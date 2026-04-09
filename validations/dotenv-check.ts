@@ -43,6 +43,10 @@ export const envSchema = z.object({
   JWT_AUD: z.string(),
   JWT_SECRET: z.string(),
 
+  ALIYUN_GREEN_ACCESS_KEY_ID: z.string().min(1),
+  ALIYUN_GREEN_ACCESS_KEY_SECRET: z.string().min(1),
+  ALIYUN_GREEN_ENDPOINT: z.string().url().optional(),
+
   NODE_ENV: z.enum(['development', 'test', 'production']),
 
   KUN_VISUAL_NOVEL_EMAIL_FROM: z.string().min(1),

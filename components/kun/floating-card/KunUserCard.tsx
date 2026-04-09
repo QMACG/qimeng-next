@@ -7,6 +7,7 @@ import { KunUserStatCard } from './KunUserStatCard'
 import { KunLoading } from '../Loading'
 import { UserFollow } from '~/components/user/follow/Follow'
 import type { FloatingCardUser } from '~/types/api/user'
+import { UserName } from '../user/UserName'
 
 interface UserCardProps {
   uid: number
@@ -23,7 +24,7 @@ export const KunUserCard = ({ uid }: UserCardProps) => {
       setUser(profile)
     }
 
-    fetchData()
+    void fetchData()
   }, [uid])
 
   return (
@@ -32,7 +33,7 @@ export const KunUserCard = ({ uid }: UserCardProps) => {
         <>
           <div className="flex items-center justify-between">
             <User
-              name={user.name}
+              name={<UserName user={user} className="font-semibold" />}
               description={user.bio || '这个用户还没有留下简介'}
               avatarProps={{
                 src: user.avatar,

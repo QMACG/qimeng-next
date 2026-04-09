@@ -95,10 +95,10 @@ export const getPatchComment = async (
             const directParent = commentMap.get(reply.parent_id!)
             const isReplyToRoot = reply.parent_id === comment.id
 
-            return {
-              id: reply.id,
-              uniqueId: reply.patch.unique_id,
-              content: await markdownToHtml(reply.content),
+      return {
+        id: reply.id,
+        uniqueId: reply.patch.unique_id,
+        content: await markdownToHtml(reply.content),
               isLike: reply.like_by.length > 0,
               likeCount: reply._count.like_by,
               parentId: comment.id,
@@ -107,11 +107,12 @@ export const getPatchComment = async (
               created: String(reply.created),
               updated: String(reply.updated),
               reply: [],
-              user: {
-                id: reply.user.id,
-                name: reply.user.name,
-                avatar: reply.user.avatar
-              },
+        user: {
+          id: reply.user.id,
+          name: reply.user.name,
+          avatar: reply.user.avatar,
+          role: reply.user.role
+        },
               quotedContent: null,
               quotedUsername: null,
               replyToUser:
@@ -119,7 +120,8 @@ export const getPatchComment = async (
                   ? {
                       id: directParent.user.id,
                       name: directParent.user.name,
-                      avatar: directParent.user.avatar
+                      avatar: directParent.user.avatar,
+                      role: directParent.user.role
                     }
                   : null
             }
@@ -141,7 +143,8 @@ export const getPatchComment = async (
         user: {
           id: comment.user.id,
           name: comment.user.name,
-          avatar: comment.user.avatar
+          avatar: comment.user.avatar,
+          role: comment.user.role
         },
         quotedContent: null,
         quotedUsername: null,

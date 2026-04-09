@@ -3,6 +3,7 @@ import { kunParsePostBody } from '~/app/api/utils/parseQuery'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 import { prisma } from '~/prisma/index'
 import { usernameSchema } from '~/validations/user'
+import { auditTextContent } from '~/utils/contentAudit'
 
 const updateUsername = async (username: string, uid: number) => {
   const user = await prisma.user.findUnique({ where: { id: uid } })
@@ -10,7 +11,19 @@ const updateUsername = async (username: string, uid: number) => {
     return '用户未找到'
   }
   if (user.moemoepoint < 30) {
-    return '更改用户名最少需要 30 萌萌点, 您的萌萌点不足'
+    return '更改用户名最少需要 30 萌萌点，您当前的萌萌点不足'
+  }
+
+  const auditError = await auditTextContent({
+    content: username,
+    scenario: 'username',
+    identity: {
+      uid,
+      username
+    }
+  })
+  if (auditError) {
+    return auditError
   }
 
   const normalizedName = username.toLowerCase()
@@ -18,7 +31,7 @@ const updateUsername = async (username: string, uid: number) => {
     where: { name: { equals: normalizedName } }
   })
   if (sameUsernameUser) {
-    return '您的用户名已经有人注册了, 请修改'
+    return '这个用户名已经被其他用户使用了，请更换后重试'
   }
 
   await prisma.user.update({
@@ -32,6 +45,7 @@ export const POST = async (req: NextRequest) => {
   if (typeof input === 'string') {
     return NextResponse.json(input)
   }
+
   const payload = await verifyHeaderCookie(req)
   if (!payload) {
     return NextResponse.json('用户未登录')

@@ -25,6 +25,7 @@ import {
   KUN_GALGAME_RATING_SPOILER_MAP
 } from '~/constants/galgame'
 import type { KunPatchRating } from '~/types/api/galgame'
+import { UserName } from '~/components/kun/user/UserName'
 
 interface Props {
   rating: KunPatchRating
@@ -129,7 +130,7 @@ export const RatingCard = ({
         <KunUser
           user={rating.user}
           userProps={{
-            name: rating.user.name,
+            name: <UserName user={rating.user} />,
             description: formatTimeDifference(rating.created),
             avatarProps: {
               src: rating.user.avatar,

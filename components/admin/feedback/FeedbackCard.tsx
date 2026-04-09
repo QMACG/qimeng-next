@@ -2,6 +2,7 @@ import { Button, Card, CardBody, Chip } from '@heroui/react'
 import Link from 'next/link'
 import { KunAvatar } from '~/components/kun/floating-card/KunAvatar'
 import { FeedbackCommentContent } from '~/components/doc/feedback/CommentContent'
+import { UserName } from '~/components/kun/user/UserName'
 import { formatDate } from '~/utils/time'
 import type { AdminFeedback } from '~/types/api/admin'
 import { FeedbackHandler } from './FeedbackHandler'
@@ -27,7 +28,9 @@ export const FeedbackCard = ({ feedback, onHandled }: Props) => {
 
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <h2 className="font-semibold">{feedback.sender.name}</h2>
+                <h2 className="font-semibold">
+                  <UserName user={feedback.sender} className="font-semibold" />
+                </h2>
                 <span className="text-small text-default-500">
                   {formatDate(feedback.created, {
                     isPrecise: true,
@@ -74,7 +77,7 @@ export const FeedbackCard = ({ feedback, onHandled }: Props) => {
                   {feedback.reply.map((reply) => (
                     <div key={reply.id} className="space-y-2">
                       <div className="text-sm font-medium text-default-700">
-                        {reply.user.name}
+                        <UserName user={reply.user} className="font-medium" />
                       </div>
                       <FeedbackCommentContent content={reply.content} />
                     </div>

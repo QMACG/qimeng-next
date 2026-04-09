@@ -3,10 +3,12 @@ import { prisma } from '~/prisma/index'
 import { patchRatingCreateSchema } from '~/validations/patch'
 import { recomputePatchRatingStat } from './stat'
 import type { KunPatchRating } from '~/types/api/galgame'
+import { auditTextContent } from '~/utils/contentAudit'
 
 export const createPatchRating = async (
   input: z.infer<typeof patchRatingCreateSchema>,
-  uid: number
+  uid: number,
+  username: string
 ) => {
   const {
     patchId,
@@ -23,7 +25,19 @@ export const createPatchRating = async (
     }
   })
   if (exists) {
-    return '您已经评价过该游戏'
+    return '您已经评价过这部作品了'
+  }
+
+  const auditError = await auditTextContent({
+    content: shortSummary,
+    scenario: 'rating',
+    identity: {
+      uid,
+      username
+    }
+  })
+  if (auditError) {
+    return auditError
   }
 
   const data = await prisma.patch_rating.create({
@@ -46,7 +60,8 @@ export const createPatchRating = async (
         select: {
           id: true,
           name: true,
-          avatar: true
+          avatar: true,
+          role: true
         }
       }
     }

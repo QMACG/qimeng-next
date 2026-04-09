@@ -1,10 +1,11 @@
 'use client'
 
+import { useRouter } from '@bprogress/next'
 import { Tooltip } from '@heroui/tooltip'
 import { User } from '@heroui/user'
-import { useRouter } from '@bprogress/next'
-import { KunUserCard } from './KunUserCard'
 import type { UserProps } from '@heroui/user'
+import { KunUserCard } from './KunUserCard'
+import { UserName } from '../user/UserName'
 
 interface KunUserProps {
   user: KunUser
@@ -17,7 +18,13 @@ export const KunUser = ({ user, userProps }: KunUserProps) => {
   const { avatarProps, ...restUser } = userProps
   const { alt, name, ...restAvatar } = avatarProps!
   const username = name?.charAt(0).toUpperCase() ?? '杂鱼'
-  const altString = alt ? alt : username
+  const altString = alt || username
+  const displayName =
+    typeof restUser.name === 'string'
+      ? restUser.name === user.name
+        ? <UserName user={user} />
+        : restUser.name
+      : restUser.name ?? <UserName user={user} />
 
   return (
     <Tooltip
@@ -31,6 +38,7 @@ export const KunUser = ({ user, userProps }: KunUserProps) => {
     >
       <User
         {...restUser}
+        name={displayName}
         onClick={(event) => {
           event.preventDefault()
           event.stopPropagation()
@@ -40,7 +48,7 @@ export const KunUser = ({ user, userProps }: KunUserProps) => {
           name: username,
           alt: altString,
           className:
-            'transition-transform duration-200 cursor-pointer shrink-0 hover:scale-110',
+            'cursor-pointer shrink-0 transition-transform duration-200 hover:scale-110',
           ...restAvatar
         }}
         className="cursor-pointer"

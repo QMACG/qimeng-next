@@ -13,6 +13,7 @@ import {
   docCommentCreateSchema,
   getDocCommentSchema
 } from '~/validations/docComment'
+import { auditTextContent } from '~/utils/contentAudit'
 
 const mapDocComment = async (
   comment: {
@@ -27,6 +28,7 @@ const mapDocComment = async (
       id: number
       name: string
       avatar: string
+      role: number
     }
     reply?: Array<{
       id: number
@@ -40,6 +42,7 @@ const mapDocComment = async (
         id: number
         name: string
         avatar: string
+        role: number
       }
     }>
   }
@@ -110,7 +113,8 @@ const getDocComments = async (
           select: {
             id: true,
             name: true,
-            avatar: true
+            avatar: true,
+            role: true
           }
         },
         reply: {
@@ -120,7 +124,8 @@ const getDocComments = async (
               select: {
                 id: true,
                 name: true,
-                avatar: true
+                avatar: true,
+                role: true
               }
             }
           }
@@ -138,11 +143,24 @@ const getDocComments = async (
 const createDocComment = async (
   input: z.infer<typeof docCommentCreateSchema>,
   uid: number,
+  username: string,
   role: number
 ): Promise<DocComment | string> => {
   const feedbackDoc = await getFeedbackDocPost(input.docPostId)
   if (!feedbackDoc) {
     return '未找到对应的反馈文章'
+  }
+
+  const auditError = await auditTextContent({
+    content: input.content,
+    scenario: 'comment',
+    identity: {
+      uid,
+      username
+    }
+  })
+  if (auditError) {
+    return auditError
   }
 
   const parentId = input.parentId ?? null
@@ -179,7 +197,8 @@ const createDocComment = async (
           select: {
             id: true,
             name: true,
-            avatar: true
+            avatar: true,
+            role: true
           }
         }
       }
@@ -224,6 +243,11 @@ export const POST = async (req: NextRequest) => {
     return NextResponse.json('用户未登录')
   }
 
-  const response = await createDocComment(input, payload.uid, payload.role)
+  const response = await createDocComment(
+    input,
+    payload.uid,
+    payload.name,
+    payload.role
+  )
   return NextResponse.json(response)
 }

@@ -11,6 +11,7 @@ import { Stats } from './follow/Stats'
 import { SelfButton } from './SelfButton'
 import { StartChatButton } from './StartChatButton'
 import type { UserInfo } from '~/types/api/user'
+import { UserName } from '~/components/kun/user/UserName'
 
 export const UserProfile = ({ user }: { user: UserInfo }) => {
   const profilePath = `/user/${user.id}`
@@ -27,7 +28,9 @@ export const UserProfile = ({ user }: { user: UserInfo }) => {
               color="primary"
             />
             <div className="flex flex-col items-center gap-1">
-              <h4 className="text-2xl font-bold">{user.name}</h4>
+              <h4 className="text-2xl font-bold">
+                <UserName user={user} className="font-bold" />
+              </h4>
               <div className="mt-1 flex flex-wrap items-center justify-center gap-2">
                 <Chip color="primary" variant="flat" size="sm">
                   {USER_ROLE_MAP[user.role]}

@@ -38,6 +38,7 @@ import { kunErrorHandler } from '~/utils/kunErrorHandler'
 import { showKunSooner } from '~/components/kun/Sooner'
 import { NSFWSwitcher } from './NSFWSwitcher'
 import type { UserState } from '~/store/userStore'
+import { UserName } from '../user/UserName'
 
 export const UserDropdown = () => {
   const router = useRouter()
@@ -134,7 +135,7 @@ export const UserDropdown = () => {
             textValue="用户名"
             className="cursor-default data-[hover=true]:bg-background"
           >
-            <p className="font-semibold">{user.name}</p>
+            <UserName user={user} className="font-semibold" />
           </DropdownItem>
           <DropdownItem
             isReadOnly

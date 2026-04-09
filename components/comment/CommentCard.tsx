@@ -4,6 +4,7 @@ import { ThumbsUp } from 'lucide-react'
 import { formatDate } from '~/utils/time'
 import Link from 'next/link'
 import type { PatchComment } from '~/types/api/comment'
+import { UserName } from '~/components/kun/user/UserName'
 
 interface Props {
   comment: PatchComment
@@ -28,7 +29,9 @@ export const CommentCard = ({ comment }: Props) => {
           />
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="font-semibold">{comment.user.name}</h2>
+              <h2 className="font-semibold">
+                <UserName user={comment.user} className="font-semibold" />
+              </h2>
               <span className="text-small text-default-500">
                 评论在{' '}
                 <span className="text-primary-500">{comment.patchName}</span>

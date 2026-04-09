@@ -1,11 +1,13 @@
 import { z } from 'zod'
 import { prisma } from '~/prisma/index'
 import { patchCommentUpdateSchema } from '~/validations/patch'
+import { auditTextContent } from '~/utils/contentAudit'
 
 export const updateComment = async (
   input: z.infer<typeof patchCommentUpdateSchema>,
   uid: number,
-  userRole: number
+  userRole: number,
+  username: string
 ) => {
   const { commentId, content } = input
 
@@ -13,27 +15,32 @@ export const updateComment = async (
     where: { id: commentId }
   })
   if (!comment) {
-    return '未找到该评论'
+    return '未找到这条评论'
   }
-  const commentUserUid = comment.user_id
+
   if (comment.user_id !== uid && userRole < 3) {
-    return '您没有权限更改该评论'
+    return '您没有权限修改这条评论'
+  }
+
+  const auditError = await auditTextContent({
+    content,
+    scenario: 'comment',
+    identity: {
+      uid,
+      username
+    }
+  })
+  if (auditError) {
+    return auditError
   }
 
   await prisma.patch_comment.update({
-    where: { id: commentId, user_id: commentUserUid },
+    where: { id: commentId },
     data: {
       content,
       edit: Date.now().toString()
-    },
-    include: {
-      user: true,
-      like_by: {
-        include: {
-          user: true
-        }
-      }
     }
   })
+
   return {}
 }

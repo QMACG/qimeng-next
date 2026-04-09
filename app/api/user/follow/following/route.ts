@@ -37,6 +37,7 @@ const getUserFollowing = async (
     name: r.following.name,
     avatar: r.following.avatar,
     bio: r.following.bio,
+    role: r.following.role,
     follower: r.following.following.length,
     following: r.following.follower.length,
     isFollow: r.following.following

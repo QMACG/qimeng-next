@@ -4,11 +4,25 @@ import { patchCommentCreateSchema } from '~/validations/patch'
 import { createDedupMessage } from '~/app/api/utils/message'
 import { createMentionMessage } from '~/app/api/utils/createMentionMessage'
 import type { PatchComment } from '~/types/api/patch'
+import { auditTextContent } from '~/utils/contentAudit'
 
 export const createPatchComment = async (
   input: z.infer<typeof patchCommentCreateSchema>,
-  uid: number
+  uid: number,
+  username: string
 ) => {
+  const auditError = await auditTextContent({
+    content: input.content,
+    scenario: 'comment',
+    identity: {
+      uid,
+      username
+    }
+  })
+  if (auditError) {
+    return auditError
+  }
+
   const data = await prisma.patch_comment.create({
     data: {
       content: input.content,

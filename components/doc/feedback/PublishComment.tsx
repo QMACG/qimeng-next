@@ -1,12 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import toast from 'react-hot-toast'
+import { Send } from 'lucide-react'
 import { Card, CardBody, CardHeader } from '@heroui/card'
 import { Button } from '@heroui/button'
-import { Send } from 'lucide-react'
-import toast from 'react-hot-toast'
 import { KunAvatar } from '~/components/kun/floating-card/KunAvatar'
 import { KunEditor } from '~/components/kun/milkdown/Editor'
+import { UserName } from '~/components/kun/user/UserName'
 import { useUserStore } from '~/store/userStore'
 import { useKunMilkdownStore } from '~/store/milkdownStore'
 import { kunFetchPost } from '~/utils/kunFetch'
@@ -57,7 +58,8 @@ export const PublishFeedbackComment = ({
         user: {
           id: user.uid,
           name: user.name,
-          avatar: user.avatar
+          avatar: user.avatar,
+          role: user.role
         }
       })
       toast.success('评论发布成功')
@@ -81,9 +83,11 @@ export const PublishFeedbackComment = ({
           }}
         />
         <div className="flex flex-col">
-          <span className="font-semibold">{user.name}</span>
+          <UserName user={user} className="font-semibold" />
           {receiverUsername ? (
-            <span className="text-sm text-default-500">回复 @{receiverUsername}</span>
+            <span className="text-sm text-default-500">
+              回复 @{receiverUsername}
+            </span>
           ) : null}
         </div>
       </CardHeader>

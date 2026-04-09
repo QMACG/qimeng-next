@@ -3,6 +3,7 @@
 import { z } from 'zod'
 import { safeParseSchema } from '~/utils/actions/safeParseSchema'
 import { getComment } from '~/app/api/admin/comment/get'
+import { getCommentAuditConfig } from '~/app/api/admin/comment/audit/_shared'
 import { adminCommentPaginationSchema } from '~/validations/admin'
 import { verifyHeaderCookie } from '~/utils/actions/verifyHeaderCookie'
 
@@ -13,14 +14,22 @@ export const kunGetActions = async (
   if (typeof input === 'string') {
     return input
   }
+
   const payload = await verifyHeaderCookie()
   if (!payload) {
-    return '用户登陆失效'
+    return '用户登录失效'
   }
   if (payload.role < 3) {
-    return '本页面仅管理员可访问'
+    return '当前页面仅管理员可访问'
   }
 
-  const response = await getComment(input)
-  return response
+  const [commentResponse, auditConfig] = await Promise.all([
+    getComment(input),
+    getCommentAuditConfig()
+  ])
+
+  return {
+    ...commentResponse,
+    auditConfig
+  }
 }

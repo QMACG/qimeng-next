@@ -17,10 +17,7 @@ import { updatePatchRating } from './update'
 import { deletePatchRating } from './delete'
 
 const ratingIdSchema = z.object({
-  ratingId: z.coerce
-    .number({ message: 'patch rating ID 不正确' })
-    .min(1)
-    .max(9999999)
+  ratingId: z.coerce.number().min(1).max(9999999)
 })
 
 export const GET = async (req: NextRequest) => {
@@ -28,6 +25,7 @@ export const GET = async (req: NextRequest) => {
   if (typeof input === 'string') {
     return NextResponse.json(input)
   }
+
   const payload = await verifyHeaderCookie(req)
   if (!payload) {
     return NextResponse.json('用户未登录')
@@ -42,12 +40,13 @@ export const POST = async (req: NextRequest) => {
   if (typeof input === 'string') {
     return NextResponse.json(input)
   }
+
   const payload = await verifyHeaderCookie(req)
   if (!payload) {
     return NextResponse.json('用户未登录')
   }
 
-  const response = await createPatchRating(input, payload.uid)
+  const response = await createPatchRating(input, payload.uid, payload.name)
   return NextResponse.json(response)
 }
 
@@ -56,12 +55,18 @@ export const PUT = async (req: NextRequest) => {
   if (typeof input === 'string') {
     return NextResponse.json(input)
   }
+
   const payload = await verifyHeaderCookie(req)
   if (!payload) {
     return NextResponse.json('用户未登录')
   }
 
-  const response = await updatePatchRating(input, payload.uid, payload.role)
+  const response = await updatePatchRating(
+    input,
+    payload.uid,
+    payload.role,
+    payload.name
+  )
   return NextResponse.json(response)
 }
 
@@ -70,6 +75,7 @@ export const DELETE = async (req: NextRequest) => {
   if (typeof input === 'string') {
     return NextResponse.json(input)
   }
+
   const payload = await verifyHeaderCookie(req)
   if (!payload) {
     return NextResponse.json('用户未登录')

@@ -122,3 +122,20 @@ export interface AdminSiteAnalyticsScript {
   created: string | Date
   updated: string | Date
 }
+
+export interface AdminCommentAuditConfig {
+  enableAudit: boolean
+  enableUsernameAudit: boolean
+  minReviewLength: number
+  keywordBlacklist: string[]
+  keywordWhitelist: string[]
+  userBlacklist: string[]
+  userWhitelist: string[]
+}
+
+export interface AdminUserNameStyleConfig {
+  role1Color: string
+  role2Color: string
+  role3Color: string
+  role4Color: string
+}

@@ -5,10 +5,12 @@ import { DisableRegisterSetting } from './DisableRegisterSetting'
 import { FrontDisplaySetting } from './FrontDisplaySetting'
 import { RedirectSetting } from './RedirectSetting'
 import { SiteAnalyticsSetting } from './SiteAnalyticsSetting'
+import { UserNameStyleSetting } from './UserNameStyleSetting'
 import type {
   AdminFrontDisplayConfig,
   AdminRedirectConfig,
-  AdminSiteAnalyticsScript
+  AdminSiteAnalyticsScript,
+  AdminUserNameStyleConfig
 } from '~/types/api/admin'
 
 interface Props {
@@ -16,13 +18,15 @@ interface Props {
   disableRegister: boolean
   frontDisplay: AdminFrontDisplayConfig
   siteAnalyticsScripts: AdminSiteAnalyticsScript[]
+  userNameStyle: AdminUserNameStyleConfig
 }
 
 export const AdminSetting = ({
   setting,
   disableRegister,
   frontDisplay,
-  siteAnalyticsScripts
+  siteAnalyticsScripts,
+  userNameStyle
 }: Props) => {
   return (
     <div className="space-y-6">
@@ -41,6 +45,10 @@ export const AdminSetting = ({
 
         <Tab key="register" title="注册设置">
           <DisableRegisterSetting disableRegister={disableRegister} />
+        </Tab>
+
+        <Tab key="user-name-style" title="昵称配色">
+          <UserNameStyleSetting config={userNameStyle} />
         </Tab>
 
         <Tab key="site-analytics" title="网站统计">

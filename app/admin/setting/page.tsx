@@ -4,7 +4,8 @@ import {
   kunGetDisableRegisterStatusActions,
   kunGetFrontDisplayConfigActions,
   kunGetRedirectConfigActions,
-  kunGetSiteAnalyticsScriptsActions
+  kunGetSiteAnalyticsScriptsActions,
+  kunGetUserNameStyleConfigActions
 } from './actions'
 import { ErrorComponent } from '~/components/error/ErrorComponent'
 import type { Metadata } from 'next'
@@ -14,19 +15,21 @@ export const revalidate = 3
 export const metadata: Metadata = kunMetadata
 
 export default async function Kun() {
-  const [setting, response, frontDisplay, siteAnalyticsScripts] =
+  const [setting, response, frontDisplay, siteAnalyticsScripts, userNameStyle] =
     await Promise.all([
       kunGetRedirectConfigActions(),
       kunGetDisableRegisterStatusActions(),
       kunGetFrontDisplayConfigActions(),
-      kunGetSiteAnalyticsScriptsActions()
+      kunGetSiteAnalyticsScriptsActions(),
+      kunGetUserNameStyleConfigActions()
     ])
 
   if (
     typeof response === 'string' ||
     typeof setting === 'string' ||
     typeof frontDisplay === 'string' ||
-    typeof siteAnalyticsScripts === 'string'
+    typeof siteAnalyticsScripts === 'string' ||
+    typeof userNameStyle === 'string'
   ) {
     const errorText =
       typeof response === 'string'
@@ -37,7 +40,9 @@ export default async function Kun() {
             ? frontDisplay
             : typeof siteAnalyticsScripts === 'string'
               ? siteAnalyticsScripts
-              : ''
+              : typeof userNameStyle === 'string'
+                ? userNameStyle
+                : ''
     return <ErrorComponent error={errorText} />
   }
 
@@ -47,6 +52,7 @@ export default async function Kun() {
       disableRegister={response.disableRegister}
       frontDisplay={frontDisplay}
       siteAnalyticsScripts={siteAnalyticsScripts}
+      userNameStyle={userNameStyle}
     />
   )
 }

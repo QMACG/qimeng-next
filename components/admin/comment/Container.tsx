@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, type Key } from 'react'
+import { Tab, Tabs } from '@heroui/react'
 import { Button, Chip, Input, Select, SelectItem } from '@heroui/react'
 import {
   Modal,
@@ -17,8 +18,9 @@ import { KunLoading } from '~/components/kun/Loading'
 import { KunPagination } from '~/components/kun/Pagination'
 import { useMounted } from '~/hooks/useMounted'
 import { kunFetchDelete, kunFetchGet } from '~/utils/kunFetch'
-import type { AdminComment } from '~/types/api/admin'
+import type { AdminComment, AdminCommentAuditConfig } from '~/types/api/admin'
 import { CommentCard } from './Card'
+import { CommentAuditSetting } from './AuditSetting'
 
 type AdminCommentSearchType = 'content' | 'user'
 
@@ -42,9 +44,14 @@ const searchTypeOptions: Array<{
 interface Props {
   initialComments: AdminComment[]
   initialTotal: number
+  initialAuditConfig: AdminCommentAuditConfig
 }
 
-export const Comment = ({ initialComments, initialTotal }: Props) => {
+export const Comment = ({
+  initialComments,
+  initialTotal,
+  initialAuditConfig
+}: Props) => {
   const [comments, setComments] = useState<AdminComment[]>(initialComments)
   const [total, setTotal] = useState(initialTotal)
   const [page, setPage] = useState(1)
@@ -105,8 +112,8 @@ export const Comment = ({ initialComments, initialTotal }: Props) => {
     if (!isMounted) {
       return
     }
-    fetchData()
-  }, [page, debouncedQuery, searchType])
+    void fetchData()
+  }, [page, debouncedQuery, searchType, isMounted])
 
   const handleSearchTypeChange = (keys: 'all' | Set<Key>) => {
     const key = Array.from(keys)[0] as AdminCommentSearchType | undefined
@@ -190,104 +197,118 @@ export const Comment = ({ initialComments, initialTotal }: Props) => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">评论管理</h1>
-
-      <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-        <div className="flex flex-col gap-3 sm:flex-row xl:flex-1">
-          <Select
-            aria-label="搜索类型"
-            className="w-full sm:max-w-40"
-            selectedKeys={new Set([searchType])}
-            onSelectionChange={handleSearchTypeChange}
-          >
-            {searchTypeOptions.map((option) => (
-              <SelectItem key={option.key}>{option.label}</SelectItem>
-            ))}
-          </Select>
-
-          <Input
-            fullWidth
-            isClearable
-            placeholder={currentPlaceholder}
-            startContent={<Search className="text-default-300" size={20} />}
-            value={searchQuery}
-            onValueChange={(value) => {
-              setSearchQuery(value)
-              setPage(1)
-            }}
-          />
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          {selectedCommentIds.size ? (
-            <Chip color="primary" variant="flat">
-              已选择 {selectedCommentIds.size} 条
-            </Chip>
-          ) : null}
-
-          <Button
-            variant="flat"
-            onPress={handleToggleSelectAll}
-            isDisabled={!comments.length || loading}
-          >
-            {isAllSelected ? '取消全选' : '全选当前页'}
-          </Button>
-
-          <Button
-            variant="light"
-            onPress={() => setSelectedCommentIds(new Set())}
-            isDisabled={!selectedCommentIds.size || loading}
-          >
-            清空选择
-          </Button>
-
-          <Button
-            color="danger"
-            onPress={onOpenDelete}
-            isDisabled={!selectedCommentIds.size || loading}
-          >
-            批量删除
-          </Button>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold">评论管理</h1>
       </div>
 
-      <div className="space-y-4">
-        {loading ? (
-          <KunLoading hint="正在获取评论数据..." />
-        ) : comments.length ? (
-          comments.map((comment) => (
-            <CommentCard
-              key={comment.id}
-              comment={comment}
-              isSelected={selectedCommentIds.has(comment.id)}
-              isSelectionDisabled={deleting}
-              onSelectionChange={(isSelected) =>
-                handleCommentSelectionChange(comment.id, isSelected)
-              }
-              onRefresh={fetchData}
-            />
-          ))
-        ) : (
-          <div className="py-12 text-center text-default-500">暂无评论</div>
-        )}
-      </div>
+      <Tabs aria-label="评论管理" variant="underlined">
+        <Tab key="comment-list" title="评论列表">
+          <div className="space-y-6 pt-2">
+            <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row xl:flex-1">
+                <Select
+                  aria-label="搜索类型"
+                  className="w-full sm:max-w-40"
+                  selectedKeys={new Set([searchType])}
+                  onSelectionChange={handleSearchTypeChange}
+                >
+                  {searchTypeOptions.map((option) => (
+                    <SelectItem key={option.key}>{option.label}</SelectItem>
+                  ))}
+                </Select>
 
-      <div className="flex justify-center">
-        <KunPagination
-          total={Math.ceil(total / 30)}
-          page={page}
-          onPageChange={setPage}
-          isLoading={loading}
-        />
-      </div>
+                <Input
+                  fullWidth
+                  isClearable
+                  placeholder={currentPlaceholder}
+                  startContent={<Search className="text-default-300" size={20} />}
+                  value={searchQuery}
+                  onValueChange={(value) => {
+                    setSearchQuery(value)
+                    setPage(1)
+                  }}
+                />
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                {selectedCommentIds.size ? (
+                  <Chip color="primary" variant="flat">
+                    已选择 {selectedCommentIds.size} 条
+                  </Chip>
+                ) : null}
+
+                <Button
+                  variant="flat"
+                  onPress={handleToggleSelectAll}
+                  isDisabled={!comments.length || loading}
+                >
+                  {isAllSelected ? '取消全选' : '全选当前页'}
+                </Button>
+
+                <Button
+                  variant="light"
+                  onPress={() => setSelectedCommentIds(new Set())}
+                  isDisabled={!selectedCommentIds.size || loading}
+                >
+                  清空选择
+                </Button>
+
+                <Button
+                  color="danger"
+                  onPress={onOpenDelete}
+                  isDisabled={!selectedCommentIds.size || loading}
+                >
+                  批量删除
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {loading ? (
+                <KunLoading hint="正在获取评论数据..." />
+              ) : comments.length ? (
+                comments.map((comment) => (
+                  <CommentCard
+                    key={comment.id}
+                    comment={comment}
+                    isSelected={selectedCommentIds.has(comment.id)}
+                    isSelectionDisabled={deleting}
+                    onSelectionChange={(isSelected) =>
+                      handleCommentSelectionChange(comment.id, isSelected)
+                    }
+                    onRefresh={fetchData}
+                  />
+                ))
+              ) : (
+                <div className="py-12 text-center text-default-500">暂无评论</div>
+              )}
+            </div>
+
+            <div className="flex justify-center">
+              <KunPagination
+                total={Math.ceil(total / 30)}
+                page={page}
+                onPageChange={setPage}
+                isLoading={loading}
+              />
+            </div>
+          </div>
+        </Tab>
+
+        <Tab key="comment-audit" title="评论审核">
+          <div className="pt-2">
+            <CommentAuditSetting config={initialAuditConfig} />
+          </div>
+        </Tab>
+      </Tabs>
 
       <Modal isOpen={isOpenDelete} onClose={onCloseDelete} placement="center">
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">批量删除评论</ModalHeader>
           <ModalBody>
             <p>
-              确认删除已选中的 {selectedCommentIds.size} 条评论吗？如果这些评论存在回复，
-              相关回复也会一并删除，且不可撤销。
+              确认删除已选中的 {selectedCommentIds.size}
+              条评论吗？如果这些评论存在回复，相关回复也会一并删除，而且无法撤销。
             </p>
           </ModalBody>
           <ModalFooter>
@@ -308,3 +329,4 @@ export const Comment = ({ initialComments, initialTotal }: Props) => {
     </div>
   )
 }
+

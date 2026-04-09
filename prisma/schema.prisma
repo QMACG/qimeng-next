@@ -227,6 +227,31 @@ model site_analytics_script {
   @@index([is_enabled, position, sort_order, id])
 }
 
+model site_content_audit_config {
+  id                      Int     @id @default(1)
+  enable_audit            Boolean @default(false)
+  enable_username_audit   Boolean @default(true)
+  min_review_length       Int     @default(5)
+  keyword_blacklist       Json
+  keyword_whitelist       Json
+  user_blacklist          Json
+  user_whitelist          Json
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+}
+
+model site_user_name_style_config {
+  id           Int    @id @default(1)
+  role_1_color String @default("#a1a1aa") @db.VarChar(32)
+  role_2_color String @default("#2563eb") @db.VarChar(32)
+  role_3_color String @default("#d97706") @db.VarChar(32)
+  role_4_color String @default("#dc2626") @db.VarChar(32)
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+}
+
 model patch_comment {
   id      Int    @id @default(autoincrement())
   content String @default("") @db.VarChar(10007)
@@ -244,6 +269,8 @@ model patch_comment {
 
   created DateTime @default(now())
   updated DateTime @updatedAt
+
+  @@index([patch_id, parent_id, created])
 }
 
 model user_patch_comment_like_relation {

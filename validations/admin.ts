@@ -286,6 +286,50 @@ export const adminDeleteSiteAnalyticsScriptSchema = z.object({
   id: z.coerce.number().int().min(1).max(9999999)
 })
 
+const auditKeywordListSchema = z.array(
+  z
+    .string()
+    .trim()
+    .min(1, { message: '名单项不能为空' })
+    .max(100, { message: '单个名单项不能超过 100 个字符' })
+)
+
+export const adminUpdateCommentAuditConfigSchema = z.object({
+  enableAudit: z.coerce.boolean(),
+  enableUsernameAudit: z.coerce.boolean(),
+  minReviewLength: z.coerce
+    .number()
+    .int()
+    .min(0, { message: '云审核触发字数不能小于 0' })
+    .max(10000, { message: '云审核触发字数不能超过 10000' }),
+  keywordBlacklist: auditKeywordListSchema.max(1000, {
+    message: '关键词黑名单最多 1000 项'
+  }),
+  keywordWhitelist: auditKeywordListSchema.max(1000, {
+    message: '关键词白名单最多 1000 项'
+  }),
+  userBlacklist: auditKeywordListSchema.max(1000, {
+    message: '用户黑名单最多 1000 项'
+  }),
+  userWhitelist: auditKeywordListSchema.max(1000, {
+    message: '用户白名单最多 1000 项'
+  })
+})
+
+const colorSchema = z
+  .string()
+  .trim()
+  .regex(/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/, {
+    message: '颜色值格式不正确，请使用十六进制颜色值'
+  })
+
+export const adminUpdateUserNameStyleConfigSchema = z.object({
+  role1Color: colorSchema,
+  role2Color: colorSchema,
+  role3Color: colorSchema,
+  role4Color: colorSchema
+})
+
 export const adminDocCategorySchema = z
   .string()
   .trim()

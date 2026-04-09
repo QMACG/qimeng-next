@@ -10,6 +10,7 @@ import { KunNull } from '~/components/kun/Null'
 import { UserFollow } from './Follow'
 import { KunPagination } from '~/components/kun/Pagination'
 import type { UserFollow as UserFollowType } from '~/types/api/user'
+import { UserName } from '~/components/kun/user/UserName'
 
 interface UserListProps {
   userId: number
@@ -77,7 +78,7 @@ export const UserList = ({ userId, type }: UserListProps) => {
                     className="text-lg font-semibold transition-colors cursor-pointer hover:text-primary-500"
                     onClick={() => router.push(`/user/${user.id}/comment`)}
                   >
-                    {user.name}
+                    <UserName user={user} className="font-semibold" />
                   </h4>
                   <p className="text-small text-default-500">{user.bio}</p>
 

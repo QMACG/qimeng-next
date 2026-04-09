@@ -26,7 +26,8 @@ export const getPatchRating = async (
           select: {
             id: true,
             name: true,
-            avatar: true
+            avatar: true,
+            role: true
           }
         },
         _count: {
@@ -61,7 +62,8 @@ export const getPatchRating = async (
     user: {
       id: rating.user.id,
       name: rating.user.name,
-      avatar: rating.user.avatar
+      avatar: rating.user.avatar,
+      role: rating.user.role
     }
   }))
 

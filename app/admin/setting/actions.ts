@@ -5,6 +5,7 @@ import { getFrontDisplayConfig } from '~/app/api/admin/setting/front-display/get
 import { getRedirectConfig } from '~/app/api/admin/setting/redirect/getRedirectConfig'
 import { getAdminSiteAnalyticsScripts } from '~/app/api/admin/setting/site-analytics/_shared'
 import { getResourceNoteConfig } from '~/app/api/admin/setting/resource-note/getResourceNoteConfig'
+import { getUserNameStyleConfig } from '~/app/api/admin/setting/user-name-style/_shared'
 import { callRouteGet } from '~/utils/actions/callRouteHandler'
 import { verifyHeaderCookie } from '~/utils/actions/verifyHeaderCookie'
 
@@ -14,7 +15,7 @@ const verifyAdmin = async () => {
     return '用户登录已失效'
   }
   if (payload.role < 3) {
-    return '本页面仅管理员可访问'
+    return '当前页面仅管理员可访问'
   }
 
   return payload
@@ -63,4 +64,13 @@ export const kunGetSiteAnalyticsScriptsActions = async () => {
   }
 
   return getAdminSiteAnalyticsScripts()
+}
+
+export const kunGetUserNameStyleConfigActions = async () => {
+  const payload = await verifyAdmin()
+  if (typeof payload === 'string') {
+    return payload
+  }
+
+  return getUserNameStyleConfig()
 }

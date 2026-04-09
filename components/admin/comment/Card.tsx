@@ -3,6 +3,7 @@ import { Card, CardBody } from '@heroui/card'
 import { ThumbsUp } from 'lucide-react'
 import Link from 'next/link'
 import { KunAvatar } from '~/components/kun/floating-card/KunAvatar'
+import { UserName } from '~/components/kun/user/UserName'
 import { formatDate } from '~/utils/time'
 import type { AdminComment } from '~/types/api/admin'
 import { CommentEdit } from './CommentEdit'
@@ -46,7 +47,9 @@ export const CommentCard = ({
 
             <div className="flex-1">
               <div className="flex items-center gap-2">
-                <h2 className="font-semibold">{comment.user.name}</h2>
+                <h2 className="font-semibold">
+                  <UserName user={comment.user} className="font-semibold" />
+                </h2>
                 <span className="text-small text-default-500">
                   评论于{' '}
                   <Link className="text-primary-500" href={`/${comment.uniqueId}`}>

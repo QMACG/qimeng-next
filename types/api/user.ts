@@ -26,6 +26,7 @@ export interface UserFollow {
   name: string
   avatar: string
   bio: string
+  role: number
   follower: number
   following: number
   isFollow: boolean

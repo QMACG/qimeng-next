@@ -1,16 +1,17 @@
 'use client'
 
 import { useState } from 'react'
+import toast from 'react-hot-toast'
+import { Send } from 'lucide-react'
 import { Card, CardBody, CardHeader } from '@heroui/card'
 import { Button } from '@heroui/button'
-import { Send } from 'lucide-react'
-import { kunFetchPost } from '~/utils/kunFetch'
-import toast from 'react-hot-toast'
-import { useUserStore } from '~/store/userStore'
-import { kunErrorHandler } from '~/utils/kunErrorHandler'
 import { KunAvatar } from '~/components/kun/floating-card/KunAvatar'
 import { KunEditor } from '~/components/kun/milkdown/Editor'
+import { UserName } from '~/components/kun/user/UserName'
+import { useUserStore } from '~/store/userStore'
 import { useKunMilkdownStore } from '~/store/milkdownStore'
+import { kunFetchPost } from '~/utils/kunFetch'
+import { kunErrorHandler } from '~/utils/kunErrorHandler'
 import type { PatchComment } from '~/types/api/patch'
 
 interface CreateCommentProps {
@@ -48,7 +49,12 @@ export const PublishComment = ({
     kunErrorHandler(res, (value) => {
       setNewComment({
         ...value,
-        user: { id: user.uid, name: user.name, avatar: user.avatar }
+        user: {
+          id: user.uid,
+          name: user.name,
+          avatar: user.avatar,
+          role: user.role
+        }
       })
       toast.success('评论发布成功')
       setContent('')
@@ -71,8 +77,10 @@ export const PublishComment = ({
           }}
         />
         <div className="flex flex-col">
-          <span className="font-semibold">{user.name}</span>
-          {receiverUsername ? <span className="text-sm">回复 @{receiverUsername}</span> : null}
+          <UserName user={user} className="font-semibold" />
+          {receiverUsername ? (
+            <span className="text-sm">回复 @{receiverUsername}</span>
+          ) : null}
         </div>
       </CardHeader>
       <CardBody className="space-y-4">

@@ -3,11 +3,13 @@ import { prisma } from '~/prisma/index'
 import { patchRatingUpdateSchema } from '~/validations/patch'
 import { recomputePatchRatingStat } from './stat'
 import type { KunPatchRating } from '~/types/api/galgame'
+import { auditTextContent } from '~/utils/contentAudit'
 
 export const updatePatchRating = async (
   input: z.infer<typeof patchRatingUpdateSchema>,
   uid: number,
-  userRole: number
+  userRole: number,
+  username: string
 ) => {
   const {
     ratingId,
@@ -25,13 +27,24 @@ export const updatePatchRating = async (
   if (!rating) {
     return '评价不存在'
   }
-  const ratingUserUid = rating.user_id
   if (rating.user_id !== uid && userRole < 3) {
     return '您没有权限更新该评价'
   }
 
+  const auditError = await auditTextContent({
+    content: shortSummary,
+    scenario: 'rating',
+    identity: {
+      uid,
+      username
+    }
+  })
+  if (auditError) {
+    return auditError
+  }
+
   const data = await prisma.patch_rating.update({
-    where: { id: ratingId, user_id: ratingUserUid },
+    where: { id: ratingId },
     data: {
       patch_id: patchId,
       recommend,
@@ -46,7 +59,8 @@ export const updatePatchRating = async (
         select: {
           id: true,
           name: true,
-          avatar: true
+          avatar: true,
+          role: true
         }
       },
       _count: {

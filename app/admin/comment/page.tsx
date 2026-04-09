@@ -24,6 +24,7 @@ export default async function Kun() {
       <Comment
         initialComments={response.comments}
         initialTotal={response.total}
+        initialAuditConfig={response.auditConfig}
       />
     </Suspense>
   )

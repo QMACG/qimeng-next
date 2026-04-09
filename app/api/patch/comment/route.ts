@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import {
   kunParseDeleteQuery,
@@ -15,13 +16,9 @@ import { getPatchComment } from './get'
 import { createPatchComment } from './create'
 import { updateComment } from './update'
 import { deleteComment } from './delete'
-import { z } from 'zod'
 
 const commentIdSchema = z.object({
-  commentId: z.coerce
-    .number({ message: '评论 ID 必须为数字' })
-    .min(1)
-    .max(9999999)
+  commentId: z.coerce.number().min(1).max(9999999)
 })
 
 export const GET = async (req: NextRequest) => {
@@ -29,9 +26,10 @@ export const GET = async (req: NextRequest) => {
   if (typeof input === 'string') {
     return NextResponse.json(input)
   }
+
   const payload = await verifyHeaderCookie(req)
   if (!payload) {
-    return NextResponse.json('用户登陆失效')
+    return NextResponse.json('用户登录已失效')
   }
 
   const response = await getPatchComment(input, payload.uid)
@@ -43,12 +41,13 @@ export const POST = async (req: NextRequest) => {
   if (typeof input === 'string') {
     return NextResponse.json(input)
   }
+
   const payload = await verifyHeaderCookie(req)
   if (!payload) {
     return NextResponse.json('用户未登录')
   }
 
-  const response = await createPatchComment(input, payload.uid)
+  const response = await createPatchComment(input, payload.uid, payload.name)
   return NextResponse.json(response)
 }
 
@@ -57,12 +56,18 @@ export const PUT = async (req: NextRequest) => {
   if (typeof input === 'string') {
     return NextResponse.json(input)
   }
+
   const payload = await verifyHeaderCookie(req)
   if (!payload) {
     return NextResponse.json('用户未登录')
   }
 
-  const response = await updateComment(input, payload.uid, payload.role)
+  const response = await updateComment(
+    input,
+    payload.uid,
+    payload.role,
+    payload.name
+  )
   return NextResponse.json(response)
 }
 
@@ -71,6 +76,7 @@ export const DELETE = async (req: NextRequest) => {
   if (typeof input === 'string') {
     return NextResponse.json(input)
   }
+
   const payload = await verifyHeaderCookie(req)
   if (!payload) {
     return NextResponse.json('用户未登录')

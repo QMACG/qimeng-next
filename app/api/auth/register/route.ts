@@ -1,4 +1,4 @@
-﻿import { z } from 'zod'
+import { z } from 'zod'
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParsePostBody } from '~/app/api/utils/parseQuery'
@@ -13,6 +13,7 @@ import { getKv } from '~/lib/redis'
 import { KUN_PATCH_DISABLE_REGISTER_KEY } from '~/config/redis'
 import { toJsonStringArray } from '~/utils/prismaJson'
 import type { UserState } from '~/store/userStore'
+import { auditTextContent } from '~/utils/contentAudit'
 
 const register = async (
   input: z.infer<typeof registerSchema>,
@@ -33,6 +34,17 @@ const register = async (
     if (isDisableRegister) {
       return '当前站点暂未开放新用户注册'
     }
+  }
+
+  const auditError = await auditTextContent({
+    content: name,
+    scenario: 'username',
+    identity: {
+      username: name
+    }
+  })
+  if (auditError) {
+    return auditError
   }
 
   const normalizedName = name.toLowerCase()
@@ -119,4 +131,3 @@ export const POST = async (req: NextRequest) => {
   const response = await register(input, ip)
   return NextResponse.json(response)
 }
-
