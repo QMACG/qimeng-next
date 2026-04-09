@@ -5,6 +5,7 @@ import { parseJsonStringArray, toJsonStringArray } from '~/utils/prismaJson'
 export const DEFAULT_COMMENT_AUDIT_CONFIG: AdminCommentAuditConfig = {
   enableAudit: false,
   enableUsernameAudit: true,
+  feedbackRequireCaptcha: false,
   minReviewLength: 5,
   keywordBlacklist: [],
   keywordWhitelist: [],
@@ -15,6 +16,7 @@ export const DEFAULT_COMMENT_AUDIT_CONFIG: AdminCommentAuditConfig = {
 const mapConfig = (config: {
   enable_audit: boolean
   enable_username_audit: boolean
+  feedback_require_captcha: boolean
   min_review_length: number
   keyword_blacklist: unknown
   keyword_whitelist: unknown
@@ -23,6 +25,7 @@ const mapConfig = (config: {
 }): AdminCommentAuditConfig => ({
   enableAudit: config.enable_audit,
   enableUsernameAudit: config.enable_username_audit,
+  feedbackRequireCaptcha: config.feedback_require_captcha,
   minReviewLength: config.min_review_length,
   keywordBlacklist: parseJsonStringArray(config.keyword_blacklist as any),
   keywordWhitelist: parseJsonStringArray(config.keyword_whitelist as any),
@@ -41,6 +44,8 @@ export const getCommentAuditConfig = async (): Promise<AdminCommentAuditConfig> 
         id: 1,
         enable_audit: DEFAULT_COMMENT_AUDIT_CONFIG.enableAudit,
         enable_username_audit: DEFAULT_COMMENT_AUDIT_CONFIG.enableUsernameAudit,
+        feedback_require_captcha:
+          DEFAULT_COMMENT_AUDIT_CONFIG.feedbackRequireCaptcha,
         min_review_length: DEFAULT_COMMENT_AUDIT_CONFIG.minReviewLength,
         keyword_blacklist: toJsonStringArray(
           DEFAULT_COMMENT_AUDIT_CONFIG.keywordBlacklist
@@ -58,4 +63,3 @@ export const getCommentAuditConfig = async (): Promise<AdminCommentAuditConfig> 
 
   return mapConfig(config)
 }
-

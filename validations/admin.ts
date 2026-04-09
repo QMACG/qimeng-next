@@ -187,9 +187,19 @@ export const adminUpdateDisableRegisterSchema = z.object({
 })
 
 export const adminUpdateFrontDisplaySchema = z.object({
+  enableSite: z.coerce.boolean(),
+  siteCloseMessage: z.string().max(10007),
   hideViewCountForVisitor: z.coerce.boolean(),
   hideDownloadCountForVisitor: z.coerce.boolean(),
   hideCreatorStatsForVisitor: z.coerce.boolean()
+}).superRefine((data, ctx) => {
+  if (!data.enableSite && !data.siteCloseMessage.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: '关闭站点时请填写站点提示',
+      path: ['siteCloseMessage']
+    })
+  }
 })
 
 export const adminUpdateResourceNoteSchema = z.object({
@@ -297,6 +307,7 @@ const auditKeywordListSchema = z.array(
 export const adminUpdateCommentAuditConfigSchema = z.object({
   enableAudit: z.coerce.boolean(),
   enableUsernameAudit: z.coerce.boolean(),
+  feedbackRequireCaptcha: z.coerce.boolean(),
   minReviewLength: z.coerce
     .number()
     .int()
@@ -315,6 +326,75 @@ export const adminUpdateCommentAuditConfigSchema = z.object({
     message: '用户白名单最多 1000 项'
   })
 })
+
+const adminHeaderNavFixedKeySchema = z.enum(['galgame', 'tag', 'company', 'doc'])
+
+export const adminUpdateHeaderNavConfigSchema = z
+  .object({
+    items: z
+      .array(
+        z.object({
+          id: z
+            .string()
+            .trim()
+            .min(1, { message: '导航项 ID 不能为空' })
+            .max(100, { message: '导航项 ID 不能超过 100 个字符' }),
+          key: adminHeaderNavFixedKeySchema.optional(),
+          name: z
+            .string()
+            .trim()
+            .min(1, { message: '导航名称不能为空' })
+            .max(30, { message: '导航名称不能超过 30 个字符' }),
+          href: createHttpUrlOrPathSchema('请输入有效的导航链接'),
+          sortOrder: z.coerce
+            .number()
+            .int()
+            .min(0, { message: '排序值不能小于 0' })
+            .max(999999, { message: '排序值不能超过 999999' }),
+          isFixed: z.coerce.boolean()
+        })
+      )
+      .max(50, { message: '页头导航最多 50 项' })
+  })
+  .superRefine((value, ctx) => {
+    const fixedKeys = value.items
+      .filter((item) => item.isFixed)
+      .map((item) => item.key)
+      .filter((item): item is z.infer<typeof adminHeaderNavFixedKeySchema> =>
+        Boolean(item)
+      )
+
+    const requiredKeys = adminHeaderNavFixedKeySchema.options
+
+    for (const key of requiredKeys) {
+      const count = fixedKeys.filter((item) => item === key).length
+      if (count !== 1) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: '固定导航项配置不完整，请保留游戏资源、游戏标签、会社、文章这四项'
+        })
+        return
+      }
+    }
+
+    for (const item of value.items) {
+      if (item.isFixed && !item.key) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: '固定导航项缺少标识'
+        })
+        return
+      }
+
+      if (!item.isFixed && item.key) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: '自定义导航项不能绑定固定标识'
+        })
+        return
+      }
+    }
+  })
 
 const colorSchema = z
   .string()

@@ -1,10 +1,13 @@
-import { kunAuthMiddleware } from '~/middleware/auth'
 import type { NextRequest } from 'next/server'
+import { kunAuthMiddleware } from '~/middleware/auth'
 
 export const config = {
-  matcher: ['/admin/:path*', '/user/:path*', '/comment/:path*', '/settings/:path*']
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\..*).*)']
 }
 
 export const middleware = async (request: NextRequest) => {
-  return kunAuthMiddleware(request)
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-pathname', request.nextUrl.pathname)
+
+  return kunAuthMiddleware(request, requestHeaders)
 }

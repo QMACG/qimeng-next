@@ -76,6 +76,11 @@ export const Galgame = ({ initialGalgames, initialTotal }: Props) => {
     setPage(1)
   }
 
+  const handleDeleted = (id: number) => {
+    setGalgames((current) => current.filter((galgame) => galgame.id !== id))
+    setTotal((current) => Math.max(0, current - 1))
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -127,7 +132,9 @@ export const Galgame = ({ initialGalgames, initialTotal }: Props) => {
             {(item) => (
               <TableRow key={item.id}>
                 {(columnKey) => (
-                  <TableCell>{RenderCell(item, columnKey.toString())}</TableCell>
+                  <TableCell>
+                    {RenderCell(item, columnKey.toString(), handleDeleted)}
+                  </TableCell>
                 )}
               </TableRow>
             )}

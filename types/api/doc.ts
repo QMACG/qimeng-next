@@ -19,15 +19,22 @@ export interface DocPost {
   updated: string
 }
 
+export interface DocCommentClientInfo {
+  os: string
+  browser: string
+}
+
 export interface DocComment {
   id: number
   docPostId: number
   parentId: number | null
   content: string
+  rawContent: string
   status: number
   created: string
   updated: string
   user: KunUser
+  clientInfo: DocCommentClientInfo
   reply: DocComment[]
 }
 

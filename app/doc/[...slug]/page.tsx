@@ -15,6 +15,7 @@ import {
   toCanonicalUrl
 } from '~/utils/seo'
 import { verifyHeaderCookie } from '~/utils/actions/verifyHeaderCookie'
+import { getCommentAuditConfig } from '~/app/api/admin/comment/audit/_shared'
 import type { Metadata } from 'next'
 
 interface Props {
@@ -51,6 +52,8 @@ export default async function Kun({ params }: Props) {
 
   const { content, frontmatter } = blog
   const { prev, next } = await getAdjacentPosts(url)
+  const commentAuditConfig =
+    blog.slug === FEEDBACK_DOC_SLUG ? await getCommentAuditConfig() : null
   const canonical = toCanonicalUrl(`/doc/${blog.slug}`)
   const articleJsonLd = {
     '@context': 'https://schema.org',
@@ -100,7 +103,10 @@ export default async function Kun({ params }: Props) {
           <CustomMDX source={content} />
         </article>
         {blog.slug === FEEDBACK_DOC_SLUG ? (
-          <FeedbackCommentSection docPostId={blog.id} />
+          <FeedbackCommentSection
+            docPostId={blog.id}
+            requireCaptcha={commentAuditConfig?.feedbackRequireCaptcha ?? false}
+          />
         ) : null}
         <KunBottomNavigation prev={prev} next={next} />
       </div>

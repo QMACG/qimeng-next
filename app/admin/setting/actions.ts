@@ -2,6 +2,7 @@
 
 import { GET as getDisableRegisterRoute } from '~/app/api/admin/setting/register/route'
 import { getFrontDisplayConfig } from '~/app/api/admin/setting/front-display/getFrontDisplayConfig'
+import { getHeaderNavConfig } from '~/app/api/admin/setting/header-nav/_shared'
 import { getRedirectConfig } from '~/app/api/admin/setting/redirect/getRedirectConfig'
 import { getAdminSiteAnalyticsScripts } from '~/app/api/admin/setting/site-analytics/_shared'
 import { getResourceNoteConfig } from '~/app/api/admin/setting/resource-note/getResourceNoteConfig'
@@ -55,6 +56,15 @@ export const kunGetFrontDisplayConfigActions = async () => {
   }
 
   return getFrontDisplayConfig()
+}
+
+export const kunGetHeaderNavConfigActions = async () => {
+  const payload = await verifyAdmin()
+  if (typeof payload === 'string') {
+    return payload
+  }
+
+  return getHeaderNavConfig()
 }
 
 export const kunGetSiteAnalyticsScriptsActions = async () => {

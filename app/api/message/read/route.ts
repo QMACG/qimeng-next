@@ -4,39 +4,13 @@ import { prisma } from '~/prisma/index'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 import { clearReadMessageSchema } from '~/validations/message'
 
-const MESSAGE_BATCH_SIZE = 5000
+const MESSAGE_BATCH_SIZE = 1000
 
-const sleep = (ms: number) =>
-  new Promise((resolve) => {
-    setTimeout(resolve, ms)
-  })
-
-const isDeadlockError = (error: unknown) =>
-  error instanceof Error && error.message.includes('deadlock detected')
-
-const withDeadlockRetry = async <T>(
-  action: () => Promise<T>,
-  maxRetries = 2
-): Promise<T> => {
-  let attempt = 0
-
+const processMessageInBatches = async (
+  handler: () => Promise<number>
+) => {
   while (true) {
-    try {
-      return await action()
-    } catch (error) {
-      if (!isDeadlockError(error) || attempt >= maxRetries) {
-        throw error
-      }
-
-      attempt += 1
-      await sleep(100 * attempt)
-    }
-  }
-}
-
-const processMessageInBatches = async (handler: () => Promise<number>) => {
-  while (true) {
-    const affectedCount = await withDeadlockRetry(handler)
+    const affectedCount = await handler()
 
     if (!affectedCount) {
       return
@@ -46,29 +20,32 @@ const processMessageInBatches = async (handler: () => Promise<number>) => {
 
 const readMessage = async (uid: number) => {
   await processMessageInBatches(async () => {
-    const result = await prisma.$queryRaw<{ count: number }[]>`
-      WITH target AS (
-        SELECT id
-        FROM user_message
-        WHERE recipient_id = ${uid}
-          AND status = 0
-        ORDER BY id
-        LIMIT ${MESSAGE_BATCH_SIZE}
-        FOR UPDATE SKIP LOCKED
-      ),
-      updated AS (
-        UPDATE user_message AS um
-        SET status = 1,
-            updated = NOW()
-        FROM target
-        WHERE um.id = target.id
-        RETURNING 1
-      )
-      SELECT COUNT(*)::int AS count
-      FROM updated
-    `
+    const messages = await prisma.user_message.findMany({
+      where: {
+        recipient_id: uid,
+        status: 0
+      },
+      orderBy: { id: 'asc' },
+      take: MESSAGE_BATCH_SIZE,
+      select: { id: true }
+    })
 
-    return result[0]?.count ?? 0
+    if (!messages.length) {
+      return 0
+    }
+
+    const result = await prisma.user_message.updateMany({
+      where: {
+        id: {
+          in: messages.map((message) => message.id)
+        }
+      },
+      data: {
+        status: 1
+      }
+    })
+
+    return result.count
   })
 
   return {}
@@ -76,48 +53,30 @@ const readMessage = async (uid: number) => {
 
 const clearReadMessage = async (uid: number, type: string) => {
   await processMessageInBatches(async () => {
-    const result = type
-      ? await prisma.$queryRaw<{ count: number }[]>`
-          WITH target AS (
-            SELECT id
-            FROM user_message
-            WHERE recipient_id = ${uid}
-              AND status = 1
-              AND type = ${type}
-            ORDER BY id
-            LIMIT ${MESSAGE_BATCH_SIZE}
-            FOR UPDATE SKIP LOCKED
-          ),
-          deleted AS (
-            DELETE FROM user_message AS um
-            USING target
-            WHERE um.id = target.id
-            RETURNING 1
-          )
-          SELECT COUNT(*)::int AS count
-          FROM deleted
-        `
-      : await prisma.$queryRaw<{ count: number }[]>`
-          WITH target AS (
-            SELECT id
-            FROM user_message
-            WHERE recipient_id = ${uid}
-              AND status = 1
-            ORDER BY id
-            LIMIT ${MESSAGE_BATCH_SIZE}
-            FOR UPDATE SKIP LOCKED
-          ),
-          deleted AS (
-            DELETE FROM user_message AS um
-            USING target
-            WHERE um.id = target.id
-            RETURNING 1
-          )
-          SELECT COUNT(*)::int AS count
-          FROM deleted
-        `
+    const messages = await prisma.user_message.findMany({
+      where: {
+        recipient_id: uid,
+        status: 1,
+        ...(type ? { type } : {})
+      },
+      orderBy: { id: 'asc' },
+      take: MESSAGE_BATCH_SIZE,
+      select: { id: true }
+    })
 
-    return result[0]?.count ?? 0
+    if (!messages.length) {
+      return 0
+    }
+
+    const result = await prisma.user_message.deleteMany({
+      where: {
+        id: {
+          in: messages.map((message) => message.id)
+        }
+      }
+    })
+
+    return result.count
   })
 
   return {}

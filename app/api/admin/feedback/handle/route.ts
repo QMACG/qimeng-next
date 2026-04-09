@@ -7,7 +7,8 @@ import { adminHandleFeedbackCommentSchema } from '~/validations/docComment'
 
 const handleFeedback = async (
   input: { commentId: number; content: string },
-  uid: number
+  uid: number,
+  userAgent: string
 ) => {
   const rootComment = await prisma.doc_post_comment.findUnique({
     where: { id: input.commentId },
@@ -40,7 +41,8 @@ const handleFeedback = async (
           content: input.content.trim(),
           user_id: uid,
           doc_post_id: rootComment.doc_post_id,
-          parent_id: rootComment.id
+          parent_id: rootComment.id,
+          user_agent: userAgent
         }
       })
     }
@@ -63,6 +65,10 @@ export const POST = async (req: NextRequest) => {
     return NextResponse.json('当前页面仅管理员可访问')
   }
 
-  const response = await handleFeedback(input, payload.uid)
+  const response = await handleFeedback(
+    input,
+    payload.uid,
+    req.headers.get('user-agent') ?? ''
+  )
   return NextResponse.json(response)
 }

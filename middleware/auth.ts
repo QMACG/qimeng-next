@@ -18,12 +18,23 @@ const getToken = (request: NextRequest) => {
   return cookies['kun-galgame-patch-moe-token']
 }
 
-export const kunAuthMiddleware = async (request: NextRequest) => {
+export const kunAuthMiddleware = async (
+  request: NextRequest,
+  requestHeaders?: Headers
+) => {
   const { pathname } = request.nextUrl
   const token = getToken(request)
 
   if (isProtectedRoute(pathname) && !token) {
     return redirectToLogin(request)
+  }
+
+  if (requestHeaders) {
+    return NextResponse.next({
+      request: {
+        headers: requestHeaders
+      }
+    })
   }
 
   return NextResponse.next()

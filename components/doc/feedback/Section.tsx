@@ -4,9 +4,13 @@ import { FeedbackComments } from './Comments'
 
 interface Props {
   docPostId: number
+  requireCaptcha: boolean
 }
 
-export const FeedbackCommentSection = ({ docPostId }: Props) => {
+export const FeedbackCommentSection = ({
+  docPostId,
+  requireCaptcha
+}: Props) => {
   return (
     <Card className="mt-8 border border-default-200">
       <CardHeader className="flex items-center gap-3 p-4">
@@ -19,7 +23,7 @@ export const FeedbackCommentSection = ({ docPostId }: Props) => {
         </div>
       </CardHeader>
       <CardBody className="p-4">
-        <FeedbackComments docPostId={docPostId} />
+        <FeedbackComments docPostId={docPostId} requireCaptcha={requireCaptcha} />
       </CardBody>
     </Card>
   )

@@ -3,11 +3,13 @@
 import { Tab, Tabs } from '@heroui/react'
 import { DisableRegisterSetting } from './DisableRegisterSetting'
 import { FrontDisplaySetting } from './FrontDisplaySetting'
+import { HeaderNavSetting } from './HeaderNavSetting'
 import { RedirectSetting } from './RedirectSetting'
 import { SiteAnalyticsSetting } from './SiteAnalyticsSetting'
 import { UserNameStyleSetting } from './UserNameStyleSetting'
 import type {
   AdminFrontDisplayConfig,
+  AdminHeaderNavConfig,
   AdminRedirectConfig,
   AdminSiteAnalyticsScript,
   AdminUserNameStyleConfig
@@ -17,6 +19,7 @@ interface Props {
   setting: AdminRedirectConfig
   disableRegister: boolean
   frontDisplay: AdminFrontDisplayConfig
+  headerNav: AdminHeaderNavConfig
   siteAnalyticsScripts: AdminSiteAnalyticsScript[]
   userNameStyle: AdminUserNameStyleConfig
 }
@@ -25,6 +28,7 @@ export const AdminSetting = ({
   setting,
   disableRegister,
   frontDisplay,
+  headerNav,
   siteAnalyticsScripts,
   userNameStyle
 }: Props) => {
@@ -37,6 +41,10 @@ export const AdminSetting = ({
       <Tabs aria-label="站点设置" variant="underlined">
         <Tab key="front-display" title="前台显示">
           <FrontDisplaySetting setting={frontDisplay} />
+        </Tab>
+
+        <Tab key="header-nav" title="页头设置">
+          <HeaderNavSetting config={headerNav} />
         </Tab>
 
         <Tab key="redirect" title="外链跳转">

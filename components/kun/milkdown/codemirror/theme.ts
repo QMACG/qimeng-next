@@ -35,7 +35,11 @@ export const kunCMTheme = () => {
       borderRadius: '0.75rem',
       lineHeight: '1.5',
       scrollbarWidth: 'none',
-      minHeight: '256px'
+      minHeight: 'var(--kun-editor-min-height, 256px)'
+    },
+
+    '.cm-editor': {
+      minHeight: 'var(--kun-editor-min-height, 256px)'
     },
 
     '&.cm-focused': {
@@ -47,11 +51,16 @@ export const kunCMTheme = () => {
       lineHeight: '1.5',
       padding: '1rem 0.5rem',
       maxWidth: '100%',
+      minHeight: 'var(--kun-editor-min-height, 256px)',
       scrollbarWidth: 'none',
       overflow: 'visible !important',
       '&>.div': {
         maxWidth: '100%'
       }
+    },
+
+    '.cm-content, .cm-gutter': {
+      minHeight: 'calc(var(--kun-editor-min-height, 256px) - 2rem)'
     },
 
     '.cm-line': {

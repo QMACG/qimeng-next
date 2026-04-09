@@ -7,6 +7,7 @@ import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 import { prisma } from '~/prisma/index'
 import { FEEDBACK_DOC_PATH, FEEDBACK_DOC_SLUG } from '~/constants/feedback'
 import type { AdminFeedback } from '~/types/api/admin'
+import { parseUserAgentSummary } from '~/utils/userAgentSummary'
 
 const mapAdminFeedback = async (
   comment: {
@@ -15,12 +16,14 @@ const mapAdminFeedback = async (
     parent_id: number | null
     content: string
     status: number
+    user_agent: string
     created: Date
     updated: Date
     user: {
       id: number
       name: string
       avatar: string
+      role: number
     }
     reply: Array<{
       id: number
@@ -28,12 +31,14 @@ const mapAdminFeedback = async (
       parent_id: number | null
       content: string
       status: number
+      user_agent: string
       created: Date
       updated: Date
       user: {
         id: number
         name: string
         avatar: string
+        role: number
       }
     }>
   }
@@ -42,11 +47,13 @@ const mapAdminFeedback = async (
   docPostId: comment.doc_post_id,
   parentId: comment.parent_id,
   content: await markdownToHtml(comment.content),
+  rawContent: comment.content,
   status: comment.status,
   created: String(comment.created),
   updated: String(comment.updated),
   user: comment.user,
   sender: comment.user,
+  clientInfo: parseUserAgentSummary(comment.user_agent),
   link: `${FEEDBACK_DOC_PATH}#feedback-comment-${comment.id}`,
   reply: await Promise.all(
     comment.reply.map(async (item) => ({
@@ -54,10 +61,12 @@ const mapAdminFeedback = async (
       docPostId: item.doc_post_id,
       parentId: item.parent_id,
       content: await markdownToHtml(item.content),
+      rawContent: item.content,
       status: item.status,
       created: String(item.created),
       updated: String(item.updated),
       user: item.user,
+      clientInfo: parseUserAgentSummary(item.user_agent),
       reply: []
     }))
   )
@@ -109,7 +118,8 @@ const getFeedback = async (
           select: {
             id: true,
             name: true,
-            avatar: true
+            avatar: true,
+            role: true
           }
         },
         reply: {
@@ -119,7 +129,8 @@ const getFeedback = async (
               select: {
                 id: true,
                 name: true,
-                avatar: true
+                avatar: true,
+                role: true
               }
             }
           }

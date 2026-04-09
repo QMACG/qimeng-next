@@ -44,6 +44,7 @@ export const PUT = async (req: NextRequest) => {
     update: {
       enable_audit: input.enableAudit,
       enable_username_audit: input.enableUsernameAudit,
+      feedback_require_captcha: input.feedbackRequireCaptcha,
       min_review_length: input.minReviewLength,
       keyword_blacklist: toJsonStringArray(input.keywordBlacklist),
       keyword_whitelist: toJsonStringArray(input.keywordWhitelist),
@@ -54,6 +55,7 @@ export const PUT = async (req: NextRequest) => {
       id: 1,
       enable_audit: input.enableAudit,
       enable_username_audit: input.enableUsernameAudit,
+      feedback_require_captcha: input.feedbackRequireCaptcha,
       min_review_length: input.minReviewLength,
       keyword_blacklist: toJsonStringArray(input.keywordBlacklist),
       keyword_whitelist: toJsonStringArray(input.keywordWhitelist),
@@ -64,4 +66,3 @@ export const PUT = async (req: NextRequest) => {
 
   return NextResponse.json({})
 }
-

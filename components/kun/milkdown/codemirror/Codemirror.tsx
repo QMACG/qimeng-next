@@ -390,5 +390,13 @@ export const Codemirror: FC<CodemirrorProps> = ({
     }
   }, [markdown, emitChange, placeholder])
 
-  return <div className="flex-1" ref={divRef} />
+  return (
+    <div
+      className="flex-1"
+      ref={divRef}
+      onClick={() => {
+        editorRef.current?.focus()
+      }}
+    />
+  )
 }

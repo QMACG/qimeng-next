@@ -1,74 +1,58 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import {
+  kunParseDeleteQuery,
   kunParseGetQuery,
-  kunParsePostBody
+  kunParsePostBody,
+  kunParsePutBody
 } from '~/app/api/utils/parseQuery'
 import { markdownToHtml } from '~/app/api/utils/render/markdownToHtml'
+import { checkKunCaptchaExist } from '~/app/api/utils/verifyKunCaptcha'
 import { FEEDBACK_DOC_SLUG } from '~/constants/feedback'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 import { prisma } from '~/prisma/index'
 import type { DocComment, DocCommentResponse } from '~/types/api/doc'
 import {
   docCommentCreateSchema,
+  docCommentDeleteSchema,
+  docCommentUpdateSchema,
   getDocCommentSchema
 } from '~/validations/docComment'
 import { auditTextContent } from '~/utils/contentAudit'
+import { parseUserAgentSummary } from '~/utils/userAgentSummary'
+import { getCommentAuditConfig } from '~/app/api/admin/comment/audit/_shared'
 
-const mapDocComment = async (
-  comment: {
+type CommentRecord = {
+  id: number
+  doc_post_id: number
+  parent_id: number | null
+  content: string
+  status: number
+  user_agent: string
+  created: Date
+  updated: Date
+  user: {
     id: number
-    doc_post_id: number
-    parent_id: number | null
-    content: string
-    status: number
-    created: Date
-    updated: Date
-    user: {
-      id: number
-      name: string
-      avatar: string
-      role: number
-    }
-    reply?: Array<{
-      id: number
-      doc_post_id: number
-      parent_id: number | null
-      content: string
-      status: number
-      created: Date
-      updated: Date
-      user: {
-        id: number
-        name: string
-        avatar: string
-        role: number
-      }
-    }>
+    name: string
+    avatar: string
+    role: number
   }
-): Promise<DocComment> => ({
+  reply?: CommentRecord[]
+}
+
+const mapDocComment = async (comment: CommentRecord): Promise<DocComment> => ({
   id: comment.id,
   docPostId: comment.doc_post_id,
   parentId: comment.parent_id,
   content: await markdownToHtml(comment.content),
+  rawContent: comment.content,
   status: comment.status,
   created: String(comment.created),
   updated: String(comment.updated),
   user: comment.user,
+  clientInfo: parseUserAgentSummary(comment.user_agent),
   reply: comment.reply
-    ? await Promise.all(
-        comment.reply.map(async (item) => ({
-          id: item.id,
-          docPostId: item.doc_post_id,
-          parentId: item.parent_id,
-          content: await markdownToHtml(item.content),
-          status: item.status,
-          created: String(item.created),
-          updated: String(item.updated),
-          user: item.user,
-          reply: []
-        }))
-      )
+    ? await Promise.all(comment.reply.map((item) => mapDocComment(item)))
     : []
 })
 
@@ -86,6 +70,37 @@ const getFeedbackDocPost = async (docPostId: number) => {
   }
 
   return docPost
+}
+
+const getFeedbackCommentById = async (commentId: number) =>
+  prisma.doc_post_comment.findUnique({
+    where: { id: commentId },
+    include: {
+      doc_post: {
+        select: {
+          id: true,
+          slug: true
+        }
+      }
+    }
+  })
+
+const deleteDocCommentWithReplies = async (
+  tx: any,
+  commentId: number
+): Promise<void> => {
+  const childComments = await tx.doc_post_comment.findMany({
+    where: { parent_id: commentId },
+    select: { id: true }
+  })
+
+  for (const child of childComments) {
+    await deleteDocCommentWithReplies(tx, child.id)
+  }
+
+  await tx.doc_post_comment.delete({
+    where: { id: commentId }
+  })
 }
 
 const getDocComments = async (
@@ -144,11 +159,23 @@ const createDocComment = async (
   input: z.infer<typeof docCommentCreateSchema>,
   uid: number,
   username: string,
-  role: number
+  role: number,
+  userAgent: string
 ): Promise<DocComment | string> => {
   const feedbackDoc = await getFeedbackDocPost(input.docPostId)
   if (!feedbackDoc) {
     return '未找到对应的反馈文章'
+  }
+
+  const config = await getCommentAuditConfig()
+  if (config.feedbackRequireCaptcha && role < 3) {
+    const captchaPassed = input.captcha
+      ? await checkKunCaptchaExist(input.captcha)
+      : null
+
+    if (!captchaPassed) {
+      return '请先完成验证码验证'
+    }
   }
 
   const auditError = await auditTextContent({
@@ -190,7 +217,8 @@ const createDocComment = async (
         content: input.content.trim(),
         user_id: uid,
         doc_post_id: feedbackDoc.id,
-        parent_id: parentId
+        parent_id: parentId,
+        user_agent: userAgent
       },
       include: {
         user: {
@@ -215,6 +243,73 @@ const createDocComment = async (
   })
 
   return mapDocComment({ ...created, reply: [] })
+}
+
+const updateDocComment = async (
+  input: z.infer<typeof docCommentUpdateSchema>,
+  uid: number,
+  username: string,
+): Promise<DocComment | string> => {
+  const comment = await getFeedbackCommentById(input.commentId)
+  if (
+    !comment ||
+    comment.doc_post.slug !== FEEDBACK_DOC_SLUG ||
+    comment.user_id !== uid
+  ) {
+    return '未找到对应的反馈评论'
+  }
+
+  const auditError = await auditTextContent({
+    content: input.content,
+    scenario: 'comment',
+    identity: {
+      uid,
+      username
+    }
+  })
+  if (auditError) {
+    return auditError
+  }
+
+  const updated = await prisma.doc_post_comment.update({
+    where: { id: comment.id },
+    data: {
+      content: input.content.trim()
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          avatar: true,
+          role: true
+        }
+      }
+    }
+  })
+
+  return mapDocComment({ ...updated, reply: [] })
+}
+
+const deleteDocComment = async (
+  input: z.infer<typeof docCommentDeleteSchema>,
+  uid: number,
+  role: number
+) => {
+  const comment = await getFeedbackCommentById(input.commentId)
+  if (
+    !comment ||
+    comment.doc_post.slug !== FEEDBACK_DOC_SLUG ||
+    (comment.user_id !== uid && role < 3)
+  ) {
+    return '未找到对应的反馈评论'
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await deleteDocCommentWithReplies(tx, input.commentId)
+  })
+
+  return {}
 }
 
 export const GET = async (req: NextRequest) => {
@@ -247,7 +342,42 @@ export const POST = async (req: NextRequest) => {
     input,
     payload.uid,
     payload.name,
-    payload.role
+    payload.role,
+    req.headers.get('user-agent') ?? ''
   )
+  return NextResponse.json(response)
+}
+
+export const PUT = async (req: NextRequest) => {
+  const input = await kunParsePutBody(req, docCommentUpdateSchema)
+  if (typeof input === 'string') {
+    return NextResponse.json(input)
+  }
+
+  const payload = await verifyHeaderCookie(req)
+  if (!payload) {
+    return NextResponse.json('用户未登录')
+  }
+
+  const response = await updateDocComment(
+    input,
+    payload.uid,
+    payload.name
+  )
+  return NextResponse.json(response)
+}
+
+export const DELETE = async (req: NextRequest) => {
+  const input = kunParseDeleteQuery(req, docCommentDeleteSchema)
+  if (typeof input === 'string') {
+    return NextResponse.json(input)
+  }
+
+  const payload = await verifyHeaderCookie(req)
+  if (!payload) {
+    return NextResponse.json('用户未登录')
+  }
+
+  const response = await deleteDocComment(input, payload.uid, payload.role)
   return NextResponse.json(response)
 }

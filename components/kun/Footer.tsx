@@ -9,7 +9,7 @@ const FOOTER_NAV = '站点导航'
 const FOOTER_FRIEND = '友情链接'
 const FOOTER_GITHUB = 'GitHub 仓库'
 const FOOTER_LINK_CLASS =
-  'flex items-center text-default-700 no-underline transition-colors hover:text-foreground'
+  'flex items-center text-sm font-medium leading-none text-default-700 no-underline transition-colors hover:text-foreground'
 
 export const KunFooter = () => {
   return (

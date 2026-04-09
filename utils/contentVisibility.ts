@@ -26,8 +26,7 @@ export const isListedVisibility = (visibility: number) =>
   visibility === CONTENT_VISIBILITY.public
 
 export const isDirectVisibleVisibility = (visibility: number) =>
-  visibility === CONTENT_VISIBILITY.public ||
-  visibility === CONTENT_VISIBILITY.hidden
+  visibility === CONTENT_VISIBILITY.public
 
 export const canManageEditorialContent = (role = 0) => role >= 2
 
@@ -47,4 +46,3 @@ export const canAccessRestrictedContent = ({
 
   return Boolean(authorId && uid && authorId === uid)
 }
-

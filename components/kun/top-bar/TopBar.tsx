@@ -8,13 +8,29 @@ import {
   NavbarMenuToggle
 } from '@heroui/navbar'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { KunTopBarBrand } from './Brand'
 import { KunTopBarUser } from './User'
-import { usePathname } from 'next/navigation'
-import { kunNavItem } from '~/constants/top-bar'
 import { KunMobileMenu } from './KunMobileMenu'
+import type { KunNavItem } from '~/constants/top-bar'
 
-export const KunTopBar = () => {
+interface Props {
+  items: KunNavItem[]
+}
+
+const isItemActive = (pathname: string, href: string, isExternal = false) => {
+  if (isExternal) {
+    return false
+  }
+
+  if (href === '/') {
+    return pathname === '/'
+  }
+
+  return pathname === href || pathname.startsWith(`${href}/`)
+}
+
+export const KunTopBar = ({ items }: Props) => {
   const pathname = usePathname()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
@@ -39,24 +55,28 @@ export const KunTopBar = () => {
         <KunTopBarBrand />
 
         <NavbarContent className="hidden gap-3 sm:flex">
-          {kunNavItem.map((item) => (
-            <NavbarItem key={item.href} isActive={pathname === item.href}>
-              <Link
-                className={
-                  pathname === item.href ? 'text-primary' : 'text-foreground'
-                }
-                href={item.href}
-              >
-                {item.name}
-              </Link>
-            </NavbarItem>
-          ))}
+          {items.map((item) => {
+            const isActive = isItemActive(pathname, item.href, item.isExternal)
+
+            return (
+              <NavbarItem key={`${item.href}-${item.name}`} isActive={isActive}>
+                <Link
+                  className={isActive ? 'text-primary' : 'text-foreground'}
+                  href={item.href}
+                  target={item.isExternal ? '_blank' : undefined}
+                  rel={item.isExternal ? 'noopener noreferrer' : undefined}
+                >
+                  {item.name}
+                </Link>
+              </NavbarItem>
+            )
+          })}
         </NavbarContent>
       </div>
 
       <KunTopBarUser />
 
-      <KunMobileMenu />
+      <KunMobileMenu items={items} />
     </Navbar>
   )
 }

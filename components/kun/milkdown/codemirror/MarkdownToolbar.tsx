@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import {
   Button,
   Input,
@@ -11,6 +11,7 @@ import {
   SelectItem,
   Textarea
 } from '@heroui/react'
+import { Tooltip } from '@heroui/tooltip'
 import {
   AlertTriangle,
   Bold,
@@ -95,6 +96,22 @@ const tableTemplateOptions = [
   }
 ] as const
 
+const TooltipTriggerButton = ({
+  tooltip,
+  ariaLabel,
+  children
+}: {
+  tooltip: string
+  ariaLabel: string
+  children: ReactNode
+}) => (
+  <Tooltip content={tooltip}>
+    <Button isIconOnly variant="light" aria-label={ariaLabel}>
+      {children}
+    </Button>
+  </Tooltip>
+)
+
 const LinkInsertButton = ({ api }: ToolProps) => {
   const [link, setLink] = useState('')
   const [text, setText] = useState('')
@@ -114,9 +131,9 @@ const LinkInsertButton = ({ api }: ToolProps) => {
   return (
     <Popover isOpen={isOpen} onOpenChange={setIsOpen} placement="bottom">
       <PopoverTrigger>
-        <Button isIconOnly variant="light" aria-label="插入链接">
+        <TooltipTriggerButton tooltip="插入链接" ariaLabel="插入链接">
           <Link2 className="size-5" />
-        </Button>
+        </TooltipTriggerButton>
       </PopoverTrigger>
       <PopoverContent className="w-[280px]">
         <div className="w-full px-1 py-2">
@@ -175,9 +192,9 @@ const ImageInsertButton = ({ api }: ToolProps) => {
   return (
     <Popover isOpen={isOpen} onOpenChange={setIsOpen} placement="bottom">
       <PopoverTrigger>
-        <Button isIconOnly variant="light" aria-label="插入图片">
+        <TooltipTriggerButton tooltip="插入图片" ariaLabel="插入图片">
           <Image className="size-5" />
-        </Button>
+        </TooltipTriggerButton>
       </PopoverTrigger>
       <PopoverContent className="w-[320px]">
         <div className="w-full px-1 py-2">
@@ -244,9 +261,9 @@ const ButtonDirectiveInsertButton = ({ api }: ToolProps) => {
   return (
     <Popover isOpen={isOpen} onOpenChange={setIsOpen} placement="bottom">
       <PopoverTrigger>
-        <Button isIconOnly variant="light" aria-label="插入按钮">
+        <TooltipTriggerButton tooltip="插入按钮" ariaLabel="插入按钮">
           <MousePointerClick className="size-5" />
-        </Button>
+        </TooltipTriggerButton>
       </PopoverTrigger>
       <PopoverContent className="w-[320px]">
         <div className="w-full px-1 py-2">
@@ -320,9 +337,9 @@ const CalloutInsertButton = ({ api }: ToolProps) => {
   return (
     <Popover isOpen={isOpen} onOpenChange={setIsOpen} placement="bottom">
       <PopoverTrigger>
-        <Button isIconOnly variant="light" aria-label="插入提示框">
+        <TooltipTriggerButton tooltip="插入提示框" ariaLabel="插入提示框">
           <AlertTriangle className="size-5" />
-        </Button>
+        </TooltipTriggerButton>
       </PopoverTrigger>
       <PopoverContent className="w-[360px]">
         <div className="w-full px-1 py-2">
@@ -387,9 +404,9 @@ const GalleryInsertButton = ({ api }: ToolProps) => {
   return (
     <Popover isOpen={isOpen} onOpenChange={setIsOpen} placement="bottom">
       <PopoverTrigger>
-        <Button isIconOnly variant="light" aria-label="插入图片画廊">
+        <TooltipTriggerButton tooltip="插入画廊" ariaLabel="插入画廊">
           <Images className="size-5" />
-        </Button>
+        </TooltipTriggerButton>
       </PopoverTrigger>
       <PopoverContent className="w-[380px]">
         <div className="w-full px-1 py-2">
@@ -440,9 +457,9 @@ const TableTemplateInsertButton = ({ api }: ToolProps) => {
   return (
     <Popover isOpen={isOpen} onOpenChange={setIsOpen} placement="bottom">
       <PopoverTrigger>
-        <Button isIconOnly variant="light" aria-label="插入表格模板">
+        <TooltipTriggerButton tooltip="插入表格模板" ariaLabel="插入表格模板">
           <Columns3 className="size-5" />
-        </Button>
+        </TooltipTriggerButton>
       </PopoverTrigger>
       <PopoverContent className="w-[320px]">
         <div className="w-full px-1 py-2">
@@ -491,9 +508,9 @@ const VideoInsertButton = ({ api }: ToolProps) => {
   return (
     <Popover isOpen={isOpen} onOpenChange={setIsOpen} placement="bottom">
       <PopoverTrigger>
-        <Button isIconOnly variant="light" aria-label="插入视频">
+        <TooltipTriggerButton tooltip="插入视频" ariaLabel="插入视频">
           <Video className="size-5" />
-        </Button>
+        </TooltipTriggerButton>
       </PopoverTrigger>
       <PopoverContent className="w-[240px]">
         <div className="w-full px-1 py-2">

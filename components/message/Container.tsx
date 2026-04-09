@@ -87,8 +87,8 @@ export const MessageContainer = ({ initialMessages, total, type }: Props) => {
     if (!isMounted) {
       return
     }
-    fetchMessages(page)
-  }, [isMounted, page])
+    void fetchMessages(page)
+  }, [currentType, isMounted, page])
 
   return (
     <div className="space-y-4">

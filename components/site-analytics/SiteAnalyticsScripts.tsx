@@ -68,32 +68,54 @@ export const SiteAnalyticsScripts = ({ scripts }: Props) => {
       return
     }
 
+    let disposed = false
     const createdNodes: HTMLScriptElement[] = []
 
-    for (const item of parsedScripts) {
-      const script = document.createElement('script')
-      script.setAttribute(DATASET_ATTR, 'true')
-
-      for (const [key, value] of Object.entries(item.attrs)) {
-        if (typeof value === 'boolean') {
-          if (value) {
-            script.setAttribute(key, '')
-          }
-        } else {
-          script.setAttribute(key, value)
+    const injectScriptsSequentially = async () => {
+      for (const item of parsedScripts) {
+        if (disposed) {
+          return
         }
-      }
 
-      if (typeof item.attrs.src !== 'string') {
-        script.text = item.content
-      }
+        const script = document.createElement('script')
+        script.setAttribute(DATASET_ATTR, 'true')
 
-      const target = item.position === 'head' ? document.head : document.body
-      target.appendChild(script)
-      createdNodes.push(script)
+        for (const [key, value] of Object.entries(item.attrs)) {
+          if (typeof value === 'boolean') {
+            if (value) {
+              script.setAttribute(key, '')
+            }
+          } else {
+            script.setAttribute(key, value)
+          }
+        }
+
+        const target = item.position === 'head' ? document.head : document.body
+        const hasExternalSource = typeof item.attrs.src === 'string'
+
+        if (!hasExternalSource) {
+          script.text = item.content
+          target.appendChild(script)
+          createdNodes.push(script)
+          continue
+        }
+
+        const loaded = new Promise<void>((resolve) => {
+          script.onload = () => resolve()
+          script.onerror = () => resolve()
+        })
+
+        target.appendChild(script)
+        createdNodes.push(script)
+
+        await loaded
+      }
     }
 
+    void injectScriptsSequentially()
+
     return () => {
+      disposed = true
       createdNodes.forEach((node) => node.remove())
     }
   }, [isAdminPage, parsedScripts])

@@ -20,6 +20,9 @@ export const CommentAuditSetting = ({ config }: Props) => {
   const [enableUsernameAudit, setEnableUsernameAudit] = useState(
     config.enableUsernameAudit
   )
+  const [feedbackRequireCaptcha, setFeedbackRequireCaptcha] = useState(
+    config.feedbackRequireCaptcha
+  )
   const [minReviewLength, setMinReviewLength] = useState(
     String(config.minReviewLength)
   )
@@ -44,6 +47,7 @@ export const CommentAuditSetting = ({ config }: Props) => {
       const response = await kunFetchPut<KunResponse<{}>>('/admin/comment/audit', {
         enableAudit,
         enableUsernameAudit,
+        feedbackRequireCaptcha,
         minReviewLength: Number(minReviewLength) || 0,
         keywordBlacklist: textToList(keywordBlacklist),
         keywordWhitelist: textToList(keywordWhitelist),
@@ -93,6 +97,20 @@ export const CommentAuditSetting = ({ config }: Props) => {
               color="primary"
               isSelected={enableUsernameAudit}
               onValueChange={setEnableUsernameAudit}
+            />
+          </div>
+
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h3 className="text-lg font-semibold">反馈发布验证码</h3>
+              <p className="text-sm text-default-500">
+                开启后，普通用户在前台发布反馈评论或回复时，需要先完成一次站内验证码验证。
+              </p>
+            </div>
+            <Switch
+              color="primary"
+              isSelected={feedbackRequireCaptcha}
+              onValueChange={setFeedbackRequireCaptcha}
             />
           </div>
 
@@ -172,4 +190,3 @@ export const CommentAuditSetting = ({ config }: Props) => {
     </div>
   )
 }
-

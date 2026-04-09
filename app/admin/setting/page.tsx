@@ -3,6 +3,7 @@ import { kunMetadata } from './metadata'
 import {
   kunGetDisableRegisterStatusActions,
   kunGetFrontDisplayConfigActions,
+  kunGetHeaderNavConfigActions,
   kunGetRedirectConfigActions,
   kunGetSiteAnalyticsScriptsActions,
   kunGetUserNameStyleConfigActions
@@ -15,11 +16,19 @@ export const revalidate = 3
 export const metadata: Metadata = kunMetadata
 
 export default async function Kun() {
-  const [setting, response, frontDisplay, siteAnalyticsScripts, userNameStyle] =
+  const [
+    setting,
+    response,
+    frontDisplay,
+    headerNav,
+    siteAnalyticsScripts,
+    userNameStyle
+  ] =
     await Promise.all([
       kunGetRedirectConfigActions(),
       kunGetDisableRegisterStatusActions(),
       kunGetFrontDisplayConfigActions(),
+      kunGetHeaderNavConfigActions(),
       kunGetSiteAnalyticsScriptsActions(),
       kunGetUserNameStyleConfigActions()
     ])
@@ -28,21 +37,24 @@ export default async function Kun() {
     typeof response === 'string' ||
     typeof setting === 'string' ||
     typeof frontDisplay === 'string' ||
+    typeof headerNav === 'string' ||
     typeof siteAnalyticsScripts === 'string' ||
     typeof userNameStyle === 'string'
   ) {
     const errorText =
       typeof response === 'string'
-        ? response
+          ? response
         : typeof setting === 'string'
           ? setting
           : typeof frontDisplay === 'string'
             ? frontDisplay
-            : typeof siteAnalyticsScripts === 'string'
-              ? siteAnalyticsScripts
-              : typeof userNameStyle === 'string'
-                ? userNameStyle
-                : ''
+            : typeof headerNav === 'string'
+              ? headerNav
+              : typeof siteAnalyticsScripts === 'string'
+                ? siteAnalyticsScripts
+                : typeof userNameStyle === 'string'
+                  ? userNameStyle
+                  : ''
     return <ErrorComponent error={errorText} />
   }
 
@@ -51,6 +63,7 @@ export default async function Kun() {
       setting={setting}
       disableRegister={response.disableRegister}
       frontDisplay={frontDisplay}
+      headerNav={headerNav}
       siteAnalyticsScripts={siteAnalyticsScripts}
       userNameStyle={userNameStyle}
     />

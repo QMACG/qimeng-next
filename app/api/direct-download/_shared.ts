@@ -171,7 +171,7 @@ const createDirectDownloadLog = async (input: {
 
 const consumeRateLimit = async (
   userId: number,
-  userIp: string,
+  filePath: string,
   windowMinutes: number,
   maxCount: number
 ) => {
@@ -183,34 +183,23 @@ const consumeRateLimit = async (
   }
 
   const windowSeconds = windowMinutes * 60
-  const userKey = `direct-download:limit:user:${userId}`
-  const ipKey = `direct-download:limit:ip:${userIp || 'unknown'}`
+  const fileKey = Buffer.from(filePath).toString('base64url')
+  const userKey = `direct-download:limit:user:${userId}:file:${fileKey}`
 
-  const [userCountRaw, ipCountRaw] = await Promise.all([
-    getKv(userKey),
-    getKv(ipKey)
-  ])
-
+  const userCountRaw = await getKv(userKey)
   const userCount = Number(userCountRaw ?? '0')
-  const ipCount = Number(ipCountRaw ?? '0')
 
-  if (userCount >= maxCount || ipCount >= maxCount) {
+  if (userCount >= maxCount) {
     return {
       ok: false,
-      message: `${windowMinutes} 分钟内下载次数已达到上限，请稍后再试。`
+      message: `${windowMinutes} 分钟内同一直链文件最多可下载 ${maxCount} 次，请稍后再试。`
     }
   }
 
-  const [nextUserCount, nextIpCount] = await Promise.all([
-    incrKv(userKey),
-    incrKv(ipKey)
-  ])
+  const nextUserCount = await incrKv(userKey)
 
   if (nextUserCount === 1) {
     await expireKv(userKey, windowSeconds)
-  }
-  if (nextIpCount === 1) {
-    await expireKv(ipKey, windowSeconds)
   }
 
   return {
@@ -529,7 +518,7 @@ export const prepareDirectDownload = async (
 
   const rateLimit = await consumeRateLimit(
     input.uid,
-    input.userIp || 'unknown',
+    normalizedFile,
     config.rate_limit_window_minutes,
     config.rate_limit_max_count
   )

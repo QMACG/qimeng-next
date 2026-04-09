@@ -3,11 +3,10 @@
 import { useEffect } from 'react'
 import Link from 'next/link'
 import { Button, Card, CardBody } from '@heroui/react'
-import { ExternalLink } from 'lucide-react'
-import { useRewritePatchStore } from '~/store/rewriteStore'
+import { ExternalLink, List } from 'lucide-react'
 import { Resources } from '~/components/patch/resource/Resource'
+import { useRewritePatchStore } from '~/store/rewriteStore'
 import { EditForm } from './EditForm'
-import { PatchDeleteButton } from './PatchDeleteButton'
 import type { RewritePatchData } from '~/store/rewriteStore'
 
 interface Props {
@@ -33,14 +32,22 @@ export const EditWorkspace = ({ initialData, canDelete }: Props) => {
           <div className="flex flex-wrap gap-2">
             <Button
               as={Link}
+              href="/admin/galgame"
+              variant="flat"
+              startContent={<List className="size-4" />}
+            >
+              返回列表
+            </Button>
+
+            <Button
+              as={Link}
               href={`/${initialData.uniqueId}`}
               target="_blank"
               variant="flat"
               startContent={<ExternalLink className="size-4" />}
             >
-              查看前台页面
+              打开前台页面
             </Button>
-            {canDelete ? <PatchDeleteButton patchId={initialData.id} /> : null}
           </div>
         </CardBody>
       </Card>

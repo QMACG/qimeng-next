@@ -91,6 +91,7 @@ model doc_post_comment {
   id      Int    @id @default(autoincrement())
   content String @default("") @db.VarChar(10007)
   status  Int    @default(0)
+  user_agent String @default("") @db.VarChar(1007)
 
   reply     doc_post_comment[] @relation("doc_post_comment_reply")
   parent_id Int?
@@ -151,6 +152,18 @@ model site_resource_note_config {
   id           Int     @id @default(1)
   enable_note  Boolean @default(true)
   default_note String  @db.MediumText
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+}
+
+model site_front_display_config {
+  id                           Int     @id @default(1)
+  enable_site                  Boolean @default(true)
+  site_close_message           String  @db.MediumText
+  hide_view_count_for_visitor  Boolean @default(true)
+  hide_download_count_for_visitor Boolean @default(true)
+  hide_creator_stats_for_visitor Boolean @default(true)
 
   created DateTime @default(now())
   updated DateTime @updatedAt
@@ -231,6 +244,7 @@ model site_content_audit_config {
   id                      Int     @id @default(1)
   enable_audit            Boolean @default(false)
   enable_username_audit   Boolean @default(true)
+  feedback_require_captcha Boolean @default(false)
   min_review_length       Int     @default(5)
   keyword_blacklist       Json
   keyword_whitelist       Json
@@ -250,6 +264,20 @@ model site_user_name_style_config {
 
   created DateTime @default(now())
   updated DateTime @updatedAt
+}
+
+model site_header_nav_item {
+  id         Int      @id @default(autoincrement())
+  nav_key    String?  @unique @db.VarChar(50)
+  name       String   @db.VarChar(100)
+  href       String   @db.VarChar(1007)
+  sort_order Int      @default(0)
+  is_fixed   Boolean  @default(false)
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+
+  @@index([sort_order, id])
 }
 
 model patch_comment {

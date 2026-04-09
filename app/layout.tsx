@@ -1,16 +1,16 @@
-import { Toaster } from 'react-hot-toast'
+import { headers } from 'next/headers'
+import type { Metadata, Viewport } from 'next'
 import { Providers } from './providers'
-import { KunTopBar } from '~/components/kun/top-bar/TopBar'
-import { KunFooter } from '~/components/kun/Footer'
-import { KunNavigationBreadcrumb } from '~/components/kun/NavigationBreadcrumb'
 import { generateKunMetadata, kunViewport } from './metadata'
-import { KunBackToTop } from '~/components/kun/BackToTop'
 import { kunMoyuMoe } from '~/config/moyu-moe'
-import { SiteAnalyticsScripts } from '~/components/site-analytics/SiteAnalyticsScripts'
+import { SiteAvailabilityLayout } from '~/components/site-availability/SiteAvailabilityLayout'
 import { getPublicSiteAnalyticsScripts } from '~/app/api/admin/setting/site-analytics/_shared'
 import { getUserNameStyleConfig } from '~/app/api/admin/setting/user-name-style/_shared'
+import { getHeaderNavConfig } from '~/app/api/admin/setting/header-nav/_shared'
+import { getFrontDisplayConfig } from '~/app/api/admin/setting/front-display/getFrontDisplayConfig'
+import { DEFAULT_HEADER_NAV_ITEMS } from '~/constants/top-bar'
+import { toPublicHeaderNavItems } from '~/utils/headerNav'
 import { serializeJsonLd, toCanonicalUrl } from '~/utils/seo'
-import type { Metadata, Viewport } from 'next'
 import '~/styles/index.css'
 import './actions'
 
@@ -22,13 +22,26 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const requestHeaders = await headers()
+  const pathname = requestHeaders.get('x-pathname') ?? '/'
   const analyticsScripts = await getPublicSiteAnalyticsScripts().catch(() => [])
+  const frontDisplayConfig = await getFrontDisplayConfig().catch(() => ({
+    enableSite: true,
+    siteCloseMessage: '',
+    hideViewCountForVisitor: true,
+    hideDownloadCountForVisitor: true,
+    hideCreatorStatsForVisitor: true
+  }))
   const userNameStyle = await getUserNameStyleConfig().catch(() => ({
     role1Color: '#a1a1aa',
     role2Color: '#2563eb',
     role3Color: '#d97706',
     role4Color: '#dc2626'
   }))
+  const headerNav = await getHeaderNavConfig().catch(() => ({
+    items: DEFAULT_HEADER_NAV_ITEMS
+  }))
+  const headerNavItems = toPublicHeaderNavItems(headerNav)
 
   const websiteJsonLd = {
     '@context': 'https://schema.org',
@@ -71,18 +84,16 @@ export default async function RootLayout({
 
       <body>
         <Providers>
-          <div className="relative flex flex-col items-center justify-center min-h-screen bg-radial">
-            <KunTopBar />
-            <KunNavigationBreadcrumb />
-            <div className="flex min-h-[calc(100dvh-256px)] w-full max-w-7xl grow px-3 sm:px-6">
-              {children}
-              <Toaster />
-            </div>
-            <KunBackToTop />
-            <KunFooter />
-          </div>
+          <SiteAvailabilityLayout
+            enableSite={frontDisplayConfig.enableSite}
+            siteCloseMessage={frontDisplayConfig.siteCloseMessage}
+            initialPathname={pathname}
+            headerNavItems={headerNavItems}
+            analyticsScripts={analyticsScripts}
+          >
+            {children}
+          </SiteAvailabilityLayout>
         </Providers>
-        <SiteAnalyticsScripts scripts={analyticsScripts} />
       </body>
     </html>
   )

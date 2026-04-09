@@ -105,6 +105,8 @@ export interface AdminResourceNoteConfig {
 }
 
 export interface AdminFrontDisplayConfig {
+  enableSite: boolean
+  siteCloseMessage: string
   hideViewCountForVisitor: boolean
   hideDownloadCountForVisitor: boolean
   hideCreatorStatsForVisitor: boolean
@@ -126,11 +128,27 @@ export interface AdminSiteAnalyticsScript {
 export interface AdminCommentAuditConfig {
   enableAudit: boolean
   enableUsernameAudit: boolean
+  feedbackRequireCaptcha: boolean
   minReviewLength: number
   keywordBlacklist: string[]
   keywordWhitelist: string[]
   userBlacklist: string[]
   userWhitelist: string[]
+}
+
+export type AdminHeaderNavFixedKey = 'galgame' | 'tag' | 'company' | 'doc'
+
+export interface AdminHeaderNavItem {
+  id: string
+  key?: AdminHeaderNavFixedKey
+  name: string
+  href: string
+  sortOrder: number
+  isFixed: boolean
+}
+
+export interface AdminHeaderNavConfig {
+  items: AdminHeaderNavItem[]
 }
 
 export interface AdminUserNameStyleConfig {
