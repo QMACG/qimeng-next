@@ -11,6 +11,7 @@ import dynamic from 'next/dynamic'
 import { useMounted } from '~/hooks/useMounted'
 import { KunLink } from '~/components/kun/milkdown/plugins/components/link/KunLink'
 import { KunExternalLink } from '~/components/kun/external-link/ExternalLink'
+import { MarkdownButtonLink } from '~/components/kun/markdown/MarkdownButtonLink'
 import type { PatchIntroduction } from '~/types/api/patch'
 
 import './_adjust.scss'
@@ -30,7 +31,7 @@ interface Props {
   uid?: number
 }
 
-export const IntroductionTab = ({ intro, patchId, uid }: Props) => {
+export const IntroductionTab = ({ intro, patchId }: Props) => {
   const contentRef = useRef<HTMLDivElement>(null)
   const isMounted = useMounted()
 
@@ -83,11 +84,34 @@ export const IntroductionTab = ({ intro, patchId, uid }: Props) => {
       const linkRoot = ReactDOM.createRoot(root)
       linkRoot.render(<KunLink href={href} text={text} />)
     })
+
+    const buttonElements = contentRef.current.querySelectorAll(
+      '[data-kun-button]'
+    )
+    buttonElements.forEach((element) => {
+      const href = element.getAttribute('data-href')
+      const text = element.getAttribute('data-text')
+      const type = element.getAttribute('data-type') ?? 'primary'
+      if (!href || !text) {
+        return
+      }
+
+      const root = document.createElement('div')
+      root.className = element.className
+      element.replaceWith(root)
+
+      const buttonRoot = ReactDOM.createRoot(root)
+      buttonRoot.render(
+        <MarkdownButtonLink href={href} type={type}>
+          {text}
+        </MarkdownButtonLink>
+      )
+    })
   }, [isMounted])
 
   return (
     <Card className="p-1 sm:p-8">
-      <CardBody className="p-4 space-y-6">
+      <CardBody className="space-y-6 p-4">
         <div
           ref={contentRef}
           dangerouslySetInnerHTML={{
@@ -96,17 +120,9 @@ export const IntroductionTab = ({ intro, patchId, uid }: Props) => {
           className="kun-prose max-w-none"
         />
 
-        {/* <div className="mt-4">
-          <h3 className="mb-4 text-xl font-medium">游戏制作商</h3>
-        </div> */}
+        <PatchTag patchId={patchId} initialTags={intro.tag} />
 
-        {uid && <PatchTag patchId={patchId} initialTags={intro.tag} />}
-
-        <PatchCompany
-          patchId={patchId}
-          initialCompanies={intro.company}
-          vndbId={intro.vndbId}
-        />
+        <PatchCompany initialCompanies={intro.company} />
 
         <Info intro={intro} />
       </CardBody>

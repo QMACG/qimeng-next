@@ -1,13 +1,9 @@
 export interface KunSiteDomain {
   main: string
-  imageBed: string
-  storage: string
-  kungal: string
+  aliases: string[]
   telegram_group: string
-  discord_group: string
-  archive: string
-  forum: string
   nav: string
+  github_repo: string
 }
 
 export interface KunSiteAuthor {

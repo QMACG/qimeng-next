@@ -20,13 +20,13 @@ export const NSFWSwitcher = () => {
   const settings = useSettingStore((state) => state.data)
   const setData = useSettingStore((state) => state.setData)
 
-  const themeIcon = themeIconMap[settings.kunNsfwEnable] || themeIconMap['all']
+  const themeIcon = themeIconMap[settings.kunNsfwEnable] || themeIconMap.all
 
   return (
     <Dropdown className="min-w-0">
       <DropdownTrigger>
         <div className="flex justify-between">
-          <span>网站内容显示</span>
+          <span>内容显示范围</span>
           <span className="text-default-700">{themeIcon}</span>
         </div>
       </DropdownTrigger>
@@ -47,9 +47,9 @@ export const NSFWSwitcher = () => {
             key={key}
             className="text-default-700"
           >
-            {key === 'sfw' && '仅显示 SFW (内容安全) 的文章'}
-            {key === 'nsfw' && '仅显示 NSFW (可能含有 R18) 的文章'}
-            {key === 'all' && '同时显示 SFW 和 NSFW 的文章'}
+            {key === 'sfw' && '仅显示常规内容'}
+            {key === 'nsfw' && '仅显示分级内容'}
+            {key === 'all' && '显示全部内容'}
           </DropdownItem>
         ))}
       </DropdownMenu>

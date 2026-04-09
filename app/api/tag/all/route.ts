@@ -1,11 +1,12 @@
-import { z } from 'zod'
+﻿import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParseGetQuery } from '~/app/api/utils/parseQuery'
 import { prisma } from '~/prisma/index'
 import { getTagSchema } from '~/validations/tag'
+import { parseJsonStringArray } from '~/utils/prismaJson'
 import type { Tag } from '~/types/api/tag'
 
-export const getTag = async (input: z.infer<typeof getTagSchema>) => {
+const getTag = async (input: z.infer<typeof getTagSchema>) => {
   const { page, limit } = input
   const offset = (page - 1) * limit
 
@@ -22,7 +23,7 @@ export const getTag = async (input: z.infer<typeof getTagSchema>) => {
     id: tag.id,
     name: tag.name,
     count: tag.count,
-    alias: tag.alias
+    alias: parseJsonStringArray(tag.alias)
   }))
 
   return { tags, total }
@@ -37,3 +38,4 @@ export const GET = async (req: NextRequest) => {
   const response = await getTag(input)
   return NextResponse.json(response)
 }
+

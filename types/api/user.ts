@@ -86,6 +86,8 @@ export interface FloatingCardUser {
   moemoepoint: number
   role: number
   isFollow: boolean
+  receivedFavoriteCount: number
+  showContributionStats: boolean
   _count: {
     follower: number
     patch: number

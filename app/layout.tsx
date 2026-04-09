@@ -5,6 +5,10 @@ import { KunFooter } from '~/components/kun/Footer'
 import { KunNavigationBreadcrumb } from '~/components/kun/NavigationBreadcrumb'
 import { generateKunMetadata, kunViewport } from './metadata'
 import { KunBackToTop } from '~/components/kun/BackToTop'
+import { kunMoyuMoe } from '~/config/moyu-moe'
+import { SiteAnalyticsScripts } from '~/components/site-analytics/SiteAnalyticsScripts'
+import { getPublicSiteAnalyticsScripts } from '~/app/api/admin/setting/site-analytics/_shared'
+import { serializeJsonLd, toCanonicalUrl } from '~/utils/seo'
 import type { Metadata, Viewport } from 'next'
 import '~/styles/index.css'
 import './actions'
@@ -12,19 +16,50 @@ import './actions'
 export const viewport: Viewport = kunViewport
 export const metadata: Metadata = generateKunMetadata()
 
-export default function RootLayout({
+export default async function RootLayout({
   children
 }: {
   children: React.ReactNode
 }) {
+  const analyticsScripts = await getPublicSiteAnalyticsScripts().catch(() => [])
+
+  const websiteJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: kunMoyuMoe.titleShort,
+    url: toCanonicalUrl('/'),
+    description: kunMoyuMoe.description,
+    inLanguage: 'zh-CN'
+  }
+
+  const organizationJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: kunMoyuMoe.titleShort,
+    url: toCanonicalUrl('/'),
+    logo: toCanonicalUrl('/favicon.ico')
+  }
+
   return (
     <html lang="zh-Hans" suppressHydrationWarning>
-      {process.env.KUN_VISUAL_NOVEL_TEST_SITE_LABEL && (
-        <head>
+      <head>
+        {process.env.KUN_VISUAL_NOVEL_TEST_SITE_LABEL && (
           <meta name="robots" content="noindex,nofollow" />
+        )}
+        {process.env.KUN_VISUAL_NOVEL_TEST_SITE_LABEL && (
           <meta name="googlebot" content="noindex,nofollow" />
-        </head>
-      )}
+        )}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(websiteJsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: serializeJsonLd(organizationJsonLd)
+          }}
+        />
+      </head>
 
       <body>
         <Providers>
@@ -39,6 +74,7 @@ export default function RootLayout({
             <KunFooter />
           </div>
         </Providers>
+        <SiteAnalyticsScripts scripts={analyticsScripts} />
       </body>
     </html>
   )

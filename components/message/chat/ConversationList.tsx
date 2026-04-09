@@ -1,14 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useMounted } from '~/hooks/useMounted'
+import toast from 'react-hot-toast'
 import { KunLoading } from '~/components/kun/Loading'
 import { KunNull } from '~/components/kun/Null'
 import { KunPagination } from '~/components/kun/Pagination'
-import { ConversationCard } from './ConversationCard'
+import { useMounted } from '~/hooks/useMounted'
 import { kunFetchGet } from '~/utils/kunFetch'
-import toast from 'react-hot-toast'
 import type { Conversation } from '~/types/api/conversation'
+import { ConversationCard } from './ConversationCard'
 
 interface Props {
   initialConversations: Conversation[]
@@ -34,6 +34,7 @@ export const ConversationList = ({ initialConversations, total }: Props) => {
       page,
       limit: 30
     })
+
     if (typeof response === 'string') {
       toast.error(response)
     } else {
@@ -55,7 +56,7 @@ export const ConversationList = ({ initialConversations, total }: Props) => {
       {loading ? (
         <KunLoading hint="正在获取会话列表..." />
       ) : conversations.length === 0 ? (
-        <KunNull message="暂无私聊会话，您可以在其他用户的主页发起私聊" />
+        <KunNull message="暂无私聊会话，您可以在其他用户主页发起私聊" />
       ) : (
         <div className="space-y-3">
           {conversations.map((conv) => (

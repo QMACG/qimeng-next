@@ -13,17 +13,19 @@ const sendCode = async (req: NextRequest) => {
   if (typeof input === 'string') {
     return input
   }
+
   const payload = await verifyHeaderCookie(req)
   if (!payload) {
     return '用户未登录'
   }
+
   if (!req.headers || !req.headers.get('x-forwarded-for')) {
     return '读取请求头失败'
   }
 
   const res = await checkKunCaptchaExist(input.captcha)
   if (!res) {
-    return '人机验证无效, 请完成人机验证'
+    return '人机验证无效，请重新完成验证'
   }
 
   const result = await sendVerificationCodeEmail(

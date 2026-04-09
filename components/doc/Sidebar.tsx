@@ -22,21 +22,21 @@ export const KunSidebar = ({ tree }: Props) => {
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure()
   const pathname = usePathname()
 
-  useEffect(() => onClose(), [pathname])
+  useEffect(() => onClose(), [pathname, onClose])
 
   return (
     <div className="kun-scroll-nav">
-      <aside className="fixed hidden md:block top-32 h-[calc(100dvh-256px)] w-64 bg-background">
-        <div className="flex flex-col h-full px-4 overflow-scroll border-r border-default-200 scrollbar-hide bg-background">
+      <aside className="fixed top-32 hidden h-[calc(100dvh-256px)] w-64 bg-background md:block">
+        <div className="flex h-full flex-col overflow-scroll border-r border-default-200 bg-background px-4 scrollbar-hide">
           <Link color="foreground" href="/doc" className="my-3 text-xl">
-            目录
+            文章目录
           </Link>
-          {SidebarContent({ tree })}
+          <SidebarContent tree={tree} />
         </div>
       </aside>
 
       <div
-        className="fixed top-0 left-0 flex items-center h-full cursor-pointer text-default-500 md:hidden"
+        className="fixed left-0 top-0 flex h-full cursor-pointer items-center text-default-500 md:hidden"
         onClick={() => onOpen()}
       >
         <ChevronRight size={24} />
@@ -49,7 +49,7 @@ export const KunSidebar = ({ tree }: Props) => {
         size="xs"
       >
         <DrawerContent>
-          <DrawerHeader className="flex flex-col gap-1">目录</DrawerHeader>
+          <DrawerHeader className="flex flex-col gap-1">文章目录</DrawerHeader>
           <DrawerBody>{SidebarContent({ tree })}</DrawerBody>
         </DrawerContent>
       </Drawer>

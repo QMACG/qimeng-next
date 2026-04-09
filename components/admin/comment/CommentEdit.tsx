@@ -18,10 +18,10 @@ import {
 } from '@heroui/modal'
 import { Textarea } from '@heroui/input'
 import { MoreVertical } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { useUserStore } from '~/store/userStore'
 import { kunFetchDelete, kunFetchPut } from '~/utils/kunFetch'
 import type { AdminComment } from '~/types/api/admin'
-import toast from 'react-hot-toast'
 
 interface Props {
   initialComment: AdminComment
@@ -30,60 +30,66 @@ interface Props {
 
 export const CommentEdit = ({ initialComment, onSuccess }: Props) => {
   const currentUser = useUserStore((state) => state.user)
+  const [editContent, setEditContent] = useState('')
+  const [updating, setUpdating] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   const {
     isOpen: isOpenDelete,
     onOpen: onOpenDelete,
     onClose: onCloseDelete
   } = useDisclosure()
-  const [deleting, setDeleting] = useState(false)
-  const handleDeleteComment = async () => {
-    setDeleting(true)
-    try {
-      const res = await kunFetchDelete<KunResponse<{}>>('/admin/comment', {
-        commentIds: String(initialComment.id)
-      })
-      if (typeof res === 'string') {
-        toast.error(res)
-      } else {
-        onCloseDelete()
-        toast.success('评论删除成功')
-        await onSuccess?.()
-      }
-    } finally {
-      setDeleting(false)
-    }
-  }
 
   const {
     isOpen: isOpenEdit,
     onOpen: onOpenEdit,
     onClose: onCloseEdit
   } = useDisclosure()
-  const [editContent, setEditContent] = useState('')
-  const [updating, setUpdating] = useState(false)
-  const handleUpdateComment = async () => {
-    if (!editContent.trim()) {
-      toast.error('评论内容不可为空')
-      return
-    }
-    setUpdating(true)
+
+  const handleDeleteComment = async () => {
+    setDeleting(true)
+
     try {
-      const res = await kunFetchPut<KunResponse<AdminComment>>(
-        '/admin/comment',
-        {
-          commentId: initialComment.id,
-          content: editContent.trim()
-        }
-      )
+      const res = await kunFetchDelete<KunResponse<{}>>('/admin/comment', {
+        commentIds: String(initialComment.id)
+      })
+
       if (typeof res === 'string') {
         toast.error(res)
-      } else {
-        onCloseEdit()
-        setEditContent('')
-        toast.success('更新评论成功!')
-        await onSuccess?.()
+        return
       }
+
+      onCloseDelete()
+      toast.success('评论删除成功')
+      await onSuccess?.()
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  const handleUpdateComment = async () => {
+    if (!editContent.trim()) {
+      toast.error('评论内容不能为空')
+      return
+    }
+
+    setUpdating(true)
+
+    try {
+      const res = await kunFetchPut<KunResponse<AdminComment>>('/admin/comment', {
+        commentId: initialComment.id,
+        content: editContent.trim()
+      })
+
+      if (typeof res === 'string') {
+        toast.error(res)
+        return
+      }
+
+      onCloseEdit()
+      setEditContent('')
+      toast.success('评论更新成功')
+      await onSuccess?.()
     } finally {
       setUpdating(false)
     }
@@ -102,6 +108,7 @@ export const CommentEdit = ({ initialComment, onSuccess }: Props) => {
             <MoreVertical size={16} />
           </Button>
         </DropdownTrigger>
+
         <DropdownMenu>
           <DropdownItem
             key="edit"
@@ -145,12 +152,12 @@ export const CommentEdit = ({ initialComment, onSuccess }: Props) => {
               取消
             </Button>
             <Button
-              color="danger"
+              color="primary"
               onPress={handleUpdateComment}
-              disabled={updating}
               isLoading={updating}
+              isDisabled={updating}
             >
-              确定
+              保存
             </Button>
           </ModalFooter>
         </ModalContent>
@@ -160,10 +167,7 @@ export const CommentEdit = ({ initialComment, onSuccess }: Props) => {
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">删除评论</ModalHeader>
           <ModalBody>
-            <p>
-              您确定要删除这条评论吗, 这将会删除该评论,
-              以及所有回复该评论的评论, 该操作不可撤销
-            </p>
+            <p>确认删除这条评论吗？该操作会同时删除其下的回复，且不可撤销。</p>
           </ModalBody>
           <ModalFooter>
             <Button variant="light" onPress={onCloseDelete}>
@@ -172,8 +176,8 @@ export const CommentEdit = ({ initialComment, onSuccess }: Props) => {
             <Button
               color="danger"
               onPress={handleDeleteComment}
-              disabled={deleting}
               isLoading={deleting}
+              isDisabled={deleting}
             >
               删除
             </Button>

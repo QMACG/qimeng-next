@@ -1,85 +1,27 @@
 'use client'
 
-import { type FC, useState, useTransition } from 'react'
 import { Chip } from '@heroui/chip'
 import { Tooltip } from '@heroui/tooltip'
 import { Link } from '@heroui/link'
-import { Button } from '@heroui/button'
-import { Download } from 'lucide-react'
-import { Company } from '~/types/api/company'
-import { PatchCompanySelector } from './PatchCompanySelector'
-import { useUserStore } from '~/store/userStore'
-import { kunFetchPost } from '~/utils/kunFetch'
-import toast from 'react-hot-toast'
+import type { FC } from 'react'
+import type { Company } from '~/types/api/company'
 
 interface Props {
-  patchId: number
   initialCompanies: Company[]
-  vndbId: string | null
 }
 
-interface FetchVNDBCompanyResponse {
-  message: string
-  companies: Company[]
-}
-
-export const PatchCompany: FC<Props> = ({
-  patchId,
-  initialCompanies,
-  vndbId
-}) => {
-  const [selectedCompanies, setSelectedCompanies] = useState<Company[]>(
-    initialCompanies ?? []
-  )
-  const user = useUserStore((state) => state.user)
-  const [isFetching, startTransition] = useTransition()
-
-  const handleFetchFromVNDB = () => {
-    startTransition(async () => {
-      const response = await kunFetchPost<FetchVNDBCompanyResponse | string>(
-        '/patch/introduction/company/vndb',
-        { patchId }
-      )
-
-      if (typeof response === 'string') {
-        toast.error(response)
-        return
-      }
-
-      toast.success(response.message)
-      setSelectedCompanies(response.companies)
-    })
-  }
-
-  const showFetchButton =
-    user.role > 2 && selectedCompanies.length === 0 && vndbId
-
+export const PatchCompany: FC<Props> = ({ initialCompanies }) => {
   return (
     <div className="mt-4 space-y-4">
       <div className="flex items-center gap-2">
         <h2 className="text-2xl font-medium">所属会社</h2>
-
-        {showFetchButton && (
-          <Tooltip content="从 VNDB 获取并关联会社信息">
-            <Button
-              size="sm"
-              color="secondary"
-              variant="flat"
-              isLoading={isFetching}
-              onPress={handleFetchFromVNDB}
-              startContent={!isFetching && <Download size={16} />}
-            >
-              获取关联会社
-            </Button>
-          </Tooltip>
-        )}
       </div>
 
       <div className="space-x-2">
-        {selectedCompanies.map((company) => (
+        {initialCompanies.map((company) => (
           <Tooltip
             key={company.id}
-            content={`${company.count} 个 Galgame 属于此会社`}
+            content={`${company.count} 个游戏归属于该会社`}
           >
             <Link href={`/company/${company.id}`}>
               <Chip color="secondary" variant="flat">
@@ -90,18 +32,8 @@ export const PatchCompany: FC<Props> = ({
           </Tooltip>
         ))}
 
-        {!selectedCompanies.length && (
-          <Chip>{'这个 Galgame 本体暂未添加所属会社信息'}</Chip>
-        )}
+        {!initialCompanies.length && <Chip>当前游戏暂未关联会社信息</Chip>}
       </div>
-
-      {user.role > 2 && (
-        <PatchCompanySelector
-          patchId={patchId}
-          initialCompanies={selectedCompanies}
-          onCompanyChange={setSelectedCompanies}
-        />
-      )}
     </div>
   )
 }

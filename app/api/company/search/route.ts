@@ -1,21 +1,22 @@
-import { NextRequest, NextResponse } from 'next/server'
+﻿import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '~/prisma'
 import { searchCompanySchema } from '~/validations/company'
 import { kunParsePostBody } from '~/app/api/utils/parseQuery'
+import { parseJsonStringArray } from '~/utils/prismaJson'
 
-export const searchCompany = async (
+const searchCompany = async (
   input: z.infer<typeof searchCompanySchema>
 ) => {
   const { query } = input
 
   const companies = await prisma.patch_company.findMany({
     where: {
-      OR: query.map((q) => ({
+      OR: query.map((item) => ({
         OR: [
-          { name: { contains: q, mode: 'insensitive' } },
-          { alias: { has: q } },
-          { parent_brand: { has: q } }
+          { name: { contains: item } },
+          { alias: { array_contains: [item] } },
+          { parent_brand: { array_contains: [item] } }
         ]
       }))
     },
@@ -29,7 +30,10 @@ export const searchCompany = async (
     take: 100
   })
 
-  return companies.flat()
+  return companies.map((company) => ({
+    ...company,
+    alias: parseJsonStringArray(company.alias)
+  }))
 }
 
 export const POST = async (req: NextRequest) => {
@@ -41,3 +45,4 @@ export const POST = async (req: NextRequest) => {
   const response = await searchCompany(input)
   return NextResponse.json(response)
 }
+

@@ -1,15 +1,16 @@
 'use client'
 
 import { Card, CardBody, Chip } from '@heroui/react'
-import { isValidURL } from '~/utils/validate'
 import { KunExternalLink } from '~/components/kun/external-link/ExternalLink'
+import { isValidURL } from '~/utils/validate'
 
 interface KunLinkProps {
   href: string
   text: string
+  targetBlank?: boolean
 }
 
-export const KunLink = ({ href, text }: KunLinkProps) => {
+export const KunLink = ({ href, text, targetBlank = false }: KunLinkProps) => {
   const domain = isValidURL(href) ? new URL(href).hostname : href
 
   return (
@@ -17,12 +18,18 @@ export const KunLink = ({ href, text }: KunLinkProps) => {
       <CardBody>
         <div className="flex items-center gap-2">
           <Chip size="sm" color="primary" variant="flat">
-            外部链接
+            链接
           </Chip>
           <span className="text-default-500">{domain}</span>
         </div>
         <p style={{ margin: '0' }}>{text}</p>
-        <KunExternalLink link={href}>{href}</KunExternalLink>
+        <KunExternalLink
+          link={href}
+          target={targetBlank ? '_blank' : undefined}
+          rel={targetBlank ? 'noopener noreferrer' : undefined}
+        >
+          {href}
+        </KunExternalLink>
       </CardBody>
     </Card>
   )

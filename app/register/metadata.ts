@@ -1,19 +1,15 @@
 import { kunMoyuMoe } from '~/config/moyu-moe'
 import type { Metadata } from 'next'
 
+const description = `注册 ${kunMoyuMoe.titleShort} 账户，浏览游戏文章、下载资源、参与评论与评分。`
+
 export const kunMetadata: Metadata = {
   title: `注册 - ${kunMoyuMoe.titleShort}`,
-  description: `注册成为 ${kunMoyuMoe.titleShort} 网站用户, 无门槛下载任何 Galgame 资源。希望明天对您来说又是美好的一天！`,
-  keywords: [
-    '注册',
-    'Galgame 网站注册',
-    '创建账户',
-    'Galgame 资源下载',
-    '免费注册'
-  ],
+  description,
+  keywords: ['注册', '创建账户', '绮梦注册', '游戏资源', '用户注册'],
   openGraph: {
     title: `注册 - ${kunMoyuMoe.titleShort}`,
-    description: `注册成为 ${kunMoyuMoe.titleShort} 网站用户, 无门槛下载任何 Galgame 资源。希望明天对您来说又是美好的一天！`,
+    description,
     url: `${kunMoyuMoe.domain.main}/register`,
     siteName: kunMoyuMoe.title,
     images: [

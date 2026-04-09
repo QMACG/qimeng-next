@@ -1,10 +1,10 @@
 'use client'
 
-import { Button, Card, CardBody, Chip, Input, Switch } from '@heroui/react'
 import { useState } from 'react'
+import { Button, Card, CardBody, Chip, Input, Switch } from '@heroui/react'
 import { ExternalLink, Plus } from 'lucide-react'
-import { kunFetchPut } from '~/utils/kunFetch'
 import toast from 'react-hot-toast'
+import { kunFetchPut } from '~/utils/kunFetch'
 import type { AdminRedirectConfig } from '~/types/api/admin'
 
 interface Props {
@@ -12,50 +12,62 @@ interface Props {
 }
 
 export const RedirectSetting = ({ setting }: Props) => {
-  const [delay, setDelay] = useState(setting.delaySeconds)
   const [isEnabled, setIsEnabled] = useState(setting.enableRedirect)
   const [excludedDomains, setExcludedDomains] = useState<string[]>(
     setting.excludedDomains
   )
   const [newDomain, setNewDomain] = useState('')
+  const [isSetting, setIsSetting] = useState(false)
 
   const addExcludedDomain = () => {
-    if (newDomain && !excludedDomains.includes(newDomain)) {
-      setExcludedDomains([...excludedDomains, newDomain])
-      setNewDomain('')
+    const normalizedDomain = newDomain.trim().toLowerCase()
+    if (!normalizedDomain || excludedDomains.includes(normalizedDomain)) {
+      return
     }
+
+    setExcludedDomains([...excludedDomains, normalizedDomain])
+    setNewDomain('')
   }
 
   const removeDomain = (domain: string) => {
-    setExcludedDomains(excludedDomains.filter((d) => d !== domain))
+    setExcludedDomains(excludedDomains.filter((item) => item !== domain))
   }
 
-  const [isSetting, setIsSetting] = useState(false)
   const handleApplyRedirect = async () => {
     setIsSetting(true)
-    const res = await kunFetchPut<KunResponse<{}>>('/admin/setting/redirect', {
-      enableRedirect: isEnabled,
-      excludedDomains,
-      delaySeconds: delay
-    })
-    if (typeof res === 'string') {
-      toast.error(res)
-    } else {
-      setNewDomain('')
-      toast.success('应用设置成功')
+
+    try {
+      const res = await kunFetchPut<KunResponse<{}>>(
+        '/admin/setting/redirect',
+        {
+          enableRedirect: isEnabled,
+          excludedDomains,
+          delaySeconds: 0
+        }
+      )
+
+      if (typeof res === 'string') {
+        toast.error(res)
+      } else {
+        setNewDomain('')
+        toast.success('外链跳转设置已保存')
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : '保存失败')
+    } finally {
+      setIsSetting(false)
     }
-    setIsSetting(false)
   }
 
   return (
     <div className="space-y-6">
       <Card>
         <CardBody className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-4">
             <div>
-              <h3 className="text-lg font-semibold">外链重定向</h3>
+              <h3 className="text-lg font-semibold">外链跳转</h3>
               <p className="text-small text-default-500">
-                将排除列表之外的所有非本站链接重定向至跳转页
+                未加入白名单的外部链接会先进入确认页，由用户手动确认后再继续访问。
               </p>
             </div>
             <Switch
@@ -63,7 +75,7 @@ export const RedirectSetting = ({ setting }: Props) => {
               onValueChange={setIsEnabled}
               size="lg"
               color="primary"
-              startContent={<ExternalLink className="w-4 h-4" />}
+              startContent={<ExternalLink className="h-4 w-4" />}
             />
           </div>
         </CardBody>
@@ -71,38 +83,19 @@ export const RedirectSetting = ({ setting }: Props) => {
 
       <Card>
         <CardBody className="space-y-4">
-          <h3 className="text-lg font-semibold">
-            <p>重定向时间</p>
+          <div>
+            <h3 className="text-lg font-semibold">直通域名</h3>
             <p className="text-sm font-medium text-default-500">
-              重定向页面的重定向时间
+              命中这些域名的链接将直接打开，不经过跳转确认页。例如：
+              `acgs.one`、`pan.example.com`
             </p>
-          </h3>
-          <Input
-            type="number"
-            value={delay.toString()}
-            endContent={
-              <div className="flex items-center pointer-events-none">
-                <span className="text-default-400 text-small">秒</span>
-              </div>
-            }
-            onChange={(e) => setDelay(Number(e.target.value))}
-          />
-        </CardBody>
-      </Card>
+          </div>
 
-      <Card>
-        <CardBody className="space-y-4">
-          <h3 className="text-lg font-semibold">
-            <p>排除域名列表</p>
-            <p className="text-sm font-medium text-default-500">
-              包含哪些域名的链接不用重定向, 例如 touchgal.top, nav.kungal.com
-            </p>
-          </h3>
-          <div className="flex gap-2 mt-4">
+          <div className="mt-4 flex gap-2">
             <Input
               value={newDomain}
-              onChange={(e) => setNewDomain(e.target.value)}
-              placeholder="请输入域名, 建议不带 http / https"
+              onChange={(event) => setNewDomain(event.target.value)}
+              placeholder="请输入域名，不要带 http:// 或 https://"
             />
 
             <Button
@@ -111,7 +104,7 @@ export const RedirectSetting = ({ setting }: Props) => {
               color="primary"
               onPress={addExcludedDomain}
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="h-4 w-4" />
             </Button>
           </div>
 
@@ -131,9 +124,7 @@ export const RedirectSetting = ({ setting }: Props) => {
       </Card>
 
       <div className="flex items-center justify-between">
-        <p className="text-default-500">
-          外链设置需要点击应用设置才能使设置生效
-        </p>
+        <p className="text-default-500">保存后立即生效。</p>
         <Button
           variant="shadow"
           color="primary"
@@ -141,7 +132,7 @@ export const RedirectSetting = ({ setting }: Props) => {
           isLoading={isSetting}
           isDisabled={isSetting}
         >
-          应用设置
+          保存设置
         </Button>
       </div>
     </div>

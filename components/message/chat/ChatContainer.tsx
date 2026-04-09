@@ -1,19 +1,19 @@
 'use client'
 
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Card, CardBody, CardHeader } from '@heroui/card'
 import { Button } from '@heroui/react'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import Link from 'next/link'
-import { KunNull } from '~/components/kun/Null'
-import { ChatMessage } from './ChatMessage'
-import { ChatInput } from './ChatInput'
-import { DeleteConversationButton } from './DeleteConversationButton'
-import { KunAvatar } from '~/components/kun/floating-card/KunAvatar'
-import { kunFetchGet, kunFetchPut } from '~/utils/kunFetch'
-import { useUserStore } from '~/store/userStore'
 import toast from 'react-hot-toast'
+import { KunAvatar } from '~/components/kun/floating-card/KunAvatar'
+import { KunNull } from '~/components/kun/Null'
+import { useUserStore } from '~/store/userStore'
+import { kunFetchGet, kunFetchPut } from '~/utils/kunFetch'
 import type { PrivateMessage } from '~/types/api/conversation'
+import { ChatInput } from './ChatInput'
+import { ChatMessage } from './ChatMessage'
+import { DeleteConversationButton } from './DeleteConversationButton'
 
 type MessageUpdateData =
   | { action: 'delete' }
@@ -44,19 +44,20 @@ export const ChatContainer = ({
   const [loading, setLoading] = useState(false)
   const [hasMore, setHasMore] = useState(initialMessages.length < total)
   const [page, setPage] = useState(1)
-  const [totalCount, setTotalCount] = useState(total)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const loadMoreRef = useRef<HTMLDivElement>(null)
-  const user = useUserStore((state) => state.user)
   const isInitialMount = useRef(true)
+  const user = useUserStore((state) => state.user)
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'instant' })
   }, [])
 
   const loadMoreMessages = useCallback(async () => {
-    if (loading || !hasMore) return
+    if (loading || !hasMore) {
+      return
+    }
 
     setLoading(true)
     const nextPage = page + 1
@@ -78,13 +79,9 @@ export const ChatContainer = ({
       const scrollContainer = scrollContainerRef.current
       const previousScrollHeight = scrollContainer?.scrollHeight || 0
 
-      setMessages((prev) => {
-        const newMessages = [...response.messages, ...prev]
-        return sortMessagesByTime(newMessages)
-      })
+      setMessages((prev) => sortMessagesByTime([...response.messages, ...prev]))
       setPage(nextPage)
-      setTotalCount(response.total)
-      setHasMore((page + 1) * 30 < response.total)
+      setHasMore(nextPage * 30 < response.total)
 
       requestAnimationFrame(() => {
         if (scrollContainer) {
@@ -95,7 +92,7 @@ export const ChatContainer = ({
     }
 
     setLoading(false)
-  }, [loading, hasMore, page, conversationId])
+  }, [conversationId, hasMore, loading, page])
 
   const handleMessageSent = useCallback(
     (newMessage: { id: number; content: string; created: string }) => {
@@ -112,13 +109,13 @@ export const ChatContainer = ({
           avatar: user.avatar
         }
       }
+
       setMessages((prev) => sortMessagesByTime([...prev, message]))
-      setTotalCount((prev) => prev + 1)
       requestAnimationFrame(() => {
         scrollToBottom()
       })
     },
-    [user, scrollToBottom]
+    [scrollToBottom, user]
   )
 
   const handleMessageUpdated = useCallback(
@@ -146,6 +143,7 @@ export const ChatContainer = ({
     const markAsRead = async () => {
       await kunFetchPut(`/message/conversation/${conversationId}/read`)
     }
+
     markAsRead()
   }, [conversationId])
 
@@ -171,11 +169,11 @@ export const ChatContainer = ({
     }
 
     return () => observer.disconnect()
-  }, [hasMore, loading, loadMoreMessages])
+  }, [hasMore, loadMoreMessages, loading])
 
   return (
     <Card className="h-[calc(100vh-200px)] min-h-[500px]">
-      <CardHeader className="border-b border-default-200 flex items-center justify-between gap-3">
+      <CardHeader className="flex items-center justify-between gap-3 border-b border-default-200">
         <div className="flex items-center gap-3">
           <Button
             as={Link}
@@ -186,6 +184,7 @@ export const ChatContainer = ({
           >
             <ArrowLeft className="size-4" />
           </Button>
+
           <KunAvatar
             uid={otherUser.id}
             avatarProps={{
@@ -194,6 +193,7 @@ export const ChatContainer = ({
               size: 'sm'
             }}
           />
+
           <span className="font-semibold">{otherUser.name}</span>
         </div>
 
@@ -214,7 +214,7 @@ export const ChatContainer = ({
           )}
 
           {messages.length === 0 ? (
-            <KunNull message="暂无消息，发送第一条消息吧" />
+            <KunNull message="暂无消息，发出第一条私聊吧" />
           ) : (
             <>
               {messages.map((msg) => (

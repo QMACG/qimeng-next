@@ -7,15 +7,19 @@ import {
   updateCompanySchema
 } from '~/validations/company'
 import {
+  kunParseDeleteQuery,
   kunParseGetQuery,
   kunParsePostBody,
   kunParsePutBody
 } from '../utils/parseQuery'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
+import { parseJsonStringArray, toJsonStringArray } from '~/utils/prismaJson'
 
-export const getCompanyById = async (
-  input: z.infer<typeof getCompanyByIdSchema>
-) => {
+const deleteCompanySchema = z.object({
+  companyId: z.coerce.number().min(1).max(9999999)
+})
+
+const getCompanyById = async (input: z.infer<typeof getCompanyByIdSchema>) => {
   const { companyId } = input
 
   const company = await prisma.patch_company.findUnique({
@@ -40,10 +44,16 @@ export const getCompanyById = async (
     }
   })
   if (!company) {
-    return '未找到公司'
+    return '未找到会社'
   }
 
-  return company
+  return {
+    ...company,
+    alias: parseJsonStringArray(company.alias),
+    primary_language: parseJsonStringArray(company.primary_language),
+    official_website: parseJsonStringArray(company.official_website),
+    parent_brand: parseJsonStringArray(company.parent_brand)
+  }
 }
 
 export const GET = async (req: NextRequest) => {
@@ -56,9 +66,7 @@ export const GET = async (req: NextRequest) => {
   return NextResponse.json(response)
 }
 
-export const rewriteCompany = async (
-  input: z.infer<typeof updateCompanySchema>
-) => {
+const rewriteCompany = async (input: z.infer<typeof updateCompanySchema>) => {
   const {
     companyId,
     name,
@@ -71,11 +79,11 @@ export const rewriteCompany = async (
 
   const existingCompany = await prisma.patch_company.findFirst({
     where: {
-      OR: [{ name }, { alias: { has: name } }]
+      OR: [{ name }, { alias: { array_contains: [name] } }]
     }
   })
   if (existingCompany && existingCompany.id !== companyId) {
-    return '这个会社已经存在了'
+    return '这个会社已经存在'
   }
 
   const newCompany = await prisma.patch_company.update({
@@ -83,10 +91,10 @@ export const rewriteCompany = async (
     data: {
       name,
       introduction,
-      alias,
-      primary_language,
-      official_website,
-      parent_brand
+      alias: toJsonStringArray(alias),
+      primary_language: toJsonStringArray(primary_language),
+      official_website: toJsonStringArray(official_website),
+      parent_brand: toJsonStringArray(parent_brand)
     },
     include: {
       user: {
@@ -99,7 +107,13 @@ export const rewriteCompany = async (
     }
   })
 
-  return newCompany
+  return {
+    ...newCompany,
+    alias: parseJsonStringArray(newCompany.alias),
+    primary_language: parseJsonStringArray(newCompany.primary_language),
+    official_website: parseJsonStringArray(newCompany.official_website),
+    parent_brand: parseJsonStringArray(newCompany.parent_brand)
+  }
 }
 
 export const PUT = async (req: NextRequest) => {
@@ -112,15 +126,15 @@ export const PUT = async (req: NextRequest) => {
   if (!payload) {
     return NextResponse.json('用户未登录')
   }
-  if (payload.role < 3) {
-    return NextResponse.json('本页面仅管理员可访问')
+  if (payload.role < 2) {
+    return NextResponse.json('仅编辑及以上角色可以编辑会社信息')
   }
 
   const response = await rewriteCompany(input)
   return NextResponse.json(response)
 }
 
-export const createCompany = async (
+const createCompany = async (
   input: z.infer<typeof createCompanySchema>,
   uid: number
 ) => {
@@ -135,11 +149,11 @@ export const createCompany = async (
 
   const existingCompany = await prisma.patch_company.findFirst({
     where: {
-      OR: [{ name }, { alias: { has: name } }]
+      OR: [{ name }, { alias: { array_contains: [name] } }]
     }
   })
   if (existingCompany) {
-    return '这个会社已经存在了'
+    return '这个会社已经存在'
   }
 
   const newCompany = await prisma.patch_company.create({
@@ -147,10 +161,10 @@ export const createCompany = async (
       user_id: uid,
       name,
       introduction,
-      alias,
-      primary_language,
-      official_website,
-      parent_brand
+      alias: toJsonStringArray(alias),
+      primary_language: toJsonStringArray(primary_language),
+      official_website: toJsonStringArray(official_website),
+      parent_brand: toJsonStringArray(parent_brand)
     },
     select: {
       id: true,
@@ -160,7 +174,10 @@ export const createCompany = async (
     }
   })
 
-  return newCompany
+  return {
+    ...newCompany,
+    alias: parseJsonStringArray(newCompany.alias)
+  }
 }
 
 export const POST = async (req: NextRequest) => {
@@ -173,10 +190,31 @@ export const POST = async (req: NextRequest) => {
   if (!payload) {
     return NextResponse.json('用户未登录')
   }
-  if (payload.role < 3) {
-    return NextResponse.json('本页面仅管理员可访问')
+  if (payload.role < 2) {
+    return NextResponse.json('仅编辑及以上角色可以创建会社信息')
   }
 
   const response = await createCompany(input, payload.uid)
   return NextResponse.json(response)
+}
+
+export const DELETE = async (req: NextRequest) => {
+  const input = kunParseDeleteQuery(req, deleteCompanySchema)
+  if (typeof input === 'string') {
+    return NextResponse.json(input)
+  }
+
+  const payload = await verifyHeaderCookie(req)
+  if (!payload) {
+    return NextResponse.json('用户未登录')
+  }
+  if (payload.role < 3) {
+    return NextResponse.json('仅管理员可以删除会社')
+  }
+
+  await prisma.patch_company.delete({
+    where: { id: input.companyId }
+  })
+
+  return NextResponse.json({})
 }

@@ -5,14 +5,14 @@ import { z } from 'zod'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Card, CardBody, CardFooter, CardHeader } from '@heroui/card'
-import { Input } from '@heroui/input'
 import { Button } from '@heroui/button'
+import { Input } from '@heroui/input'
 import { KeyRound, Mail } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { EmailVerification } from '~/components/kun/verification-code/Code'
 import { resetEmailSchema } from '~/validations/user'
 import { kunFetchPost } from '~/utils/kunFetch'
 import { kunErrorHandler } from '~/utils/kunErrorHandler'
-import toast from 'react-hot-toast'
 
 type EmailFormData = z.infer<typeof resetEmailSchema>
 
@@ -35,13 +35,10 @@ export const Email = () => {
   const handleUpdateEmail = async () => {
     setLoading(true)
 
-    const res = await kunFetchPost<KunResponse<{}>>(
-      '/user/setting/email',
-      watch()
-    )
+    const res = await kunFetchPost<KunResponse<{}>>('/user/setting/email', watch())
     kunErrorHandler(res, () => {
       reset()
-      toast.success('更新邮箱成功!')
+      toast.success('邮箱更新成功')
     })
 
     setLoading(false)
@@ -53,14 +50,15 @@ export const Email = () => {
         <CardHeader>
           <h2 className="text-xl font-medium">邮箱</h2>
         </CardHeader>
-        <CardBody className="py-0 space-y-4">
+
+        <CardBody className="space-y-4 py-0">
           <div>
-            <p>这是您的邮箱设置, 您的邮箱将会被用于恢复您的密码</p>
+            <p>这里可以修改您的邮箱地址，邮箱将用于密码找回和站内通知。</p>
             <p>
-              点击发送验证码, 您的新邮箱中将会收到一封包含验证码的邮件,
-              请填写新邮箱中收到的验证码
+              点击发送验证码后，新邮箱会收到一封包含验证码的邮件，请将收到的验证码填入下方。
             </p>
           </div>
+
           <Controller
             name="email"
             control={control}
@@ -68,15 +66,16 @@ export const Email = () => {
               <Input
                 {...field}
                 type="email"
-                placeholder="请输入您的新邮箱"
+                placeholder="请输入新的邮箱地址"
                 startContent={
-                  <Mail className="text-2xl pointer-events-none shrink-0 text-default-400" />
+                  <Mail className="pointer-events-none shrink-0 text-2xl text-default-400" />
                 }
                 isInvalid={!!errors.email}
                 errorMessage={errors.email?.message}
               />
             )}
           />
+
           <Controller
             name="code"
             control={control}
@@ -84,9 +83,9 @@ export const Email = () => {
               <Input
                 {...field}
                 type="text"
-                placeholder="新邮箱验证码"
+                placeholder="输入新邮箱收到的验证码"
                 startContent={
-                  <KeyRound className="text-2xl pointer-events-none shrink-0 text-default-400" />
+                  <KeyRound className="pointer-events-none shrink-0 text-2xl text-default-400" />
                 }
                 endContent={
                   <EmailVerification
@@ -101,9 +100,10 @@ export const Email = () => {
             )}
           />
         </CardBody>
+
         <CardFooter className="flex-wrap">
           <p className="text-default-500">
-            如果您的新邮箱未收到验证码, 请检查垃圾邮件或者全部邮件
+            如果新邮箱暂时没有收到验证码，请检查垃圾邮件箱，或稍后重新发送。
           </p>
           <Button
             color="primary"

@@ -67,7 +67,7 @@ export const MentionsListDropdown = () => {
         if (lastAtIndex < 0) return false
 
         const atContent = currentTextBlockContent.slice(lastAtIndex)
-        // /\s$/ matches `\u00A0`, `\u3000`, `\u2009` etc. Cannot use endsWith(' ')
+        // 这里需要匹配各种空白字符，不能只用 endsWith(' ')
         if (/\s/.test(atContent)) {
           return false
         }
@@ -108,7 +108,7 @@ export const MentionsListDropdown = () => {
           view.focus()
         }
       } else {
-        toast.error(`用户 ID 为 ${userId} 用户的用户名为空`)
+        toast.error(`用户 ID ${userId} 对应的用户名为空`)
       }
     })
   }
@@ -121,6 +121,7 @@ export const MentionsListDropdown = () => {
       setUsers(response)
     })
   }
+
   useEffect(() => {
     if (debouncedQuery.length && !/\s/.test(debouncedQuery)) {
       fetchUsers(debouncedQuery)

@@ -10,6 +10,8 @@ import type { NextConfig } from 'next'
 // const __filename = fileURLToPath(import.meta.url)
 // const __dirname = path.dirname(__filename)
 
+const isWindows = process.platform === 'win32'
+
 const nextConfig: NextConfig = {
   devIndicators: false,
   pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
@@ -28,20 +30,20 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: env.data!.KUN_VISUAL_NOVEL_IMAGE_BED_HOST,
+        hostname: '**',
         port: '',
         pathname: '/**'
       },
       {
-        protocol: 'https',
-        hostname: 'cloud.touchgaloss.com',
+        protocol: 'http',
+        hostname: '**',
         port: '',
         pathname: '/**'
       }
     ]
   },
 
-  output: 'standalone',
+  ...(isWindows ? {} : { output: 'standalone' }),
   experimental: {
     // turbotrace: {
     //   logLevel: 'error',

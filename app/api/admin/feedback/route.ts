@@ -1,62 +1,153 @@
 import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParseGetQuery } from '~/app/api/utils/parseQuery'
-import { prisma } from '~/prisma/index'
-import { adminPaginationSchema } from '~/validations/admin'
+import { markdownToHtml } from '~/app/api/utils/render/markdownToHtml'
+import { adminFeedbackPaginationSchema } from '~/validations/admin'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
-import type { Message } from '~/types/api/message'
+import { prisma } from '~/prisma/index'
+import { FEEDBACK_DOC_PATH, FEEDBACK_DOC_SLUG } from '~/constants/feedback'
+import type { AdminFeedback } from '~/types/api/admin'
 
-export const getFeedback = async (
-  input: z.infer<typeof adminPaginationSchema>
+const mapAdminFeedback = async (
+  comment: {
+    id: number
+    doc_post_id: number
+    parent_id: number | null
+    content: string
+    status: number
+    created: Date
+    updated: Date
+    user: {
+      id: number
+      name: string
+      avatar: string
+    }
+    reply: Array<{
+      id: number
+      doc_post_id: number
+      parent_id: number | null
+      content: string
+      status: number
+      created: Date
+      updated: Date
+      user: {
+        id: number
+        name: string
+        avatar: string
+      }
+    }>
+  }
+): Promise<AdminFeedback> => ({
+  id: comment.id,
+  docPostId: comment.doc_post_id,
+  parentId: comment.parent_id,
+  content: await markdownToHtml(comment.content),
+  status: comment.status,
+  created: String(comment.created),
+  updated: String(comment.updated),
+  user: comment.user,
+  sender: comment.user,
+  link: `${FEEDBACK_DOC_PATH}#feedback-comment-${comment.id}`,
+  reply: await Promise.all(
+    comment.reply.map(async (item) => ({
+      id: item.id,
+      docPostId: item.doc_post_id,
+      parentId: item.parent_id,
+      content: await markdownToHtml(item.content),
+      status: item.status,
+      created: String(item.created),
+      updated: String(item.updated),
+      user: item.user,
+      reply: []
+    }))
+  )
+})
+
+const getFeedback = async (
+  input: z.infer<typeof adminFeedbackPaginationSchema>
 ) => {
-  const { page, limit } = input
+  const feedbackDoc = await prisma.doc_post.findUnique({
+    where: { slug: FEEDBACK_DOC_SLUG },
+    select: { id: true }
+  })
+
+  if (!feedbackDoc) {
+    return { feedbacks: [], total: 0 }
+  }
+
+  const { page, limit, search, searchType, status } = input
   const offset = (page - 1) * limit
+  const normalizedSearch = search?.trim()
+
+  const where = {
+    doc_post_id: feedbackDoc.id,
+    parent_id: null,
+    ...(status === 'pending' ? { status: 0 } : {}),
+    ...(status === 'handled' ? { status: { not: 0 } } : {}),
+    ...(normalizedSearch
+      ? searchType === 'user'
+        ? {
+            user: {
+              name: {
+                contains: normalizedSearch
+              }
+            }
+          }
+        : {
+            content: {
+              contains: normalizedSearch
+            }
+          }
+      : {})
+  }
 
   const [data, total] = await Promise.all([
-    prisma.user_message.findMany({
-      where: { type: 'feedback', sender_id: { not: null } },
+    prisma.doc_post_comment.findMany({
+      where,
       include: {
-        sender: {
+        user: {
           select: {
             id: true,
             name: true,
             avatar: true
           }
+        },
+        reply: {
+          orderBy: { created: 'asc' },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                avatar: true
+              }
+            }
+          }
         }
       },
-      orderBy: { created: 'desc' },
+      orderBy: [{ status: 'asc' }, { created: 'desc' }],
       skip: offset,
       take: limit
     }),
-    prisma.user_message.count({
-      where: { type: 'feedback', sender_id: { not: null } }
-    })
+    prisma.doc_post_comment.count({ where })
   ])
 
-  const feedbacks: Message[] = data.map((msg) => ({
-    id: msg.id,
-    type: msg.type,
-    content: msg.content,
-    status: msg.status,
-    link: msg.link,
-    created: msg.created,
-    sender: msg.sender
-  }))
-
+  const feedbacks = await Promise.all(data.map(mapAdminFeedback))
   return { feedbacks, total }
 }
 
 export const GET = async (req: NextRequest) => {
-  const input = kunParseGetQuery(req, adminPaginationSchema)
+  const input = kunParseGetQuery(req, adminFeedbackPaginationSchema)
   if (typeof input === 'string') {
     return NextResponse.json(input)
   }
+
   const payload = await verifyHeaderCookie(req)
   if (!payload) {
     return NextResponse.json('用户未登录')
   }
   if (payload.role < 3) {
-    return NextResponse.json('本页面仅管理员可访问')
+    return NextResponse.json('当前页面仅管理员可访问')
   }
 
   const response = await getFeedback(input)

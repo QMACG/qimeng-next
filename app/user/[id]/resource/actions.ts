@@ -4,8 +4,8 @@ import { z } from 'zod'
 import { getUserInfoSchema } from '~/validations/user'
 import { verifyHeaderCookie } from '~/utils/actions/verifyHeaderCookie'
 import { safeParseSchema } from '~/utils/actions/safeParseSchema'
-import { getNSFWHeader } from '~/utils/actions/getNSFWHeader'
-import { getUserPatchResource } from '~/app/api/user/profile/resource/route'
+import { GET as getUserResourceRoute } from '~/app/api/user/profile/resource/route'
+import { callRouteGet } from '~/utils/actions/callRouteHandler'
 
 export const kunGetActions = async (
   params: z.infer<typeof getUserInfoSchema>
@@ -19,8 +19,10 @@ export const kunGetActions = async (
     return '用户登陆失效'
   }
 
-  const nsfwEnable = await getNSFWHeader()
-
-  const response = await getUserPatchResource(input, nsfwEnable)
+  const response = await callRouteGet(
+    getUserResourceRoute,
+    '/api/user/profile/resource',
+    input
+  )
   return response
 }

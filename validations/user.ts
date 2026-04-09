@@ -5,7 +5,7 @@ import {
 } from '~/utils/validate'
 
 export const avatarSchema = z.object({
-  avatar: z.any()
+  avatar: z.string().trim().url().max(1007)
 })
 
 export const bioSchema = z.object({

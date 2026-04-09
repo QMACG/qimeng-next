@@ -5,6 +5,12 @@ import { prisma } from '~/prisma/index'
 import { markdownToHtmlExtend } from '~/app/api/utils/render/markdownToHtmlExtend'
 import { getKv, setKv } from '~/lib/redis'
 import { PATCH_INTRODUCTION_CACHE_DURATION } from '~/config/cache'
+import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
+import {
+  canAccessRestrictedContent,
+  isDirectVisibleVisibility
+} from '~/utils/contentVisibility'
+import { parseJsonStringArray } from '~/utils/prismaJson'
 import type { PatchIntroduction } from '~/types/api/patch'
 
 const CACHE_KEY = 'patch:introduction'
@@ -13,8 +19,10 @@ const uniqueIdSchema = z.object({
   uniqueId: z.string().min(8).max(8)
 })
 
-export const getPatchIntroduction = async (
-  input: z.infer<typeof uniqueIdSchema>
+const getPatchIntroduction = async (
+  input: z.infer<typeof uniqueIdSchema>,
+  uid = 0,
+  role = 0
 ) => {
   const cachedIntro = await getKv(`${CACHE_KEY}:${input.uniqueId}`)
   if (cachedIntro) {
@@ -26,11 +34,6 @@ export const getPatchIntroduction = async (
   const patch = await prisma.patch.findUnique({
     where: { unique_id: uniqueId },
     include: {
-      alias: {
-        select: {
-          name: true
-        }
-      },
       tag: {
         include: {
           tag: {
@@ -58,30 +61,43 @@ export const getPatchIntroduction = async (
     }
   })
   if (!patch) {
-    return '未找到对应 Galgame'
+    return '未找到对应游戏'
+  }
+  if (
+    !canAccessRestrictedContent({
+      visibility: patch.visibility,
+      authorId: patch.user_id,
+      uid,
+      role
+    })
+  ) {
+    return '未找到对应游戏'
   }
 
   const response: PatchIntroduction = {
-    vndbId: patch.vndb_id,
-    vndbRelationId: patch.vndb_relation_id,
-    bangumiId: patch.bangumi_id,
-    steamId: patch.steam_id,
-    dlsiteCode: patch.dlsite_code,
     introduction: await markdownToHtmlExtend(patch.introduction),
+    resourceNote: patch.resource_note,
     released: patch.released,
-    alias: patch.alias.map((a) => a.name),
-    tag: patch.tag.map((tag) => tag.tag),
-    company: patch.company.map((company) => company.company),
+    tag: patch.tag.map((item) => ({
+      ...item.tag,
+      alias: parseJsonStringArray(item.tag.alias)
+    })),
+    company: patch.company.map((item) => ({
+      ...item.company,
+      alias: parseJsonStringArray(item.company.alias)
+    })),
     created: patch.created,
     updated: patch.updated,
     resourceUpdateTime: patch.resource_update_time
   }
 
-  await setKv(
-    `${CACHE_KEY}:${input.uniqueId}`,
-    JSON.stringify(response),
-    PATCH_INTRODUCTION_CACHE_DURATION
-  )
+  if (isDirectVisibleVisibility(patch.visibility)) {
+    await setKv(
+      `${CACHE_KEY}:${input.uniqueId}`,
+      JSON.stringify(response),
+      PATCH_INTRODUCTION_CACHE_DURATION
+    )
+  }
 
   return response
 }
@@ -92,6 +108,11 @@ export const GET = async (req: NextRequest) => {
     return NextResponse.json(input)
   }
 
-  const response = await getPatchIntroduction(input)
+  const payload = await verifyHeaderCookie(req)
+  const response = await getPatchIntroduction(
+    input,
+    payload?.uid ?? 0,
+    payload?.role ?? 0
+  )
   return NextResponse.json(response)
 }

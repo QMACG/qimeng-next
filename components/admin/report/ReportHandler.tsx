@@ -37,6 +37,7 @@ export const ReportHandler = ({ initialReport }: Props) => {
           <MoreVertical size={16} />
         </Button>
       </DropdownTrigger>
+
       <DropdownMenu disabledKeys={disabledKeys}>
         <DropdownItem
           key="game"

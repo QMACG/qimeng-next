@@ -1,11 +1,7 @@
 import { kunMoyuMoe } from '~/config/moyu-moe'
 
-const iconImage = `${process.env.NEXT_PUBLIC_KUN_PATCH_ADDRESS_DEV}/favicon.webp`
-
-const domain =
-  process.env.NODE_ENV === 'development'
-    ? process.env.NEXT_PUBLIC_KUN_PATCH_ADDRESS_DEV
-    : process.env.NEXT_PUBLIC_KUN_PATCH_ADDRESS_PROD
+const iconImage = `${kunMoyuMoe.domain.main}/favicon.ico`
+const domain = kunMoyuMoe.domain.main
 
 export const announcementTemplate = (
   title: string,
@@ -66,7 +62,7 @@ export const announcementTemplate = (
       <div class="card">
         <div class="header">
           <img src="${iconImage}" />
-          <h1 style="color: white; margin: 0; font-size: 24px;">重要公告</h1>
+          <h1 style="color: white; margin: 0; font-size: 24px;">重要通知</h1>
         </div>
         <div class="content">
           <h2 style="color: #dc2626; margin: 0 0 16px 0; font-size: 20px;">${title}</h2>
@@ -77,8 +73,14 @@ export const announcementTemplate = (
           </div>
         </div>
         <div class="footer">
-          <p style="margin: 0;">此消息为系统自动发布, 请勿回复此消息, 如果有任何问题, 请联系 <a href="${kunMoyuMoe.domain.main}" target="_blank">${kunMoyuMoe.titleShort}</a> </p>
-          <p style="margin: 0;">要取消邮件通知, 请点击 <a href="${domain}/auth/email-notice?email=${email}&code=${validateEmailCode}" target="_blank">退订邮件</a> </p>
+          <p style="margin: 0;">
+            此邮件由系统自动发送，请勿直接回复。如有需要，请访问
+            <a href="${kunMoyuMoe.domain.main}" target="_blank">${kunMoyuMoe.titleShort}</a>
+          </p>
+          <p style="margin: 12px 0 0;">
+            如需取消邮件通知，请点击
+            <a href="${domain}/auth/email-notice?email=${email}&code=${validateEmailCode}" target="_blank">退订邮件</a>
+          </p>
         </div>
       </div>
     </div>

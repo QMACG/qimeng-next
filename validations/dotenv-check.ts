@@ -16,9 +16,22 @@ if (!fs.existsSync(envPath)) {
 
 config({ path: envPath })
 
+const optionalUrl = z.preprocess((value) => {
+  if (typeof value !== 'string') {
+    return value
+  }
+
+  const trimmed = value.trim()
+  return trimmed.length > 0 ? trimmed : undefined
+}, z.string().url().optional())
+
 export const envSchema = z.object({
   KUN_DATABASE_URL: z.string().url(),
   KUN_VISUAL_NOVEL_SITE_URL: z.string().url(),
+  KUN_VISUAL_NOVEL_SITE_URLS: z.string().optional(),
+  KUN_VISUAL_NOVEL_NAV_URL: optionalUrl,
+  KUN_VISUAL_NOVEL_GITHUB_REPO_URL: optionalUrl,
+  KUN_VISUAL_NOVEL_TELEGRAM_GROUP_URL: optionalUrl,
 
   NEXT_PUBLIC_KUN_PATCH_ADDRESS_DEV: z.string(),
   NEXT_PUBLIC_KUN_PATCH_ADDRESS_PROD: z.string(),
@@ -32,26 +45,11 @@ export const envSchema = z.object({
 
   NODE_ENV: z.enum(['development', 'test', 'production']),
 
-  KUN_VISUAL_NOVEL_EMAIL_FROM: z.string(),
-  KUN_VISUAL_NOVEL_EMAIL_HOST: z.string(),
-  KUN_VISUAL_NOVEL_EMAIL_PORT: z.string(),
-  KUN_VISUAL_NOVEL_EMAIL_ACCOUNT: z.string(),
-  KUN_VISUAL_NOVEL_EMAIL_PASSWORD: z.string(),
-
-  KUN_VISUAL_NOVEL_S3_STORAGE_ACCESS_KEY_ID: z.string(),
-  KUN_VISUAL_NOVEL_S3_STORAGE_SECRET_ACCESS_KEY: z.string(),
-  KUN_VISUAL_NOVEL_S3_STORAGE_BUCKET_NAME: z.string(),
-  KUN_VISUAL_NOVEL_S3_STORAGE_ENDPOINT: z.string(),
-  KUN_VISUAL_NOVEL_S3_STORAGE_REGION: z.string(),
-  NEXT_PUBLIC_KUN_VISUAL_NOVEL_S3_STORAGE_URL: z.string(),
-
-  KUN_VISUAL_NOVEL_IMAGE_BED_HOST: z.string(),
-  KUN_VISUAL_NOVEL_IMAGE_BED_URL: z.string(),
-
-  KUN_CF_CACHE_ZONE_ID: z.string(),
-  KUN_CF_CACHE_PURGE_API_TOKEN: z.string(),
-
-  KUN_VISUAL_NOVEL_INDEX_NOW_KEY: z.string(),
+  KUN_VISUAL_NOVEL_EMAIL_FROM: z.string().min(1),
+  KUN_VISUAL_NOVEL_EMAIL_HOST: z.string().min(1),
+  KUN_VISUAL_NOVEL_EMAIL_PORT: z.string().regex(/^\d+$/),
+  KUN_VISUAL_NOVEL_EMAIL_ACCOUNT: z.string().email(),
+  KUN_VISUAL_NOVEL_EMAIL_PASSWORD: z.string().min(1),
 
   KUN_VISUAL_NOVEL_TEST_SITE_LABEL: z.string().optional()
 })
@@ -60,7 +58,7 @@ export const env = envSchema.safeParse(process.env)
 
 if (!env.success) {
   throw new Error(
-    '❌ Invalid environment variables: ' +
+    'Invalid environment variables: ' +
       JSON.stringify(env.error.format(), null, 4)
   )
 }

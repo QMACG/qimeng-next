@@ -2,12 +2,19 @@ import { z } from 'zod'
 import { prisma } from '~/prisma/index'
 import { getKv, setKv } from '~/lib/redis'
 import { PATCH_CACHE_DURATION } from '~/config/cache'
+import { getFrontDisplayConfig } from '~/app/api/admin/setting/front-display/getFrontDisplayConfig'
+import {
+  canAccessRestrictedContent,
+  isDirectVisibleVisibility
+} from '~/utils/contentVisibility'
+import { canShowDownloadCount, canShowViewCount } from '~/utils/frontDisplay'
 import { roundOneDecimal } from '~/utils/rating/average'
 import {
   getCachedPatchFavoriteStatus,
   getPatchCacheKey,
   setCachedPatchFavoriteStatus
 } from './cache'
+import { parseJsonStringArray } from '~/utils/prismaJson'
 import type { Patch } from '~/types/api/patch'
 
 type CachedPatch = Omit<Patch, 'isFavorite'>
@@ -50,14 +57,24 @@ const getPatchFavoriteStatus = async (
 
 export const getPatchById = async (
   input: z.infer<typeof uniqueIdSchema>,
-  uid: number
+  uid: number,
+  role = 0
 ) => {
+  const frontDisplayConfig = await getFrontDisplayConfig()
+  const showViewCount = canShowViewCount(role, frontDisplayConfig)
+  const showDownloadCount = canShowDownloadCount(role, frontDisplayConfig)
   const cachedPatch = await getKv(getPatchCacheKey(input.uniqueId))
   if (cachedPatch) {
     const patch = JSON.parse(cachedPatch) as CachedPatch
-    return {
-      ...patch,
-      isFavorite: await getPatchFavoriteStatus(input.uniqueId, patch.id, uid)
+    if (isDirectVisibleVisibility(patch.status)) {
+      return {
+        ...patch,
+        view: showViewCount ? patch.view : 0,
+        download: showDownloadCount ? patch.download : 0,
+        showViewCount,
+        showDownloadCount,
+        isFavorite: await getPatchFavoriteStatus(input.uniqueId, patch.id, uid)
+      }
     }
   }
 
@@ -74,11 +91,6 @@ export const getPatchById = async (
           }
         }
       },
-      alias: {
-        select: {
-          name: true
-        }
-      },
       _count: {
         select: {
           favorite_folder: true,
@@ -90,7 +102,17 @@ export const getPatchById = async (
   })
 
   if (!patch) {
-    return '未找到对应 Galgame'
+    return '未找到对应游戏'
+  }
+  if (
+    !canAccessRestrictedContent({
+      visibility: patch.visibility,
+      authorId: patch.user_id,
+      uid,
+      role
+    })
+  ) {
+    return '未找到对应游戏'
   }
 
   const stat = await prisma.patch_rating_stat.findUnique({
@@ -100,22 +122,18 @@ export const getPatchById = async (
   const response: CachedPatch = {
     id: patch.id,
     uniqueId: patch.unique_id,
-    vndbId: patch.vndb_id,
-    vndbRelationId: patch.vndb_relation_id,
-    bangumiId: patch.bangumi_id,
-    steamId: patch.steam_id,
-    dlsiteCode: patch.dlsite_code,
     name: patch.name,
     introduction: patch.introduction,
     banner: patch.banner,
-    status: patch.status,
-    view: patch.view,
-    download: patch.download,
-    type: patch.type,
-    language: patch.language,
-    platform: patch.platform,
-    tags: patch.tag.map((t) => t.tag.name),
-    alias: patch.alias.map((a) => a.name),
+    status: patch.visibility,
+    view: showViewCount ? patch.view : 0,
+    download: showDownloadCount ? patch.download : 0,
+    showViewCount,
+    showDownloadCount,
+    type: parseJsonStringArray(patch.type),
+    language: parseJsonStringArray(patch.language),
+    platform: parseJsonStringArray(patch.platform),
+    tags: patch.tag.map((item) => item.tag.name),
     contentLimit: patch.content_limit,
     ratingSummary: stat
       ? {
@@ -166,11 +184,13 @@ export const getPatchById = async (
     _count: patch._count
   }
 
-  await setKv(
-    getPatchCacheKey(input.uniqueId),
-    JSON.stringify(response),
-    PATCH_CACHE_DURATION
-  )
+  if (isDirectVisibleVisibility(patch.visibility)) {
+    await setKv(
+      getPatchCacheKey(input.uniqueId),
+      JSON.stringify(response),
+      PATCH_CACHE_DURATION
+    )
+  }
 
   return {
     ...response,

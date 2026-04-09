@@ -1,73 +1,69 @@
 import { exec } from 'child_process'
-import { mkdir, readdir, copyFile } from 'fs/promises'
-import path from 'path'
+import { access, copyFile, mkdir, readdir } from 'fs/promises'
 import os from 'os'
+import path from 'path'
+import { promisify } from 'util'
 
-const isWindows: boolean = os.platform() === 'win32'
+const execAsync = promisify(exec)
+const isWindows = os.platform() === 'win32'
 
 const copyDirectory = async (src: string, dest: string): Promise<void> => {
-  try {
-    await mkdir(dest, { recursive: true })
-    const entries = await readdir(src, { withFileTypes: true })
+  await mkdir(dest, { recursive: true })
+  const entries = await readdir(src, { withFileTypes: true })
 
-    for (const entry of entries) {
-      const srcPath = path.join(src, entry.name)
-      const destPath = path.join(dest, entry.name)
+  for (const entry of entries) {
+    const srcPath = path.join(src, entry.name)
+    const destPath = path.join(dest, entry.name)
 
-      if (entry.isDirectory()) {
-        await copyDirectory(srcPath, destPath)
-      } else {
-        await copyFile(srcPath, destPath)
-      }
+    if (entry.isDirectory()) {
+      await copyDirectory(srcPath, destPath)
+    } else {
+      await copyFile(srcPath, destPath)
     }
-  } catch (error) {
-    console.error(`Error copying directory from ${src} to ${dest}:`, error)
-    throw error
   }
 }
 
+const pathExists = async (target: string) => {
+  try {
+    await access(target)
+    return true
+  } catch {
+    return false
+  }
+}
+
+const copyStandaloneAssets = async () => {
+  const standaloneDir = '.next/standalone'
+  if (!(await pathExists(standaloneDir))) {
+    console.log('Standalone output not found. Skip standalone asset copy.')
+    return
+  }
+
+  if (isWindows) {
+    console.log('Detected Windows OS. Copying standalone assets with fs APIs.')
+    await copyDirectory('public', '.next/standalone/public')
+    await copyDirectory('.next/static', '.next/standalone/.next/static')
+    console.log('Standalone assets copied successfully.')
+    return
+  }
+
+  console.log('Detected non-Windows OS. Copying standalone assets with cp.')
+  await execAsync('cp -r public .next/standalone/')
+  await execAsync('cp -r .next/static .next/standalone/.next/')
+  console.log('Standalone assets copied successfully.')
+}
+
 const copyFiles = async () => {
-  exec('pnpm build:sitemap', async (error, stdout, stderr) => {
-    if (error) {
-      console.error('Error generating sitemap:', error)
-      process.exit(1)
-    }
+  try {
+    const { stdout, stderr } = await execAsync('corepack pnpm build:sitemap')
     if (stdout) console.log(stdout)
     if (stderr) console.error(stderr)
 
-    try {
-      if (isWindows) {
-        console.log('Detected Windows OS. Using fs module for copying files.')
-
-        await copyDirectory('public', '.next/standalone/public')
-        await copyDirectory('.next/static', '.next/standalone/.next/static')
-        console.log('Files copied successfully.')
-      } else {
-        console.log(
-          'Detected non-Windows OS. Using cp command for copying files.'
-        )
-
-        const commands: string[] = [
-          'cp -r public .next/standalone/',
-          'cp -r .next/static .next/standalone/.next/'
-        ]
-
-        for (const command of commands) {
-          exec(command, (error, stdout, stderr) => {
-            if (error) {
-              console.error(`Error executing command "${command}":`, error)
-              process.exit(1)
-            }
-            if (stdout) console.log(stdout)
-            if (stderr) console.error(stderr)
-          })
-        }
-      }
-    } catch (fsError) {
-      console.error('Error copying files:', fsError)
-      process.exit(1)
-    }
-  })
+    await copyStandaloneAssets()
+  } catch (error) {
+    console.error('Postbuild failed:', error)
+    process.exit(1)
+  }
 }
 
 copyFiles()

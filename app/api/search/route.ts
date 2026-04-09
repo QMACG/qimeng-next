@@ -4,35 +4,24 @@ import { kunParsePostBody } from '~/app/api/utils/parseQuery'
 import { prisma } from '~/prisma/index'
 import { searchSchema } from '~/validations/search'
 import { GalgameCardSelectField } from '~/constants/api/select'
+import { getFrontDisplayConfig } from '~/app/api/admin/setting/front-display/getFrontDisplayConfig'
 import { getNSFWHeader } from '~/app/api/utils/getNSFWHeader'
-import { Prisma } from '~/prisma/generated/prisma/client'
-import type { SearchSuggestionType } from '~/types/api/search'
-import {
-  buildGalgameDateFilter,
-  buildGalgameOrderBy,
-  buildGalgameWhere
-} from '../utils/galgameQuery'
+import type { SearchResponse, SearchSuggestionType } from '~/types/api/search'
+import { buildGalgameOrderBy, buildGalgameWhere } from '../utils/galgameQuery'
+import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
+import { canShowDownloadCount, canShowViewCount } from '~/utils/frontDisplay'
+import { parseJsonStringArray } from '~/utils/prismaJson'
 
-export const searchGalgame = async (
+const searchGalgame = async (
   input: z.infer<typeof searchSchema>,
-  nsfwEnable: Record<string, string | undefined>
+  nsfwEnable: Record<string, string | undefined>,
+  role = 0
 ) => {
-  const {
-    queryString,
-    limit,
-    searchOption,
-    page,
-    selectedType = 'all',
-    selectedLanguage = 'all',
-    selectedPlatform = 'all',
-    sortField,
-    sortOrder,
-    selectedYears = ['all'],
-    selectedMonths = ['all'],
-    minRatingCount
-  } = input
+  const frontDisplayConfig = await getFrontDisplayConfig()
+  const showViewCount = canShowViewCount(role, frontDisplayConfig)
+  const showDownloadCount = canShowDownloadCount(role, frontDisplayConfig)
+  const { queryString, limit, searchOption, page, sortField, sortOrder } = input
   const offset = (page - 1) * limit
-  const insensitive = Prisma.QueryMode.insensitive
 
   const query = JSON.parse(queryString) as SearchSuggestionType[]
 
@@ -43,43 +32,27 @@ export const searchGalgame = async (
     .filter((item) => item.type === 'tag')
     .map((item) => item.name)
 
-  const dateFilter = buildGalgameDateFilter(selectedYears, selectedMonths)
   const where = buildGalgameWhere({
-    selectedType,
-    selectedLanguage,
-    selectedPlatform,
-    minRatingCount: sortField === 'rating' ? minRatingCount : 0,
     nsfwEnable
+  })
+  const unrestrictedWhere = buildGalgameWhere({
+    nsfwEnable: {}
   })
   const orderBy = buildGalgameOrderBy(sortField, sortOrder)
 
-  const queryCondition = [
+  const baseQueryCondition = [
     ...queryArray.map((q) => ({
       OR: [
-        { name: { contains: q, mode: insensitive } },
-        { vndb_id: q },
-        { vndb_relation_id: q },
-        { dlsite_code: q },
+        { name: { contains: q } },
         ...(searchOption.searchInIntroduction
-          ? [{ introduction: { contains: q, mode: insensitive } }]
-          : []),
-        ...(searchOption.searchInAlias
-          ? [
-              {
-                alias: {
-                  some: {
-                    name: { contains: q, mode: insensitive }
-                  }
-                }
-              }
-            ]
+          ? [{ introduction: { contains: q } }]
           : []),
         ...(searchOption.searchInTag
           ? [
               {
                 tag: {
                   some: {
-                    tag: { name: { contains: q, mode: insensitive } }
+                    tag: { name: { contains: q } }
                   }
                 }
               }
@@ -88,34 +61,42 @@ export const searchGalgame = async (
       ]
     })),
 
-    nsfwEnable,
-
     ...tagArray.map((q) => ({
       tag: {
         some: {
           tag: {
-            OR: [{ name: q }, { alias: { has: q } }]
+            OR: [{ name: q }, { alias: { array_contains: [q] } }]
           }
         }
       }
     }))
   ]
 
-  const [data, total] = await Promise.all([
+  const [data, total, unrestrictedTotal] = await Promise.all([
     prisma.patch.findMany({
       take: limit,
       skip: offset,
       orderBy,
-      where: { AND: queryCondition, ...dateFilter, ...where },
+      where: { AND: baseQueryCondition, ...where },
       select: GalgameCardSelectField
     }),
-    await prisma.patch.count({
-      where: { AND: queryCondition, ...dateFilter, ...where }
+    prisma.patch.count({
+      where: { AND: baseQueryCondition, ...where }
+    }),
+    prisma.patch.count({
+      where: { AND: baseQueryCondition, ...unrestrictedWhere }
     })
   ])
 
   const galgames: GalgameCard[] = data.map((gal) => ({
     ...gal,
+    view: showViewCount ? gal.view : 0,
+    download: showDownloadCount ? gal.download : 0,
+    showViewCount,
+    showDownloadCount,
+    type: parseJsonStringArray(gal.type),
+    language: parseJsonStringArray(gal.language),
+    platform: parseJsonStringArray(gal.platform),
     tags: gal.tag.map((t) => t.tag.name).slice(0, 3),
     uniqueId: gal.unique_id,
     averageRating: gal.rating_stat?.avg_overall
@@ -123,7 +104,11 @@ export const searchGalgame = async (
       : 0
   }))
 
-  return { galgames, total }
+  return {
+    galgames,
+    total,
+    hiddenCount: Math.max(0, unrestrictedTotal - total)
+  } satisfies SearchResponse
 }
 
 export const POST = async (req: NextRequest) => {
@@ -131,8 +116,9 @@ export const POST = async (req: NextRequest) => {
   if (typeof input === 'string') {
     return NextResponse.json(input)
   }
-  const nsfwEnable = getNSFWHeader(req)
+  const nsfwEnable = await getNSFWHeader(req)
+  const payload = await verifyHeaderCookie(req)
 
-  const response = await searchGalgame(input, nsfwEnable)
+  const response = await searchGalgame(input, nsfwEnable, payload?.role ?? 0)
   return NextResponse.json(response)
 }

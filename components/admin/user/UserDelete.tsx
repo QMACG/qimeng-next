@@ -23,10 +23,10 @@ interface Props {
 
 export const UserDelete = ({ user }: Props) => {
   const currentUser = useUserStore((state) => state.user)
-
   const { isOpen, onOpen, onClose } = useDisclosure()
   const [deleting, setDeleting] = useState(false)
-  const handleUpdateUserInfo = async () => {
+
+  const handleDeleteUser = async () => {
     setDeleting(true)
     const res = await kunFetchDelete<KunResponse<{}>>('/admin/user', {
       uid: user.id
@@ -55,12 +55,12 @@ export const UserDelete = ({ user }: Props) => {
 
       <Modal size="2xl" isOpen={isOpen} onClose={onClose}>
         <ModalContent>
-          <ModalHeader>删除用户: {user.name}</ModalHeader>
+          <ModalHeader>删除用户：{user.name}</ModalHeader>
           <ModalBody>
             <div>
               <h2 className="text-2xl text-danger">严重警告</h2>
-              <p>您确定要永久删除用户 {user.name} 吗?</p>
-              <p>该操作将会抹消用户的一切痕迹, 该操作不可撤销</p>
+              <p>您确定要永久删除用户 {user.name} 吗？</p>
+              <p>该操作将抹去用户的一切痕迹，并且不可撤销。</p>
             </div>
           </ModalBody>
           <ModalFooter>
@@ -71,7 +71,7 @@ export const UserDelete = ({ user }: Props) => {
               color="primary"
               isDisabled={deleting}
               isLoading={deleting}
-              onPress={handleUpdateUserInfo}
+              onPress={handleDeleteUser}
             >
               永久删除用户
             </Button>

@@ -15,12 +15,12 @@ import {
   Textarea,
   useDisclosure
 } from '@heroui/react'
+import toast from 'react-hot-toast'
 import { KunAvatar } from '~/components/kun/floating-card/KunAvatar'
 import { formatDate } from '~/utils/time'
-import { ReportHandler } from './ReportHandler'
-import type { AdminReport, AdminReportTargetType } from '~/types/api/admin'
 import { kunFetchPost } from '~/utils/kunFetch'
-import toast from 'react-hot-toast'
+import type { AdminReport, AdminReportTargetType } from '~/types/api/admin'
+import { ReportHandler } from './ReportHandler'
 
 interface Props {
   report: AdminReport
@@ -34,8 +34,10 @@ export const ReportCard = ({ report, targetType, onHandled }: Props) => {
   const [actionType, setActionType] = useState<'delete' | 'reject'>('delete')
   const [updating, setUpdating] = useState(false)
   const { isOpen, onOpen, onClose } = useDisclosure()
+
   const targetId =
     targetType === 'rating' ? report.reportedRatingId : report.reportedCommentId
+
   const displayedUid = report.reportedUser?.id ?? report.reportedUserId ?? 0
   const displayedName = report.reportedUser?.name
     ? report.reportedUser.name
@@ -44,14 +46,9 @@ export const ReportCard = ({ report, targetType, onHandled }: Props) => {
       : '未知被举报用户'
   const displayedAvatar = report.reportedUser?.avatar ?? ''
 
-  const openActionModal = (action: 'delete' | 'reject') => {
-    setActionType(action)
-    setHandleContent('')
-    onOpen()
-  }
-
   const handleUpdateReport = async () => {
     setUpdating(true)
+
     const res = await kunFetchPost<KunResponse<{}>>('/admin/report/handle', {
       messageId: report.id,
       action: actionType,
@@ -59,20 +56,23 @@ export const ReportCard = ({ report, targetType, onHandled }: Props) => {
       targetId,
       content: handleContent.trim()
     })
+
     if (typeof res === 'string') {
       toast.error(res)
     } else {
       setReportStatus(actionType === 'reject' ? 3 : 2)
       onClose()
       setHandleContent('')
-      toast.success(actionType === 'reject' ? '驳回举报成功!' : '处理举报成功!')
+      toast.success(actionType === 'reject' ? '举报已驳回' : '举报处理成功')
       onHandled()
     }
+
     setUpdating(false)
   }
 
   const statusColor: 'success' | 'danger' | 'warning' =
     reportStatus === 0 ? 'danger' : reportStatus === 3 ? 'warning' : 'success'
+
   const statusLabel =
     reportStatus === 0 ? '未处理' : reportStatus === 3 ? '已驳回' : '已处理'
 
@@ -97,6 +97,7 @@ export const ReportCard = ({ report, targetType, onHandled }: Props) => {
                   src={displayedAvatar}
                 />
               )}
+
               <div>
                 <div className="flex items-center gap-2">
                   <Chip size="sm" variant="flat">
@@ -110,9 +111,10 @@ export const ReportCard = ({ report, targetType, onHandled }: Props) => {
                     })}
                   </span>
                 </div>
+
                 <p className="mt-1 whitespace-pre-wrap">{report.content}</p>
 
-                <div className="flex items-center gap-4 mt-2">
+                <div className="mt-2 flex items-center gap-4">
                   <Chip color={statusColor} variant="flat">
                     {statusLabel}
                   </Chip>
@@ -120,19 +122,27 @@ export const ReportCard = ({ report, targetType, onHandled }: Props) => {
                     size="sm"
                     color="danger"
                     variant="flat"
-                    onPress={() => openActionModal('delete')}
+                    onPress={() => {
+                      setActionType('delete')
+                      setHandleContent('')
+                      onOpen()
+                    }}
                     isDisabled={reportStatus !== 0}
                   >
-                    删除
+                    删除内容
                   </Button>
                   <Button
                     size="sm"
                     color="warning"
                     variant="flat"
-                    onPress={() => openActionModal('reject')}
+                    onPress={() => {
+                      setActionType('reject')
+                      setHandleContent('')
+                      onOpen()
+                    }}
                     isDisabled={reportStatus !== 0}
                   >
-                    驳回
+                    驳回举报
                   </Button>
                 </div>
               </div>
@@ -151,12 +161,12 @@ export const ReportCard = ({ report, targetType, onHandled }: Props) => {
           <ModalBody>
             <Textarea
               value={handleContent}
-              label="反馈回复内容 (可选)"
+              label="处理说明（可选）"
               onChange={(e) => setHandleContent(e.target.value)}
               placeholder={
                 actionType === 'reject'
-                  ? '留空将使用默认回复：已驳回'
-                  : '留空将使用默认回复：已处理'
+                  ? '留空则使用默认回复：已驳回举报'
+                  : '留空则使用默认回复：已处理举报'
               }
               minRows={2}
               maxRows={8}
@@ -175,8 +185,8 @@ export const ReportCard = ({ report, targetType, onHandled }: Props) => {
             <Button
               color={actionType === 'reject' ? 'warning' : 'danger'}
               onPress={handleUpdateReport}
-              isDisabled={updating}
               isLoading={updating}
+              isDisabled={updating}
             >
               {actionType === 'reject' ? '确认驳回' : '确认删除'}
             </Button>

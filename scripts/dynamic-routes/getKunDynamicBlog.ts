@@ -1,43 +1,29 @@
-import fs from 'fs'
-import path from 'path'
-import matter from 'gray-matter'
-
-const POSTS_PATH = path.join(process.cwd(), 'posts')
+import { prisma } from '~/prisma/index'
+import { CONTENT_VISIBILITY } from '~/constants/contentVisibility'
 
 interface KunDynamicBlogSitemap {
   path: string
   lastmod: string
 }
 
-export const getKunDynamicBlog = (): KunDynamicBlogSitemap[] => {
-  const buildTree = (currentPath: string): KunDynamicBlogSitemap[] => {
-    const stats = fs.statSync(currentPath)
+export const getKunDynamicBlog = async (): Promise<KunDynamicBlogSitemap[]> => {
+  try {
+    const posts = await prisma.doc_post.findMany({
+      where: { visibility: CONTENT_VISIBILITY.public },
+      select: {
+        slug: true,
+        updated: true
+      }
+    })
 
-    if (stats.isFile() && currentPath.endsWith('.mdx')) {
-      const fileContents = fs.readFileSync(currentPath, 'utf8')
-      const { data } = matter(fileContents)
-
-      return [
-        {
-          path: `/doc/${path
-            .relative(POSTS_PATH, currentPath)
-            .replace(/\.mdx$/, '')
-            .replace(/\\/g, '/')}`,
-          lastmod: data.date
-            ? new Date(data.date).toISOString()
-            : new Date().toISOString()
-        }
-      ]
-    }
-
-    if (stats.isDirectory()) {
-      return fs
-        .readdirSync(currentPath)
-        .flatMap((child) => buildTree(path.join(currentPath, child)))
-    }
-
+    return posts.map((post) => ({
+      path: `/doc/${post.slug}`,
+      lastmod: post.updated?.toISOString() || new Date().toISOString()
+    }))
+  } catch (error) {
+    console.error('Error fetching dynamic blog routes:', error)
     return []
+  } finally {
+    await prisma.$disconnect()
   }
-
-  return buildTree(POSTS_PATH)
 }

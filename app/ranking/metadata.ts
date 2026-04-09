@@ -1,13 +1,15 @@
 import { kunMoyuMoe } from '~/config/moyu-moe'
 import type { Metadata } from 'next'
 
+const description = `${kunMoyuMoe.titleShort} 游戏排行榜，按评分、热度与下载等维度浏览热门作品。`
+
 export const kunMetadata: Metadata = {
-  title: `Galgame 排行榜 - ${kunMoyuMoe.titleShort}`,
-  description: `${kunMoyuMoe.titleShort} 游戏排行, 综合评分与下载数等数据, 为所有玩家提供参考`,
+  title: `游戏排行 - ${kunMoyuMoe.titleShort}`,
+  description,
   openGraph: {
-    title: `Galgame 排行榜 - ${kunMoyuMoe.titleShort}`,
-    description: `${kunMoyuMoe.titleShort} 游戏排行, 综合评分与下载数等数据, 为所有玩家提供参考`,
-    url: `${kunMoyuMoe.domain.main}/register`,
+    title: `游戏排行 - ${kunMoyuMoe.titleShort}`,
+    description,
+    url: `${kunMoyuMoe.domain.main}/ranking`,
     siteName: kunMoyuMoe.title,
     images: [
       {

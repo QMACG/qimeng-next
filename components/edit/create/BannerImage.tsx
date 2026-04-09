@@ -1,56 +1,27 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import localforage from 'localforage'
-import { dataURItoBlob } from '~/utils/dataURItoBlob'
-import { KunImageCropper } from '~/components/kun/cropper/KunImageCropper'
+import { Input } from '@heroui/input'
+import { useCreatePatchStore } from '~/store/editStore'
 
 interface Props {
   errors: string | undefined
 }
 
 export const BannerImage = ({ errors }: Props) => {
-  const [initialUrl, setInitialUrl] = useState<string>('')
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const localeBannerBlob: Blob | null =
-        await localforage.getItem('kun-patch-banner')
-      if (localeBannerBlob) {
-        setInitialUrl(URL.createObjectURL(localeBannerBlob))
-      }
-    }
-    fetchData()
-  }, [])
-
-  const removeBanner = async () => {
-    await localforage.removeItem('kun-patch-banner')
-    await localforage.removeItem('kun-patch-banner-original')
-    setInitialUrl('')
-  }
-
-  const onImageComplete = async (croppedImage: string) => {
-    const imageBlob = dataURItoBlob(croppedImage)
-    await localforage.setItem('kun-patch-banner', imageBlob)
-  }
-
-  const onOriginalImageComplete = async (originalImage: string) => {
-    const imageBlob = dataURItoBlob(originalImage)
-    await localforage.setItem('kun-patch-banner-original', imageBlob)
-  }
+  const { data, setData } = useCreatePatchStore()
 
   return (
     <div className="space-y-2">
-      <h2 className="text-xl">封面图片 (必须)</h2>
-      {errors && <p className="text-xs text-danger-500">{errors}</p>}
-
-      <KunImageCropper
-        aspect={{ x: 16, y: 9 }}
-        initialImage={initialUrl}
-        description="您的预览图片将会被固定为 1920 × 1080 分辨率"
-        onImageComplete={onImageComplete}
-        onOriginalImageComplete={onOriginalImageComplete}
-        removeImage={removeBanner}
+      <h2 className="text-xl">封面图片链接</h2>
+      <Input
+        isRequired
+        label="封面 URL"
+        labelPlacement="outside"
+        placeholder="填写游戏封面的图片直链"
+        value={data.banner}
+        isInvalid={!!errors}
+        errorMessage={errors}
+        onChange={(e) => setData({ ...data, banner: e.target.value })}
       />
     </div>
   )

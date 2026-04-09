@@ -8,7 +8,7 @@ export const KunTopBarBrand = () => {
     <NavbarBrand className="hidden sm:flex">
       <Link className="flex items-center" href="/">
         <Image
-          src="/favicon.webp"
+          src="/favicon.ico"
           alt={kunMoyuMoe.titleShort}
           width={32}
           height={32}
@@ -16,7 +16,7 @@ export const KunTopBarBrand = () => {
           className="shrink-0"
         />
         <p className="ml-4 mr-2 font-bold text-inherit">
-          {kunMoyuMoe.creator.name}
+          {kunMoyuMoe.titleShort}
         </p>
       </Link>
     </NavbarBrand>

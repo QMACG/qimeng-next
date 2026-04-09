@@ -4,8 +4,8 @@ import { useState } from 'react'
 import { Button } from '@heroui/react'
 import { Textarea } from '@heroui/input'
 import { Send } from 'lucide-react'
-import { kunFetchPost } from '~/utils/kunFetch'
 import toast from 'react-hot-toast'
+import { kunFetchPost } from '~/utils/kunFetch'
 
 interface Props {
   conversationId: number
@@ -32,6 +32,7 @@ export const ChatInput = ({ conversationId, onMessageSent }: Props) => {
     }
 
     setSending(true)
+
     const response = await kunFetchPost<
       KunResponse<{ id: number; content: string; created: string }>
     >(`/message/conversation/${conversationId}`, { content: trimmedContent })
@@ -42,6 +43,7 @@ export const ChatInput = ({ conversationId, onMessageSent }: Props) => {
       setContent('')
       onMessageSent(response)
     }
+
     setSending(false)
   }
 
@@ -65,9 +67,9 @@ export const ChatInput = ({ conversationId, onMessageSent }: Props) => {
   }
 
   return (
-    <div className="flex gap-2 items-end">
+    <div className="flex items-end gap-2">
       <Textarea
-        placeholder="输入消息... (按 Enter 发送，Ctrl+Enter 换行)"
+        placeholder="输入消息...（按 Enter 发送，Ctrl+Enter 换行）"
         value={content}
         onValueChange={setContent}
         onKeyDown={handleKeyDown}

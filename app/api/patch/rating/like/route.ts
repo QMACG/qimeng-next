@@ -1,4 +1,4 @@
-import { z } from 'zod'
+﻿import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParsePutBody } from '~/app/api/utils/parseQuery'
 import { prisma } from '~/prisma/index'
@@ -9,7 +9,7 @@ const ratingIdSchema = z.object({
   ratingId: z.coerce.number({ message: 'ID 不正确' }).min(1).max(9999999)
 })
 
-export const toggleRatingLike = async (
+const toggleRatingLike = async (
   input: z.infer<typeof ratingIdSchema>,
   uid: number
 ) => {
@@ -84,3 +84,4 @@ export const PUT = async (req: NextRequest) => {
   const response = await toggleRatingLike(input, payload.uid)
   return NextResponse.json(response)
 }
+

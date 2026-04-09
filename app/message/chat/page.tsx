@@ -1,7 +1,7 @@
-import { ConversationList } from '~/components/message/chat/ConversationList'
-import { ErrorComponent } from '~/components/error/ErrorComponent'
-import { kunGetConversationsAction } from './actions'
 import type { Metadata } from 'next'
+import { ErrorComponent } from '~/components/error/ErrorComponent'
+import { ConversationList } from '~/components/message/chat/ConversationList'
+import { kunGetConversationsAction } from './actions'
 
 export const revalidate = 3
 

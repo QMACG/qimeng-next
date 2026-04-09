@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 import {
   Button,
@@ -26,7 +26,7 @@ interface Props {
   initialUser: AdminUser
 }
 
-const roleOptions = Object.entries(USER_ROLE_MAP).map(([value, label]) => ({
+const allRoleOptions = Object.entries(USER_ROLE_MAP).map(([value, label]) => ({
   value: Number(value),
   label
 }))
@@ -41,6 +41,7 @@ export const UserEdit = ({ initialUser }: Props) => {
   const [formUser, setFormUser] = useState<AdminUser>(initialUser)
   const [password, setPassword] = useState('')
   const [disabling2FA, setDisabling2FA] = useState(false)
+  const [updating, setUpdating] = useState(false)
   const currentUser = useUserStore((state) => state.user)
   const { isOpen, onOpen, onClose } = useDisclosure()
 
@@ -48,6 +49,16 @@ export const UserEdit = ({ initialUser }: Props) => {
     setUser(initialUser)
     setFormUser(initialUser)
   }, [initialUser])
+
+  const roleOptions = useMemo(() => {
+    if (currentUser.role >= 4) {
+      return allRoleOptions
+    }
+
+    return allRoleOptions.filter((item) => item.value <= 2)
+  }, [currentUser.role])
+
+  const canEditUser = currentUser.role >= 4 || initialUser.role < 3
 
   const handleChange = (key: keyof AdminUser, value: string | number) => {
     setFormUser((prev) => ({ ...prev, [key]: value }))
@@ -65,7 +76,6 @@ export const UserEdit = ({ initialUser }: Props) => {
     onClose()
   }
 
-  const [updating, setUpdating] = useState(false)
   const handleUpdateUserInfo = async () => {
     const requestData = {
       uid: formUser.id,
@@ -85,7 +95,7 @@ export const UserEdit = ({ initialUser }: Props) => {
         setUser(formUser)
         setFormUser(formUser)
         setPassword('')
-        toast.success('更新用户信息成功')
+        toast.success('用户信息更新成功')
         onClose()
       })
     } catch (error) {
@@ -98,16 +108,13 @@ export const UserEdit = ({ initialUser }: Props) => {
   const handleDisable2FA = async () => {
     setDisabling2FA(true)
     try {
-      const res = await kunFetchPost<KunResponse<{}>>(
-        '/admin/user/2fa/disable',
-        {
-          uid: formUser.id
-        }
-      )
+      const res = await kunFetchPost<KunResponse<{}>>('/admin/user/2fa/disable', {
+        uid: formUser.id
+      })
       kunErrorHandler(res, () => {
         setUser((prev) => ({ ...prev, enable2FA: false }))
         setFormUser((prev) => ({ ...prev, enable2FA: false }))
-        toast.success('关闭用户两步验证成功')
+        toast.success('已关闭该用户的两步验证')
       })
     } catch (error) {
       errorReporter(error)
@@ -123,16 +130,16 @@ export const UserEdit = ({ initialUser }: Props) => {
         size="sm"
         variant="light"
         onPress={handleOpen}
-        isDisabled={currentUser.role < 3}
+        isDisabled={currentUser.role < 3 || !canEditUser}
       >
         <Edit2 size={16} />
       </Button>
 
       <Modal size="2xl" isOpen={isOpen} onClose={handleClose}>
         <ModalContent>
-          <ModalHeader>编辑用户: {formUser.name}</ModalHeader>
+          <ModalHeader>编辑用户：{formUser.name}</ModalHeader>
           <ModalBody>
-            <p>请注意, 您的任何更改都会导致该用户重新登录</p>
+            <p>修改用户资料后，对方需要重新登录才能看到最新权限与设置。</p>
             <div className="grid grid-cols-2 gap-4">
               <Input label="用户 ID" value={String(formUser.id)} isReadOnly />
               <Input
@@ -166,7 +173,7 @@ export const UserEdit = ({ initialUser }: Props) => {
                 ))}
               </Select>
               <Input
-                label="每日图片限额"
+                label="每日头像修改次数"
                 type="number"
                 value={String(formUser.dailyImageCount)}
                 onChange={(e) =>

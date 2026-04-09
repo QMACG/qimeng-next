@@ -1,4 +1,4 @@
-import { z } from 'zod'
+﻿import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParseGetQuery } from '~/app/api/utils/parseQuery'
 import { prisma } from '~/prisma/index'
@@ -6,7 +6,7 @@ import { getMessageSchema } from '~/validations/message'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 import type { Message } from '~/types/api/message'
 
-export const getMessage = async (
+const getMessage = async (
   input: z.infer<typeof getMessageSchema>,
   uid: number
 ) => {
@@ -65,3 +65,4 @@ export const GET = async (req: NextRequest) => {
   const response = await getMessage(input, payload.uid)
   return NextResponse.json(response)
 }
+

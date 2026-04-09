@@ -1,20 +1,11 @@
 'use client'
 
-import { Snippet } from '@heroui/snippet'
 import { Chip } from '@heroui/chip'
-import { Cloud, Database, Link as LinkIcon } from 'lucide-react'
-import { Microsoft } from '~/components/kun/icons/Microsoft'
+import { Link as LinkIcon } from 'lucide-react'
+import { KunExternalLink } from '~/components/kun/external-link/ExternalLink'
 import { SUPPORTED_RESOURCE_LINK_MAP } from '~/constants/resource'
 import { kunFetchPut } from '~/utils/kunFetch'
-import { KunExternalLink } from '~/components/kun/external-link/ExternalLink'
-import type { JSX } from 'react'
 import type { PatchResource } from '~/types/api/patch'
-
-const storageIcons: { [key: string]: JSX.Element } = {
-  s3: <Cloud className="size-4" />,
-  onedrive: <Microsoft className="size-4" />,
-  user: <LinkIcon className="size-4" />
-}
 
 interface Props {
   resource: PatchResource
@@ -22,6 +13,10 @@ interface Props {
 
 export const ResourceDownloadCard = ({ resource }: Props) => {
   const handleClickDownload = async () => {
+    if (resource.section === 'direct' || resource.storage === 'direct') {
+      return
+    }
+
     await kunFetchPut<KunResponse<{}>>('/patch/resource/download', {
       patchId: resource.patchId,
       resourceId: resource.id
@@ -34,46 +29,27 @@ export const ResourceDownloadCard = ({ resource }: Props) => {
         <Chip
           color="secondary"
           variant="flat"
-          startContent={storageIcons[resource.storage]}
+          startContent={<LinkIcon className="size-4" />}
         >
-          {
-            SUPPORTED_RESOURCE_LINK_MAP[
-              resource.storage as 's3' | 'onedrive' | 'user'
-            ]
-          }
-        </Chip>
-        <Chip variant="flat" startContent={<Database className="w-4 h-4" />}>
-          {resource.size}
+          {SUPPORTED_RESOURCE_LINK_MAP[resource.storage] ?? resource.storage}
         </Chip>
       </div>
 
-      <p className="text-sm text-default-500">点击下面的链接以下载</p>
+      <p className="text-sm text-default-500">点击下方链接即可前往对应资源。</p>
 
-      {resource.content.split(',').map((link) => (
-        <div key={Math.random()} className="space-y-2">
-          <KunExternalLink
-            onPress={handleClickDownload}
-            underline="always"
-            link={link}
-          >
-            {link}
-          </KunExternalLink>
+      <KunExternalLink
+        onPress={handleClickDownload}
+        underline="always"
+        link={resource.content}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {resource.name || resource.content}
+      </KunExternalLink>
 
-          {resource.storage === 's3' && (
-            <>
-              <p className="text-sm">
-                BLACK3 校验码 (您可以根据此校验码校验下载文件完整性)
-              </p>
-              <Snippet
-                symbol=""
-                className="flex overflow-auto whitespace-normal"
-              >
-                {resource.hash}
-              </Snippet>
-            </>
-          )}
-        </div>
-      ))}
+      {resource.name ? (
+        <p className="break-all text-xs text-default-400">{resource.content}</p>
+      ) : null}
     </div>
   )
 }

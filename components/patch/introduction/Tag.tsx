@@ -1,11 +1,8 @@
 'use client'
 
-import { useState } from 'react'
 import { Chip } from '@heroui/chip'
 import { Tooltip } from '@heroui/tooltip'
 import { Link } from '@heroui/link'
-import { PatchTagSelector } from './PatchTagSelector'
-import { useUserStore } from '~/store/userStore'
 import type { Tag } from '~/types/api/tag'
 
 interface Props {
@@ -13,19 +10,16 @@ interface Props {
   initialTags: Tag[]
 }
 
-export const PatchTag = ({ patchId, initialTags }: Props) => {
-  const [selectedTags, setSelectedTags] = useState<Tag[]>(initialTags ?? [])
-  const user = useUserStore((state) => state.user)
-
+export const PatchTag = ({ initialTags }: Props) => {
   return (
     <div className="mt-4 space-y-4">
-      <h2 className="pt-8 mt-12 text-2xl border-t border-default-200">
+      <h2 className="mt-12 border-t border-default-200 pt-8 text-2xl">
         游戏标签
       </h2>
 
       <div className="flex flex-wrap gap-2">
-        {selectedTags.map((tag) => (
-          <Tooltip key={tag.id} content={`${tag.count} 个 Galgame 使用此标签`}>
+        {initialTags.map((tag) => (
+          <Tooltip key={tag.id} content={`${tag.count} 个游戏使用该标签`}>
             <Link href={`/tag/${tag.id}`}>
               <Chip color="secondary" variant="flat">
                 {tag.name}
@@ -35,16 +29,8 @@ export const PatchTag = ({ patchId, initialTags }: Props) => {
           </Tooltip>
         ))}
 
-        {!initialTags.length && <Chip>{'这个 Galgame 暂时没有标签'}</Chip>}
+        {!initialTags.length && <Chip>当前游戏暂时没有标签</Chip>}
       </div>
-
-      {user.role > 2 && (
-        <PatchTagSelector
-          patchId={patchId}
-          initialTags={selectedTags}
-          onTagChange={setSelectedTags}
-        />
-      )}
     </div>
   )
 }

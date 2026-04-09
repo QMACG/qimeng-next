@@ -4,11 +4,10 @@ import { setKUNGalgameTask } from '~/server/cron'
 
 setKUNGalgameTask()
 
-import { getNSFWHeader } from '~/utils/actions/getNSFWHeader'
-import { getHomeData } from '~/app/api/home/route'
+import { GET as getHomeRoute } from '~/app/api/home/route'
+import { callRouteGet } from '~/utils/actions/callRouteHandler'
 
 export const kunGetActions = async () => {
-  const nsfwEnable = await getNSFWHeader()
-  const response = await getHomeData(nsfwEnable)
+  const response = await callRouteGet(getHomeRoute, '/api/home')
   return response
 }

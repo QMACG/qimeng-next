@@ -1,4 +1,4 @@
-import { z } from 'zod'
+﻿import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParseGetQuery } from '~/app/api/utils/parseQuery'
 import { prisma } from '~/prisma/index'
@@ -7,7 +7,7 @@ import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 import type { AdminReport, AdminReportTargetType } from '~/types/api/admin'
 import { getReportTargetWhere, resolveReportMeta } from './_meta'
 
-export const getReport = async (
+const getReport = async (
   input: z.infer<typeof adminReportPaginationSchema>
 ) => {
   const { page, limit, tab, targetType } = input
@@ -105,3 +105,4 @@ export const GET = async (req: NextRequest) => {
   const response = await getReport(input)
   return NextResponse.json(response)
 }
+

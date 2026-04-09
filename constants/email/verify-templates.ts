@@ -1,22 +1,40 @@
 import { kunMoyuMoe } from '~/config/moyu-moe'
 
+const titleMap = {
+  register: (siteName: string) => `欢迎注册 ${siteName}`,
+  forgot: () => '找回密码',
+  reset: () => '修改邮箱验证'
+}
+
+const messageMap = {
+  register: (siteName: string) =>
+    `感谢您注册 ${siteName}，请使用下面的验证码完成注册。`,
+  forgot: () =>
+    '我们收到了您的密码重置请求，请使用下面的验证码继续操作。',
+  reset: () =>
+    '您正在修改邮箱地址，请使用下面的验证码确认新的邮箱。'
+}
+
 export const createKunVerificationEmailTemplate = (
   type: 'register' | 'forgot' | 'reset',
   code: string
 ) => {
+  const siteName = kunMoyuMoe.titleShort
   const titles = {
-    register: `欢迎注册 ${kunMoyuMoe.titleShort}`,
-    forgot: `忘记密码`,
-    reset: `更改邮箱验证`
+    register: titleMap.register(siteName),
+    forgot: titleMap.forgot(),
+    reset: titleMap.reset()
   }
-
   const messages = {
-    register: `感谢您注册 ${kunMoyuMoe.titleShort}, 请使用下面的验证码以完成您的注册`,
-    forgot: '我们收到了您重置密码的请求, 请使用下面的验证码以继续',
-    reset: '您正在更改您的邮箱地址, 请使用下面的验证码以让我们确认您的新邮箱'
+    register: messageMap.register(siteName),
+    forgot: messageMap.forgot(),
+    reset: messageMap.reset()
   }
 
-  const iconImage = `${process.env.NEXT_PUBLIC_KUN_PATCH_ADDRESS_DEV}/favicon.webp`
+  const iconImage = `${kunMoyuMoe.domain.main}/favicon.ico`
+  const pageTitle = `${siteName} 邮箱验证码`
+  const codeExpiresText = '验证码 10 分钟内有效。'
+  const ignoreText = '如果这不是您的操作，请忽略这封邮件。'
 
   return `
 <!doctype html>
@@ -24,31 +42,7 @@ export const createKunVerificationEmailTemplate = (
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>${kunMoyuMoe.titleShort} 邮箱验证码</title>
-    <!--[if mso]>
-      <style>
-        table {
-          border-collapse: collapse;
-          border-spacing: 0;
-          border: none;
-          margin: 0;
-        }
-        div,
-        td {
-          padding: 0;
-        }
-        div {
-          margin: 0 !important;
-        }
-      </style>
-      <noscript>
-        <xml>
-          <o:OfficeDocumentSettings>
-            <o:PixelsPerInch>96</o:PixelsPerInch>
-          </o:OfficeDocumentSettings>
-        </xml>
-      </noscript>
-    <![endif]-->
+    <title>${pageTitle}</title>
     <style>
       body {
         margin: 0;
@@ -57,24 +51,20 @@ export const createKunVerificationEmailTemplate = (
         -webkit-text-size-adjust: 100%;
         -ms-text-size-adjust: 100%;
       }
-
       img {
         max-width: 100%;
         outline: none;
         text-decoration: none;
         -ms-interpolation-mode: bicubic;
       }
-
       h1 {
         padding-left: 10px;
         color: #27272a;
       }
-
       .container {
         max-width: 600px;
         margin: 0 auto;
       }
-
       .header {
         background: #e6f1fe;
         color: white;
@@ -84,14 +74,12 @@ export const createKunVerificationEmailTemplate = (
         align-items: center;
         border-radius: 14px 14px 0 0;
       }
-
       .content {
         background: #ffffff;
         padding: 40px 30px;
         text-align: center;
         border-radius: 0 0 14px 14px;
       }
-
       .code {
         font-size: 32px;
         letter-spacing: 4px;
@@ -102,7 +90,6 @@ export const createKunVerificationEmailTemplate = (
         margin: 24px 0;
         display: inline-block;
       }
-
       .footer {
         color: #a1a1aa;
         font-size: 14px;
@@ -110,16 +97,13 @@ export const createKunVerificationEmailTemplate = (
         padding-top: 24px;
         border-top: 1px solid #e4e4e7;
       }
-
       @media only screen and (max-width: 480px) {
         .container {
           width: 100% !important;
         }
-
         .content {
           padding: 30px 20px !important;
         }
-
         .code {
           font-size: 24px !important;
           padding: 12px 24px !important;
@@ -136,22 +120,15 @@ export const createKunVerificationEmailTemplate = (
         </h1>
       </div>
       <div class="content">
-        <p
-          style="
-            color: #374151;
-            font-size: 16px;
-            line-height: 24px;
-            margin: 0 0 24px 0;
-          "
-        >
+        <p style="color: #374151; font-size: 16px; line-height: 24px; margin: 0 0 24px 0;">
           ${messages[type]}
         </p>
         <div class="code">${code}</div>
-        <p style="color: #374151; font-size: 14px; margin: 0">
-          验证码在十分钟之内有效。
+        <p style="color: #374151; font-size: 14px; margin: 0;">
+          ${codeExpiresText}
         </p>
         <div class="footer">
-          <p style="margin: 0"> 如果您没有进行相关操作, 请忽略这封邮件。 </p>
+          <p style="margin: 0;">${ignoreText}</p>
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { z } from 'zod'
+﻿import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParsePutBody } from '~/app/api/utils/parseQuery'
 import { prisma } from '~/prisma/index'
@@ -12,7 +12,7 @@ const resourceIdSchema = z.object({
     .max(9999999)
 })
 
-export const toggleResourceLike = async (
+const toggleResourceLike = async (
   input: z.infer<typeof resourceIdSchema>,
   uid: number
 ) => {
@@ -90,3 +90,4 @@ export const PUT = async (req: NextRequest) => {
   const response = await toggleResourceLike(input, payload.uid)
   return NextResponse.json(response)
 }
+

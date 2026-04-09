@@ -1,4 +1,4 @@
-import { z } from 'zod'
+﻿import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParseGetQuery } from '~/app/api/utils/parseQuery'
 import { prisma } from '~/prisma/index'
@@ -9,7 +9,7 @@ const getProfileSchema = z.object({
   id: z.coerce.number().min(1).max(9999999)
 })
 
-export const getUserProfile = async (
+const getUserProfile = async (
   input: z.infer<typeof getProfileSchema>,
   currentUserUid: number
 ) => {
@@ -71,3 +71,4 @@ export async function GET(req: NextRequest) {
   const user = await getUserProfile(input, payload?.uid ?? 0)
   return NextResponse.json(user)
 }
+

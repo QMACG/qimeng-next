@@ -1,4 +1,5 @@
 import { prisma } from '~/prisma/index'
+import { toJsonStringArray } from '~/utils/prismaJson'
 
 export const handleBatchPatchTags = async (
   patchId: number,
@@ -23,7 +24,7 @@ export const handleBatchPatchTags = async (
       ? await prisma.patch_tag.findMany({
           where: {
             OR: tagsToAdd.map((tag) => ({
-              OR: [{ name: tag }, { alias: { has: tag } }]
+              OR: [{ name: tag }, { alias: { array_contains: [tag] } }]
             }))
           }
         })
@@ -41,7 +42,7 @@ export const handleBatchPatchTags = async (
           data: tagsToCreate.map((name) => ({
             user_id: uid,
             name,
-            source: 'self'
+            alias: toJsonStringArray([])
           }))
         })
       }
@@ -55,8 +56,8 @@ export const handleBatchPatchTags = async (
           : []
 
       const allTagIds = [
-        ...existingTags.map((t) => t.id),
-        ...newTags.map((t) => t.id)
+        ...existingTags.map((tag) => tag.id),
+        ...newTags.map((tag) => tag.id)
       ]
 
       if (allTagIds.length > 0) {

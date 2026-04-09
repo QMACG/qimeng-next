@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { Card, CardBody, CardHeader } from '@heroui/card'
 import { Button } from '@heroui/button'
-import { Chip } from '@heroui/chip'
 import { Send } from 'lucide-react'
 import { kunFetchPost } from '~/utils/kunFetch'
 import toast from 'react-hot-toast'
@@ -11,7 +10,6 @@ import { useUserStore } from '~/store/userStore'
 import { kunErrorHandler } from '~/utils/kunErrorHandler'
 import { KunAvatar } from '~/components/kun/floating-card/KunAvatar'
 import { KunEditor } from '~/components/kun/milkdown/Editor'
-import { Markdown } from '~/components/kun/icons/Markdown'
 import { useKunMilkdownStore } from '~/store/milkdownStore'
 import type { PatchComment } from '~/types/api/patch'
 
@@ -41,14 +39,12 @@ export const PublishComment = ({
 
   const handlePublishComment = async () => {
     setLoading(true)
-    const res = await kunFetchPost<KunResponse<PatchComment>>(
-      '/patch/comment',
-      {
-        patchId,
-        parentId,
-        content: content.trim()
-      }
-    )
+    const res = await kunFetchPost<KunResponse<PatchComment>>('/patch/comment', {
+      patchId,
+      parentId,
+      content: content.trim()
+    })
+
     kunErrorHandler(res, (value) => {
       setNewComment({
         ...value,
@@ -65,7 +61,7 @@ export const PublishComment = ({
 
   return (
     <Card>
-      <CardHeader className="pb-0 space-x-4">
+      <CardHeader className="space-x-4 pb-0">
         <KunAvatar
           uid={user.uid}
           avatarProps={{
@@ -76,31 +72,19 @@ export const PublishComment = ({
         />
         <div className="flex flex-col">
           <span className="font-semibold">{user.name}</span>
-          {receiverUsername && (
-            <span className="text-sm">回复 @{receiverUsername}</span>
-          )}
+          {receiverUsername ? <span className="text-sm">回复 @{receiverUsername}</span> : null}
         </div>
       </CardHeader>
       <CardBody className="space-y-4">
         <KunEditor valueMarkdown={content} saveMarkdown={setContent} />
 
-        <div className="flex items-center justify-between">
-          <Chip
-            variant="light"
-            color="secondary"
-            size="sm"
-            endContent={<Markdown />}
-            className="select-none"
-          >
-            评论支持 Markdown
-          </Chip>
-
+        <div className="flex items-center justify-end">
           <div className="flex gap-2">
-            {onCancel && (
+            {onCancel ? (
               <Button variant="flat" onPress={onCancel}>
                 取消
               </Button>
-            )}
+            ) : null}
             <Button
               color="primary"
               startContent={<Send className="size-4" />}

@@ -5,8 +5,9 @@ import { z } from 'zod'
 import { verifyHeaderCookie } from '~/utils/actions/verifyHeaderCookie'
 import { safeParseSchema } from '~/utils/actions/safeParseSchema'
 import { getPatchById } from '~/app/api/patch/get'
-import { getPatchIntroduction } from '~/app/api/patch/introduction/route'
+import { GET as getPatchIntroductionRoute } from '~/app/api/patch/introduction/route'
 import { updatePatchViews } from '~/app/api/patch/views/put'
+import { callRouteGet } from '~/utils/actions/callRouteHandler'
 
 const uniqueIdSchema = z.object({
   uniqueId: z.string().min(8).max(8)
@@ -20,7 +21,11 @@ export const kunGetPatchActions = cache(
     }
     const payload = await verifyHeaderCookie()
 
-    const response = await getPatchById(input, payload?.uid ?? 0)
+    const response = await getPatchById(
+      input,
+      payload?.uid ?? 0,
+      payload?.role ?? 0
+    )
     return response
   }
 )
@@ -32,7 +37,11 @@ export const kunGetPatchIntroductionActions = cache(
       return input
     }
 
-    const response = await getPatchIntroduction(input)
+    const response = await callRouteGet(
+      getPatchIntroductionRoute,
+      '/api/patch/introduction',
+      input
+    )
     return response
   }
 )

@@ -1,11 +1,11 @@
 'use client'
 
 import { Radio, RadioGroup } from '@heroui/react'
-import { ErrorType } from '../share'
 import {
   RESOURCE_SECTION_MAP,
   SUPPORTED_RESOURCE_SECTION
 } from '~/constants/resource'
+import type { ErrorType } from '../share'
 
 interface Props {
   errors: ErrorType
@@ -20,16 +20,16 @@ export const ResourceSectionSelect = ({
 }: Props) => {
   return (
     <div className="space-y-2">
-      <h3 className="text-lg font-medium">请选择资源的类别</h3>
+      <h3 className="text-lg font-medium">资源分区</h3>
       <RadioGroup
         value={section}
         onValueChange={setSection}
         isInvalid={!!errors.section}
         errorMessage={errors.section?.message}
       >
-        {SUPPORTED_RESOURCE_SECTION.map((section) => (
-          <Radio key={section} value={section}>
-            {RESOURCE_SECTION_MAP[section]}
+        {SUPPORTED_RESOURCE_SECTION.map((item) => (
+          <Radio key={item} value={item}>
+            {RESOURCE_SECTION_MAP[item]}
           </Radio>
         ))}
       </RadioGroup>

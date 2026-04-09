@@ -1,24 +1,27 @@
 import { Button } from '@heroui/button'
 import { ChevronRight } from 'lucide-react'
 import { GalgameCard } from '~/components/galgame/Card'
-import { ResourceCard } from '~/components/resource/ResourceCard'
+import { NsfwVisibilityHint } from '~/components/kun/NsfwVisibilityHint'
 import Link from 'next/link'
+import { FeaturedPostAdvertisements } from './FeaturedPostAdvertisements'
 import { HomeHero } from './hero/HomeHero'
-import type { HomeResource } from '~/types/api/home'
 
 interface Props {
   galgames: GalgameCard[]
-  resources: HomeResource[]
+  nsfwHiddenCount?: number
 }
 
-export const HomeContainer = ({ galgames, resources }: Props) => {
+export const HomeContainer = async ({
+  galgames,
+  nsfwHiddenCount = 0
+}: Props) => {
   return (
-    <div className="mx-auto space-y-8 max-w-7xl">
+    <div className="mx-auto max-w-7xl space-y-8">
       <HomeHero />
 
       <section className="space-y-6">
         <div className="flex items-center space-x-4">
-          <h2 className="text-lg font-bold sm:text-2xl">最新 Galgame</h2>
+          <h2 className="text-lg font-bold sm:text-2xl">最新游戏</h2>
           <Button
             variant="light"
             as={Link}
@@ -29,34 +32,15 @@ export const HomeContainer = ({ galgames, resources }: Props) => {
             查看更多
           </Button>
         </div>
+        <NsfwVisibilityHint count={nsfwHiddenCount} />
         <div className="grid grid-cols-2 gap-2 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
+          <FeaturedPostAdvertisements />
           {galgames.map((galgame) => (
             <GalgameCard
               key={galgame.id}
               patch={galgame}
               openOnNewTab={false}
             />
-          ))}
-        </div>
-      </section>
-
-      <section className="space-y-6">
-        <div className="flex items-center space-x-4">
-          <h2 className="text-lg font-bold sm:text-2xl">最新补丁资源下载</h2>
-          <Button
-            variant="light"
-            as={Link}
-            color="primary"
-            endContent={<ChevronRight className="size-4" />}
-            href="/resource"
-          >
-            查看更多
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-1 gap-2 sm:gap-6 md:grid-cols-2">
-          {resources.map((resource) => (
-            <ResourceCard key={resource.id} resource={resource} />
           ))}
         </div>
       </section>

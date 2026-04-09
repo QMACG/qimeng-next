@@ -1,20 +1,15 @@
 'use client'
 
-import {
-  Button,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  Textarea,
-  Tooltip,
-  useDisclosure
-} from '@heroui/react'
-import { useState } from 'react'
+import { useRouter } from '@bprogress/next'
+import { Button, Tooltip } from '@heroui/react'
 import toast from 'react-hot-toast'
-import { kunFetchPost } from '~/utils/kunFetch'
 import { MessageCircleQuestion } from 'lucide-react'
+import {
+  buildPatchFeedbackPrefill,
+  FEEDBACK_COMMENTS_HASH,
+  FEEDBACK_DOC_PATH
+} from '~/constants/feedback'
+import { useUserStore } from '~/store/userStore'
 import type { Patch } from '~/types/api/patch'
 
 interface Props {
@@ -22,69 +17,32 @@ interface Props {
 }
 
 export const FeedbackButton = ({ patch }: Props) => {
-  const { isOpen, onOpen, onClose } = useDisclosure()
-  const [inputValue, setInputValue] = useState('')
-  const [submitting, setSubmitting] = useState(false)
+  const router = useRouter()
+  const user = useUserStore((state) => state.user)
 
-  const handleSubmitFeedback = async () => {
-    setSubmitting(true)
-    const res = await kunFetchPost<KunResponse<{}>>('/patch/feedback', {
-      patchId: patch.id,
-      content: inputValue
-    })
-    if (typeof res === 'string') {
-      toast.error(res)
-    } else {
-      setInputValue('')
-      toast.success('提交反馈成功')
+  const handleOpenFeedback = () => {
+    if (!user.uid) {
+      toast.error('请先登录后再提交反馈')
+      return
     }
-    onClose()
-    setSubmitting(false)
+
+    const prefill = encodeURIComponent(buildPatchFeedbackPrefill(patch.name))
+    router.push(
+      `${FEEDBACK_DOC_PATH}?prefill=${prefill}#${FEEDBACK_COMMENTS_HASH}`
+    )
   }
 
   return (
-    <>
-      <Tooltip content="游戏反馈">
-        <Button
-          variant="bordered"
-          isIconOnly
-          aria-label="游戏反馈"
-          onPress={onOpen}
-          size="sm"
-        >
-          <MessageCircleQuestion className="size-4" />
-        </Button>
-      </Tooltip>
-
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalContent>
-          <ModalHeader className="flex flex-col gap-1">
-            提交 Galgame 反馈
-          </ModalHeader>
-          <ModalBody>
-            <Textarea
-              label={`游戏 ${patch.name} 的反馈`}
-              isRequired
-              placeholder="请填写反馈内容 (游戏错误, 资源失效, 游戏介绍错误等等, 请尽可能详细并指明具体的位置)"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-            />
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="light" onPress={onClose}>
-              取消
-            </Button>
-            <Button
-              color="primary"
-              onPress={handleSubmitFeedback}
-              isDisabled={submitting}
-              isLoading={submitting}
-            >
-              提交
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-    </>
+    <Tooltip content="游戏反馈">
+      <Button
+        variant="bordered"
+        isIconOnly
+        aria-label="游戏反馈"
+        onPress={handleOpenFeedback}
+        size="sm"
+      >
+        <MessageCircleQuestion className="size-4" />
+      </Button>
+    </Tooltip>
   )
 }

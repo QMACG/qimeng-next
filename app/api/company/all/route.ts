@@ -1,10 +1,11 @@
-import { z } from 'zod'
+﻿import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '~/prisma/index'
 import { getCompanySchema } from '~/validations/company'
 import { kunParseGetQuery } from '~/app/api/utils/parseQuery'
+import { parseJsonStringArray } from '~/utils/prismaJson'
 
-export const getCompany = async (input: z.infer<typeof getCompanySchema>) => {
+const getCompany = async (input: z.infer<typeof getCompanySchema>) => {
   const { page, limit } = input
   const offset = (page - 1) * limit
 
@@ -23,7 +24,13 @@ export const getCompany = async (input: z.infer<typeof getCompanySchema>) => {
     prisma.patch_company.count()
   ])
 
-  return { companies, total }
+  return {
+    companies: companies.map((company) => ({
+      ...company,
+      alias: parseJsonStringArray(company.alias)
+    })),
+    total
+  }
 }
 
 export const GET = async (req: NextRequest) => {
@@ -35,3 +42,4 @@ export const GET = async (req: NextRequest) => {
   const response = await getCompany(input)
   return NextResponse.json(response)
 }
+

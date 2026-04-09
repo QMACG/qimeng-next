@@ -2,22 +2,23 @@
 
 import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
-import { KunLoading } from '~/components/kun/Loading'
-import { kunFetchPost } from '~/utils/kunFetch'
-import { errorReporter, kunErrorHandler } from '~/utils/kunErrorHandler'
-import { KunHeader } from '~/components/kun/Header'
-import { GalgameCard } from '~/components/galgame/Card'
-import { useSearchStore } from '~/store/searchStore'
-import { SearchHistory } from './SearchHistory'
-import { KunPagination } from '~/components/kun/Pagination'
-import { SearchSuggestion } from './Suggestion'
-import { SearchOption } from './Option'
 import { useDebounce } from 'use-debounce'
-import { SearchInput } from './Input'
 import { FilterBar } from '~/components/galgame/FilterBar'
+import { GalgameCard } from '~/components/galgame/Card'
+import { KunHeader } from '~/components/kun/Header'
+import { KunLoading } from '~/components/kun/Loading'
+import { NsfwVisibilityHint } from '~/components/kun/NsfwVisibilityHint'
+import { KunPagination } from '~/components/kun/Pagination'
 import { useSettingStore } from '~/store/settingStore'
-import type { SearchSuggestionType } from '~/types/api/search'
+import { useSearchStore } from '~/store/searchStore'
+import { errorReporter, kunErrorHandler } from '~/utils/kunErrorHandler'
+import { kunFetchPost } from '~/utils/kunFetch'
 import type { SortField, SortOrder } from '~/components/galgame/_sort'
+import type { SearchResponse, SearchSuggestionType } from '~/types/api/search'
+import { SearchHistory } from './SearchHistory'
+import { SearchInput } from './Input'
+import { SearchOption } from './Option'
+import { SearchSuggestion } from './Suggestion'
 
 const MAX_HISTORY_ITEMS = 10
 
@@ -28,30 +29,23 @@ export const SearchPage = () => {
   const [debouncedQuery] = useDebounce(query, 500)
   const [hasSearched, setHasSearched] = useState(false)
   const [patches, setPatches] = useState<GalgameCard[]>([])
+  const [hiddenCount, setHiddenCount] = useState(0)
   const [loading, setLoading] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [selectedSuggestions, setSelectedSuggestions] = useState<
     SearchSuggestionType[]
   >([])
-
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
-  const [selectedType, setSelectedType] = useState<string>('all')
-  const [selectedLanguage, setSelectedLanguage] = useState<string>('all')
-  const [selectedPlatform, setSelectedPlatform] = useState<string>('all')
   const [sortField, setSortField] = useState<SortField>('resource_update_time')
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
-  const [selectedYears, setSelectedYears] = useState<string[]>(['all'])
-  const [selectedMonths, setSelectedMonths] = useState<string[]>(['all'])
-  const [minRatingCount, setMinRatingCount] = useState(10)
-  const [debouncedMinRatingCount] = useDebounce(minRatingCount, 400)
-
   const [showHistory, setShowHistory] = useState(false)
+
   const searchData = useSearchStore((state) => state.data)
   const setSearchData = useSearchStore((state) => state.setData)
 
   const settings = useSettingStore((state) => state.data)
-  const isNSFWEnabled =
+  const isRestrictedContentEnabled =
     settings.kunNsfwEnable === 'nsfw' || settings.kunNsfwEnable === 'all'
 
   const addToHistory = (suggestions: SearchSuggestionType[]) => {
@@ -60,17 +54,18 @@ export const SearchPage = () => {
     }
 
     const entryKey = suggestions
-      .map((s) => `${s.type}:${s.name}`)
+      .map((item) => `${item.type}:${item.name}`)
       .sort()
       .join('|')
 
     const newHistory = [
       suggestions,
-      ...searchData.searchHistory.filter((item) => {
-        const itemKey = item
-          .map((s) => `${s.type}:${s.name}`)
+      ...searchData.searchHistory.filter((historyItem) => {
+        const itemKey = historyItem
+          .map((item) => `${item.type}:${item.name}`)
           .sort()
           .join('|')
+
         return itemKey !== entryKey
       })
     ].slice(0, MAX_HISTORY_ITEMS)
@@ -91,30 +86,16 @@ export const SearchPage = () => {
     setShowSuggestions(false)
 
     try {
-      const response = await kunFetchPost<
-        | {
-            galgames: GalgameCard[]
-            total: number
-          }
-        | string
-      >('/search', {
+      const response = await kunFetchPost<SearchResponse | string>('/search', {
         queryString: JSON.stringify(selectedSuggestions),
         limit: 12,
         searchOption: {
           searchInIntroduction: searchData.searchInIntroduction,
-          searchInAlias: searchData.searchInAlias,
           searchInTag: searchData.searchInTag
         },
-
         page: currentPage,
-        selectedType,
-        selectedLanguage,
-        selectedPlatform,
         sortField,
-        sortOrder,
-        selectedYears,
-        selectedMonths,
-        minRatingCount: sortField === 'rating' ? debouncedMinRatingCount : 0
+        sortOrder
       })
 
       if (requestId !== latestSearchRequestIdRef.current) {
@@ -125,12 +106,16 @@ export const SearchPage = () => {
         kunErrorHandler(response, () => {})
         setPatches([])
         setTotal(0)
+        setHiddenCount(0)
         setHasSearched(true)
         return
       }
 
       setPatches(Array.isArray(response.galgames) ? response.galgames : [])
       setTotal(typeof response.total === 'number' ? response.total : 0)
+      setHiddenCount(
+        typeof response.hiddenCount === 'number' ? response.hiddenCount : 0
+      )
       setHasSearched(true)
       addToHistory(selectedSuggestions)
     } catch (error) {
@@ -140,6 +125,7 @@ export const SearchPage = () => {
 
       setPatches([])
       setTotal(0)
+      setHiddenCount(0)
       setHasSearched(true)
       errorReporter(error)
     } finally {
@@ -157,40 +143,39 @@ export const SearchPage = () => {
 
   useEffect(() => {
     if (selectedSuggestions.length) {
-      handleSearch()
-    } else {
-      latestSearchRequestIdRef.current += 1
-      setPatches([])
-      setHasSearched(false)
-      setPage(1)
-      setTotal(0)
-      setLoading(false)
+      void handleSearch()
+      return
     }
+
+    latestSearchRequestIdRef.current += 1
+    setPatches([])
+    setHiddenCount(0)
+    setHasSearched(false)
+    setPage(1)
+    setTotal(0)
+    setLoading(false)
   }, [
     page,
-    selectedType,
-    selectedLanguage,
-    selectedPlatform,
     sortField,
     sortOrder,
-    selectedYears,
-    selectedMonths,
-    sortField === 'rating' ? debouncedMinRatingCount : null,
     selectedSuggestions,
-    searchData.searchInAlias,
     searchData.searchInIntroduction,
     searchData.searchInTag
   ])
 
+  const showHiddenHint = hiddenCount > 0
+
   return (
-    <div className="relative w-full my-4 space-y-6">
+    <div className="relative my-4 w-full space-y-6">
       <KunHeader
-        name="搜索 Galgame"
+        name="搜索游戏"
         headerEndContent={<SearchOption />}
         endContent={
           <div className="text-default-500">
-            <p>使用游戏标题的一部分作为关键词搜索更容易找到游戏。</p>
-            <p>您可以使用多个关键词和标签的组合进行搜索。</p>
+            <p>
+              使用标题、别名、标签或会社名称作为关键词，会更容易找到想看的内容。
+            </p>
+            <p>也可以组合多个关键词与标签，进一步缩小搜索范围。</p>
           </div>
         }
       />
@@ -205,14 +190,14 @@ export const SearchPage = () => {
         setShowHistory={setShowHistory}
       />
 
-      {showSuggestions && (
+      {showSuggestions ? (
         <SearchSuggestion
           inputRef={inputRef}
           query={debouncedQuery}
           setQuery={setQuery}
           setSelectedSuggestions={setSelectedSuggestions}
         />
-      )}
+      ) : null}
 
       <SearchHistory
         showHistory={showHistory}
@@ -221,35 +206,31 @@ export const SearchPage = () => {
       />
 
       <FilterBar
-        selectedType={selectedType}
-        setSelectedType={setSelectedType}
         sortField={sortField}
         setSortField={setSortField}
         sortOrder={sortOrder}
         setSortOrder={setSortOrder}
-        selectedLanguage={selectedLanguage}
-        setSelectedLanguage={setSelectedLanguage}
-        selectedPlatform={selectedPlatform}
-        setSelectedPlatform={setSelectedPlatform}
-        selectedYears={selectedYears}
-        setSelectedYears={setSelectedYears}
-        selectedMonths={selectedMonths}
-        setSelectedMonths={setSelectedMonths}
-        minRatingCount={minRatingCount}
-        setMinRatingCount={setMinRatingCount}
       />
 
       {loading ? (
         <KunLoading hint="正在搜索中..." />
       ) : (
-        <div>
-          <div className="grid grid-cols-2 gap-2 mx-auto mb-8 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {patches.map((pa) => (
-              <GalgameCard key={pa.id} patch={pa} />
-            ))}
-          </div>
+        <div className="space-y-6">
+          {patches.length > 0 ? (
+            <>
+              {showHiddenHint ? (
+                <NsfwVisibilityHint count={hiddenCount} />
+              ) : null}
 
-          {total > 12 && (
+              <div className="mx-auto mb-8 grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+                {patches.map((patch) => (
+                  <GalgameCard key={patch.id} patch={patch} />
+                ))}
+              </div>
+            </>
+          ) : null}
+
+          {total > 12 ? (
             <div className="flex justify-center">
               <KunPagination
                 total={Math.ceil(total / 12)}
@@ -258,28 +239,48 @@ export const SearchPage = () => {
                 isLoading={loading}
               />
             </div>
-          )}
+          ) : null}
 
-          {hasSearched && patches.length === 0 && (
-            <div className="flex flex-col items-center justify-center space-y-4 size-full">
-              <Image
-                className="rounded-2xl"
-                src="/null.webp"
-                alt="未找到相关内容"
-                width={150}
-                height={150}
-                priority
-              />
-              <div className="space-y-1 text-center">
-                <p>未找到相关内容</p>
-                <p>
-                  {isNSFWEnabled
-                    ? '请尝试使用游戏的日文原名搜索'
-                    : '请尝试使用游戏的日文原名搜索或打开 NSFW'}
-                </p>
+          {hasSearched && patches.length === 0 ? (
+            showHiddenHint ? (
+              <div className="space-y-4">
+                <NsfwVisibilityHint count={hiddenCount} />
+                <div className="flex size-full flex-col items-center justify-center space-y-4">
+                  <Image
+                    className="rounded-2xl"
+                    src="/null.webp"
+                    alt="当前列表还有内容未显示"
+                    width={150}
+                    height={150}
+                    priority
+                  />
+                  <div className="space-y-1 text-center">
+                    <p>当前列表还有内容未显示</p>
+                    <p>你可以先调整内容显示范围，再重新查看搜索结果。</p>
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="flex size-full flex-col items-center justify-center space-y-4">
+                <Image
+                  className="rounded-2xl"
+                  src="/null.webp"
+                  alt="未找到相关内容"
+                  width={150}
+                  height={150}
+                  priority
+                />
+                <div className="space-y-1 text-center">
+                  <p>未找到相关内容</p>
+                  <p>
+                    {isRestrictedContentEnabled
+                      ? '请尝试使用游戏的日文原名搜索。'
+                      : '请尝试使用游戏的日文原名搜索，或在设置中调整内容显示范围。'}
+                  </p>
+                </div>
+              </div>
+            )
+          ) : null}
         </div>
       )}
     </div>

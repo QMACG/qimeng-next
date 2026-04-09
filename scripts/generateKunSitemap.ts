@@ -1,91 +1,128 @@
 import { writeFile } from 'fs/promises'
-import { globby } from 'globby'
 import prettier from 'prettier'
-import { getKunDynamicPatches } from './dynamic-routes/getKunDynamicPatches'
-import { getKunDynamicBlog } from './dynamic-routes/getKunDynamicBlog'
+import { prisma } from '~/prisma/index'
+import { CONTENT_VISIBILITY } from '~/constants/contentVisibility'
 
-const WEBSITE_URL = process.env.NEXT_PUBLIC_KUN_PATCH_ADDRESS_PROD
+const WEBSITE_URL =
+  process.env.KUN_VISUAL_NOVEL_SITE_URL ||
+  process.env.NEXT_PUBLIC_KUN_PATCH_ADDRESS_PROD ||
+  process.env.NEXT_PUBLIC_KUN_PATCH_ADDRESS_DEV ||
+  'http://127.0.0.1:3000'
+
+const normalizeSiteUrl = (value: string) => value.replace(/\/+$/, '')
+
+const escapeXml = (value: string) =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;')
+
+interface SitemapEntry {
+  loc: string
+  lastmod?: string
+  changefreq?: 'daily' | 'weekly' | 'monthly'
+  priority?: number
+}
+
+const buildEntry = (entry: SitemapEntry) => `
+  <url>
+    <loc>${escapeXml(entry.loc)}</loc>
+    ${entry.lastmod ? `<lastmod>${entry.lastmod}</lastmod>` : ''}
+    ${entry.changefreq ? `<changefreq>${entry.changefreq}</changefreq>` : ''}
+    ${typeof entry.priority === 'number' ? `<priority>${entry.priority.toFixed(1)}</priority>` : ''}
+  </url>
+`
 
 const generateKunSitemap = async () => {
+  const baseUrl = normalizeSiteUrl(WEBSITE_URL)
+
   try {
-    const pages = await globby([
-      'app/**/*.tsx',
-      '!app/**/_*.tsx',
-      '!app/**/layout.tsx',
-      '!app/**/providers.tsx',
-      '!app/**/loading.tsx',
-      '!app/**/error.tsx',
-      '!app/**/*.test.tsx',
-      '!app/**/components/**',
-      '!app/**/[id]/**',
-      '!app/**/admin/**',
-      '!app/**/edit/**',
-      '!app/**/message/**',
-      '!app/**/user/**',
-      '!app/**/doc/**/**'
+    const [patches, posts, tags, companies] = await Promise.all([
+      prisma.patch.findMany({
+        where: { content_limit: 'sfw', visibility: CONTENT_VISIBILITY.public },
+        select: {
+          unique_id: true,
+          updated: true
+        }
+      }),
+      prisma.doc_post.findMany({
+        where: { visibility: CONTENT_VISIBILITY.public },
+        select: {
+          slug: true,
+          updated: true
+        }
+      }),
+      prisma.patch_tag.findMany({
+        select: {
+          id: true,
+          updated: true
+        }
+      }),
+      prisma.patch_company.findMany({
+        select: {
+          id: true,
+          updated: true
+        }
+      })
     ])
 
-    const dynamicPatches = await getKunDynamicPatches()
-    const dynamicBlogs = getKunDynamicBlog()
+    const staticRoutes: SitemapEntry[] = [
+      { loc: `${baseUrl}/`, changefreq: 'daily', priority: 1.0 },
+      { loc: `${baseUrl}/galgame`, changefreq: 'daily', priority: 0.9 },
+      { loc: `${baseUrl}/doc`, changefreq: 'weekly', priority: 0.8 },
+      { loc: `${baseUrl}/tag`, changefreq: 'weekly', priority: 0.7 },
+      { loc: `${baseUrl}/company`, changefreq: 'weekly', priority: 0.7 },
+      { loc: `${baseUrl}/ranking`, changefreq: 'daily', priority: 0.7 },
+      { loc: `${baseUrl}/friend-link`, changefreq: 'monthly', priority: 0.4 }
+    ]
+
+    const patchRoutes: SitemapEntry[] = patches.map((patch) => ({
+      loc: `${baseUrl}/${patch.unique_id}`,
+      lastmod: patch.updated.toISOString(),
+      changefreq: 'daily',
+      priority: 0.9
+    }))
+
+    const postRoutes: SitemapEntry[] = posts.map((post) => ({
+      loc: `${baseUrl}/doc/${post.slug}`,
+      lastmod: post.updated.toISOString(),
+      changefreq: 'weekly',
+      priority: 0.8
+    }))
+
+    const tagRoutes: SitemapEntry[] = tags.map((tag) => ({
+      loc: `${baseUrl}/tag/${tag.id}`,
+      lastmod: tag.updated.toISOString(),
+      changefreq: 'weekly',
+      priority: 0.6
+    }))
+
+    const companyRoutes: SitemapEntry[] = companies.map((company) => ({
+      loc: `${baseUrl}/company/${company.id}`,
+      lastmod: company.updated.toISOString(),
+      changefreq: 'weekly',
+      priority: 0.6
+    }))
 
     const sitemap = `
       <?xml version="1.0" encoding="UTF-8"?>
       <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-        ${pages
-          .concat(['app/doc/page.tsx'])
-          .map((page) => {
-            const path = page
-              .replace('app', '')
-              .replace('/page.tsx', '')
-              .replace('.tsx', '')
-            const route = path === '/index' ? '' : path
-
-            return `
-              <url>
-                <loc>${WEBSITE_URL}${route}</loc>
-                <lastmod>${new Date().toISOString()}</lastmod>
-                <changefreq>daily</changefreq>
-                <priority>0.7</priority>
-              </url>
-            `
-          })
+        ${[...staticRoutes, ...patchRoutes, ...postRoutes, ...tagRoutes, ...companyRoutes]
+          .map(buildEntry)
           .join('')}
-        ${dynamicPatches
-          .map(
-            (patch) => `
-              <url>
-                <loc>${WEBSITE_URL}${patch.path}</loc>
-                <lastmod>${patch.lastmod}</lastmod>
-                <changefreq>daily</changefreq>
-                <priority>0.8</priority>
-              </url>
-            `
-          )
-          .join('')}
-          ${dynamicBlogs
-            .map(
-              (patch) => `
-                <url>
-                  <loc>${WEBSITE_URL}${patch.path}</loc>
-                  <lastmod>${patch.lastmod}</lastmod>
-                  <changefreq>weekly</changefreq>
-                  <priority>0.9</priority>
-                </url>
-              `
-            )
-            .join('')}
       </urlset>
     `
 
-    const formatted = await prettier.format(sitemap, {
-      parser: 'html'
-    })
-
+    const formatted = await prettier.format(sitemap, { parser: 'html' })
     await writeFile('public/sitemap.xml', formatted)
-    console.log('✅ Sitemap generated successfully!')
+    console.log('Sitemap generated successfully!')
   } catch (error) {
     console.error('Error generating sitemap:', error)
     process.exit(1)
+  } finally {
+    await prisma.$disconnect()
   }
 }
 

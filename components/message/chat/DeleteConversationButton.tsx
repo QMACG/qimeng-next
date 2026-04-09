@@ -55,7 +55,7 @@ export const DeleteConversationButton = ({
         color="danger"
         size="sm"
         isIconOnly
-        aria-label="删除该私聊"
+        aria-label="删除当前私聊"
         onPress={onOpen}
       >
         <Trash2 className="size-4" />
@@ -65,7 +65,7 @@ export const DeleteConversationButton = ({
         <ModalContent>
           <ModalHeader>删除私聊</ModalHeader>
           <ModalBody>
-            <p>确定要删除与 {otherUserName} 的私聊吗？</p>
+            <p>确认删除与 {otherUserName} 的私聊吗？</p>
             <p className="text-sm text-danger">
               删除后会同步清空该会话中的全部消息，且不可撤销。
             </p>

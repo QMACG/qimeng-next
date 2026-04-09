@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { prisma } from '~/prisma/index'
 import { patchResourceUpdateSchema } from '~/validations/patch'
-import { deletePatchResource, uploadPatchResource, recalcPatchType } from './_helper'
+import { recalcPatchType } from './_helper'
 import type { PatchResource } from '~/types/api/patch'
 
 export const updatePatchResource = async (
@@ -9,7 +9,7 @@ export const updatePatchResource = async (
   uid: number,
   userRole: number
 ) => {
-  const { resourceId, patchId, content, ...resourceData } = input
+  const { resourceId, patchId, storage, section, content, name } = input
   const resource = await prisma.patch_resource.findUnique({
     where: { id: resourceId }
   })
@@ -18,40 +18,26 @@ export const updatePatchResource = async (
   }
 
   const resourceUserUid = resource.user_id
-  if (resource.user_id !== uid && userRole < 3) {
-    return '您没有权限更改该资源'
+  if (resource.user_id !== uid && userRole < 2) {
+    return '您没有权限修改该资源'
   }
 
   const currentPatch = await prisma.patch.findUnique({
     where: { id: patchId },
-    select: { name: true }
+    select: { unique_id: true }
   })
   if (!currentPatch) {
-    return '未找到该资源对应的 Galgame 信息, 请确认 Galgame 存在'
+    return '未找到该资源对应的游戏'
   }
 
-  let newContent: string
-  if (resource.storage !== 's3' || resource.content === content) {
-    newContent = content
-  } else {
-    await deletePatchResource(
-      resource.content,
-      resource.patch_id,
-      resource.hash
-    )
-    const result = await uploadPatchResource(patchId, resourceData.hash)
-    if (typeof result === 'string') {
-      return result
-    }
-    newContent = result.downloadLink
-  }
-
-  return await prisma.$transaction(async (prisma) => {
+  return prisma.$transaction(async (prisma) => {
     const newResource = await prisma.patch_resource.update({
       where: { id: resourceId, user_id: resourceUserUid },
       data: {
-        content: newContent,
-        ...resourceData
+        name,
+        storage,
+        section,
+        content
       },
       include: {
         user: {
@@ -81,15 +67,15 @@ export const updatePatchResource = async (
       section: newResource.section,
       uniqueId: newResource.patch.unique_id,
       storage: newResource.storage,
-      size: newResource.size,
-      type: newResource.type,
-      language: newResource.language,
-      note: newResource.note,
-      hash: newResource.hash,
+      size: '',
+      type: [],
+      language: [],
+      note: '',
+      hash: '',
       content: newResource.content,
-      code: newResource.code,
-      password: newResource.password,
-      platform: newResource.platform,
+      code: '',
+      password: '',
+      platform: [],
       likeCount: 0,
       isLike: false,
       status: newResource.status,
@@ -101,7 +87,8 @@ export const updatePatchResource = async (
         name: newResource.user.name,
         avatar: newResource.user.avatar,
         patchCount: newResource.user._count.patch_resource,
-        role: newResource.user.role
+        role: newResource.user.role,
+        showContributionStats: true
       }
     }
 

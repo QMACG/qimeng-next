@@ -120,7 +120,7 @@ export const RatingCard = ({
 
     onDeleted(rating.id)
     onCloseDelete()
-    toast.success('Galgame 评价删除成功')
+    toast.success('评价删除成功')
   }
 
   return (

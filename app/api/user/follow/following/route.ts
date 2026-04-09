@@ -1,4 +1,4 @@
-import { z } from 'zod'
+﻿import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParseGetQuery } from '~/app/api/utils/parseQuery'
 import { prisma } from '~/prisma/index'
@@ -6,7 +6,7 @@ import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 import { getUserFollowStatusSchema } from '~/validations/user'
 import type { UserFollow } from '~/types/api/user'
 
-export const getUserFollowing = async (
+const getUserFollowing = async (
   input: z.infer<typeof getUserFollowStatusSchema>,
   currentUserUid: number | undefined
 ) => {
@@ -57,3 +57,4 @@ export const GET = async (req: NextRequest) => {
   const response = await getUserFollowing(input, payload?.uid)
   return NextResponse.json(response)
 }
+

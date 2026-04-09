@@ -4,18 +4,14 @@ import { Company } from './company'
 export interface Patch {
   id: number
   uniqueId: string
-  vndbId: string | null
-  vndbRelationId: string | null
-  bangumiId: number | null
-  steamId: number | null
-  dlsiteCode: string | null
   name: string
   banner: string
   introduction: string
   status: number
   view: number
   download: number
-  alias: string[]
+  showViewCount?: boolean
+  showDownloadCount?: boolean
   type: string[]
   language: string[]
   platform: string[]
@@ -51,14 +47,9 @@ export interface PatchRatingSummary {
 }
 
 export interface PatchIntroduction {
-  vndbId: string | null
-  vndbRelationId?: string | null
-  bangumiId?: number | null
-  steamId?: number | null
-  dlsiteCode?: string | null
   introduction: string
+  resourceNote: string
   released: string
-  alias: string[]
   tag: Tag[]
   company: Company[]
   resourceUpdateTime: Date | string
@@ -66,9 +57,13 @@ export interface PatchIntroduction {
   updated: Date | string
 }
 
+export interface PatchResourcePayload {
+  resources: PatchResource[]
+  note: string
+}
+
 export interface PatchUpdate {
   name: string
-  alias: string[]
   introduction: string
 }
 
@@ -96,6 +91,7 @@ export interface PatchResource {
   user: KunUser & {
     patchCount: number
     role: number
+    showContributionStats?: boolean
   }
 }
 

@@ -1,4 +1,4 @@
-import { Card, CardBody, CardHeader } from '@heroui/card'
+﻿import { Card, CardBody, CardHeader } from '@heroui/card'
 import Image from 'next/image'
 import { kunMoyuMoe } from '~/config/moyu-moe'
 
@@ -14,7 +14,7 @@ export const LoginContainer = ({ title, children }: Props) => {
         <CardHeader className="flex flex-col items-center pt-8 space-y-6">
           <div className="flex items-center space-x-2 font-medium cursor-default text-medium text-default-500">
             <Image
-              src="/favicon.webp"
+              src="/favicon.ico"
               priority={true}
               alt={kunMoyuMoe.titleShort}
               width={36}
@@ -33,3 +33,4 @@ export const LoginContainer = ({ title, children }: Props) => {
     </div>
   )
 }
+

@@ -1,11 +1,11 @@
-import { z } from 'zod'
+﻿import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParsePostBody } from '~/app/api/utils/parseQuery'
 import { createMessage } from '~/app/api/utils/message'
 import { createMessageSchema } from '~/validations/message'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 
-export const create = async (
+const create = async (
   input: z.infer<typeof createMessageSchema>,
   uid: number
 ) => {
@@ -35,3 +35,4 @@ export const POST = async (req: NextRequest) => {
   const response = await create(input, payload.uid)
   return NextResponse.json(response)
 }
+

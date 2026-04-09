@@ -22,12 +22,12 @@ export const SearchCompanies: FC<SearchCompaniesProps> = ({
       <Input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="可以用空格分隔您的搜索关键字"
+        placeholder="可用空格分隔多个关键词"
         endContent={
           <Button
             isIconOnly
             variant="light"
-            aria-label="搜索 Galgame 会社"
+            aria-label="搜索会社"
             onPress={handleSearch}
           >
             <Search />
@@ -37,7 +37,7 @@ export const SearchCompanies: FC<SearchCompaniesProps> = ({
           if (e.key === 'Enter') handleSearch()
         }}
       />
-      {searching && <KunLoading hint="正在搜索会社数据..." />}
+      {searching && <KunLoading hint="正在搜索会社..." />}
     </>
   )
 }

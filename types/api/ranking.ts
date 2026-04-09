@@ -18,6 +18,8 @@ export interface RankingCard {
   banner: string
   view: number
   download: number
+  showViewCount?: boolean
+  showDownloadCount?: boolean
   averageRating: number
   ratingCount: number
   positiveRecommendCount: number

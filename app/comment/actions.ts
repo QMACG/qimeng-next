@@ -3,7 +3,8 @@
 import { z } from 'zod'
 import { safeParseSchema } from '~/utils/actions/safeParseSchema'
 import { commentSchema } from '~/validations/comment'
-import { getComment } from '~/app/api/comment/route'
+import { GET as getCommentRoute } from '~/app/api/comment/route'
+import { callRouteGet } from '~/utils/actions/callRouteHandler'
 
 export const kunGetActions = async (params: z.infer<typeof commentSchema>) => {
   const input = safeParseSchema(commentSchema, params)
@@ -11,6 +12,6 @@ export const kunGetActions = async (params: z.infer<typeof commentSchema>) => {
     return input
   }
 
-  const response = await getComment(input)
+  const response = await callRouteGet(getCommentRoute, '/api/comment', input)
   return response
 }

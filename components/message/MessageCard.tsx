@@ -1,8 +1,7 @@
 import Link from 'next/link'
-import { Card, CardBody } from '@heroui/card'
 import { Avatar } from '@heroui/avatar'
+import { Card, CardBody } from '@heroui/card'
 import { Chip } from '@heroui/chip'
-import { formatTimeDifference } from '~/utils/time'
 import {
   AtSign,
   Bell,
@@ -14,8 +13,9 @@ import {
   ThumbsUp,
   Users
 } from 'lucide-react'
-import { MESSAGE_TYPE_MAP } from '~/constants/message'
 import { KunAvatar } from '~/components/kun/floating-card/KunAvatar'
+import { MESSAGE_TYPE_MAP } from '~/constants/message'
+import { formatTimeDifference } from '~/utils/time'
 import type { Message } from '~/types/api/message'
 
 interface Props {
@@ -75,17 +75,15 @@ export const MessageCard = ({ msg }: Props) => {
             }}
           />
         ) : (
-          <Avatar src="/favicon.webp" name="系统消息" />
+          <Avatar src="/favicon.ico" name="系统消息" />
         )}
 
         <div className="flex-1 space-y-2">
           <div className="flex items-center gap-2">
             {getNotificationIcon(msg.type)}
-
             <span className="font-semibold">
               {msg.sender ? msg.sender.name : '系统'}
             </span>
-
             <span>{MESSAGE_TYPE_MAP[msg.type]}</span>
           </div>
           <p className="text-default-600">{msg.content}</p>
@@ -93,13 +91,14 @@ export const MessageCard = ({ msg }: Props) => {
             {formatTimeDifference(msg.created)}
           </span>
         </div>
+
         {msg.status === 0 ? (
           <Chip color="danger" size="sm">
             新消息
           </Chip>
         ) : (
           <Chip color="default" size="sm">
-            已阅读
+            已读
           </Chip>
         )}
       </CardBody>

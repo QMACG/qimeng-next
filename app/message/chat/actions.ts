@@ -7,8 +7,12 @@ import {
   getConversationMessagesSchema
 } from '~/validations/conversation'
 import { verifyHeaderCookie } from '~/utils/actions/verifyHeaderCookie'
-import { getConversations } from '~/app/api/message/conversation/route'
-import { getConversationMessages } from '~/app/api/message/conversation/[id]/route'
+import { GET as getConversationsRoute } from '~/app/api/message/conversation/route'
+import { GET as getConversationMessagesRoute } from '~/app/api/message/conversation/[id]/route'
+import {
+  callRouteGet,
+  callRouteGetWithParams
+} from '~/utils/actions/callRouteHandler'
 
 export const kunGetConversationsAction = async (
   params: z.infer<typeof getConversationsSchema>
@@ -22,7 +26,11 @@ export const kunGetConversationsAction = async (
     return '用户登录失效'
   }
 
-  const response = await getConversations(input, payload.uid)
+  const response = await callRouteGet(
+    getConversationsRoute,
+    '/api/message/conversation',
+    input
+  )
   return response
 }
 
@@ -39,10 +47,11 @@ export const kunGetConversationMessagesAction = async (
     return '用户登录失效'
   }
 
-  const response = await getConversationMessages(
-    conversationId,
+  const response = await callRouteGetWithParams(
+    getConversationMessagesRoute,
+    `/api/message/conversation/${conversationId}`,
+    { id: String(conversationId) },
     input,
-    payload.uid
   )
   return response
 }

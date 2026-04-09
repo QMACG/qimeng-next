@@ -16,7 +16,7 @@ export const kunViewport: Viewport = {
 
 export const generateKunMetadata = (): Metadata => {
   if (process.env.KUN_VISUAL_NOVEL_TEST_SITE_LABEL) {
-    return generateNullMetadata('测试站点')
+    return generateNullMetadata(process.env.KUN_VISUAL_NOVEL_TEST_SITE_LABEL)
   }
 
   return {
@@ -29,8 +29,9 @@ export const generateKunMetadata = (): Metadata => {
     keywords: kunMoyuMoe.keywords,
     authors: kunMoyuMoe.author,
     icons: {
-      apple: '/apple-touch-icon.avif',
-      icon: '/favicon.ico'
+      icon: '/favicon.ico',
+      shortcut: '/favicon.ico',
+      apple: '/favicon.ico'
     },
     creator: kunMoyuMoe.creator.name,
     publisher: kunMoyuMoe.publisher.name,

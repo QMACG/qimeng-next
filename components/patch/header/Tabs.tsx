@@ -8,7 +8,6 @@ import type { Dispatch, SetStateAction } from 'react'
 
 interface PatchHeaderProps {
   id: number
-  vndbId: string
   uid?: number
   intro: PatchIntroduction
   selected: string
@@ -17,7 +16,6 @@ interface PatchHeaderProps {
 
 export const PatchHeaderTabs = ({
   id,
-  vndbId,
   uid,
   intro,
   selected,
@@ -25,27 +23,27 @@ export const PatchHeaderTabs = ({
 }: PatchHeaderProps) => {
   return (
     <Tabs
-      className="w-full my-6 overflow-hidden shadow-medium rounded-large"
-      fullWidth={true}
+      className="my-6 w-full overflow-hidden rounded-large shadow-medium"
+      fullWidth
       defaultSelectedKey="introduction"
       onSelectionChange={(value) => {
         setSelected(value.toString())
       }}
       selectedKey={selected}
     >
-      <Tab key="introduction" title="游戏信息" className="p-0 min-w-20">
+      <Tab key="introduction" title="游戏信息" className="min-w-20 p-0">
         <IntroductionTab intro={intro} patchId={Number(id)} uid={uid} />
       </Tab>
 
-      <Tab key="resources" title="资源链接" className="p-0 min-w-20">
-        <ResourceTab id={id} vndbId={vndbId} />
+      <Tab key="resources" title="资源链接" className="min-w-20 p-0">
+        <ResourceTab id={id} />
       </Tab>
 
-      <Tab key="comments" title="讨论版" className="p-0 min-w-20">
+      <Tab key="comments" title="评论" className="min-w-20 p-0">
         <CommentTab id={id} />
       </Tab>
 
-      <Tab key="rating" title="游戏评价" className="p-0 min-w-20">
+      <Tab key="rating" title="评分" className="min-w-20 p-0">
         <RatingTab id={id} />
       </Tab>
     </Tabs>

@@ -1,5 +1,18 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+import { useRouter } from '@bprogress/next'
+import {
+  ArrowLeftRight,
+  CalendarCheck,
+  CircleHelp,
+  LogOut,
+  Lollipop,
+  Settings,
+  Shield,
+  Sparkles,
+  UserRound
+} from 'lucide-react'
 import {
   Dropdown,
   DropdownItem,
@@ -16,59 +29,57 @@ import {
   ModalHeader,
   useDisclosure
 } from '@heroui/modal'
-import {
-  ArrowLeftRight,
-  CalendarCheck,
-  CircleHelp,
-  LogOut,
-  Lollipop,
-  Settings,
-  Sparkles,
-  UserRound
-} from 'lucide-react'
-import { useUserStore } from '~/store/userStore'
-import { useEffect, useState } from 'react'
-import { useRouter } from '@bprogress/next'
-import { kunFetchGet, kunFetchPost } from '~/utils/kunFetch'
 import toast from 'react-hot-toast'
 import { useMounted } from '~/hooks/useMounted'
-import { showKunSooner } from '~/components/kun/Sooner'
+import { useSettingStore } from '~/store/settingStore'
+import { useUserStore } from '~/store/userStore'
+import { kunFetchGet, kunFetchPost } from '~/utils/kunFetch'
 import { kunErrorHandler } from '~/utils/kunErrorHandler'
+import { showKunSooner } from '~/components/kun/Sooner'
 import { NSFWSwitcher } from './NSFWSwitcher'
 import type { UserState } from '~/store/userStore'
 
 export const UserDropdown = () => {
   const router = useRouter()
   const { user, setUser, logout } = useUserStore((state) => state)
+  const resetSettingData = useSettingStore((state) => state.resetData)
   const isMounted = useMounted()
   const [loading, setLoading] = useState(false)
+  const [checking, setChecking] = useState(false)
   const { isOpen, onOpen, onOpenChange } = useDisclosure()
 
   useEffect(() => {
-    if (!isMounted) {
-      return
-    }
-    if (!user.uid) {
+    if (!isMounted || !user.uid) {
       return
     }
 
     const getUserStatus = async () => {
-      const user = await kunFetchGet<UserState>('/user/status')
-      setUser(user)
+      const latestUser = await kunFetchGet<UserState>('/user/status')
+      setUser(latestUser)
     }
-    getUserStatus()
-  }, [isMounted])
+
+    void getUserStatus()
+  }, [isMounted, setUser, user.uid])
 
   const handleLogOut = async () => {
     setLoading(true)
-    await kunFetchPost<KunResponse<{}>>('/user/status/logout')
+    const response = await kunFetchPost<KunResponse<{}> | string>(
+      '/user/status/logout'
+    )
     setLoading(false)
+
+    if (typeof response === 'string') {
+      toast.error(response)
+      return
+    }
+
     logout()
+    resetSettingData()
     router.push('/login')
-    toast.success('您已经成功登出!')
+    router.refresh()
+    toast.success('已退出登录')
   }
 
-  const [checking, setChecking] = useState(false)
   const handleCheckIn = async () => {
     if (checking) {
       return
@@ -80,18 +91,21 @@ export const UserDropdown = () => {
         randomMoemoepoints: number
       }>
     >('/user/status/check-in')
+
     kunErrorHandler(res, (value) => {
       showKunSooner(
         value
-          ? `签到成功! 您今天获得了 ${value.randomMoemoepoints} 萌萌点`
-          : '您的运气不好...今天没有获得萌萌点...'
+          ? `签到成功，今天获得了 ${value.randomMoemoepoints} 萌萌点`
+          : '今天没有获得萌萌点，下次再试试吧'
       )
+
       setUser({
         ...user,
         dailyCheckIn: 1,
         moemoepoint: user.moemoepoint + value.randomMoemoepoints
       })
     })
+
     setChecking(false)
   }
 
@@ -102,7 +116,7 @@ export const UserDropdown = () => {
           <Avatar
             isBordered
             as="button"
-            className="transition-transform shrink-0"
+            className="shrink-0 transition-transform"
             color="secondary"
             name={user.name.charAt(0).toUpperCase()}
             size="sm"
@@ -111,7 +125,7 @@ export const UserDropdown = () => {
           />
         </DropdownTrigger>
         <DropdownMenu
-          aria-label="Profile Actions"
+          aria-label="用户菜单"
           disabledKeys={user.dailyCheckIn ? ['check'] : []}
         >
           <DropdownItem
@@ -137,25 +151,36 @@ export const UserDropdown = () => {
             onPress={() => router.push(`/user/${user.uid}/comment`)}
             startContent={<UserRound className="size-4" />}
           >
-            用户主页
+            个人主页
           </DropdownItem>
+
+          {user.role >= 2 ? (
+            <DropdownItem
+              key="admin"
+              onPress={() => router.push('/admin/galgame')}
+              startContent={<Shield className="size-4" />}
+            >
+              后台管理
+            </DropdownItem>
+          ) : null}
+
           <DropdownItem
             key="settings"
             onPress={() => router.push('/settings/user')}
             startContent={<Settings className="size-4" />}
           >
-            信息设置
+            账户设置
           </DropdownItem>
           <DropdownItem
             key="help_and_feedback"
-            onPress={() => router.push(`/doc/notice/feedback`)}
+            onPress={() => router.push('/doc/help/feedback')}
             startContent={<CircleHelp className="size-4" />}
           >
-            帮助与反馈
+            帮助反馈
           </DropdownItem>
           <DropdownItem
             isReadOnly
-            textValue="NSFW 切换"
+            textValue="内容显示范围"
             key="nsfw_toggle"
             startContent={<ArrowLeftRight className="size-4" />}
           >
@@ -177,7 +202,7 @@ export const UserDropdown = () => {
             startContent={<CalendarCheck className="size-4" />}
             endContent={
               user.dailyCheckIn ? (
-                <span className="text-xs">签到过啦</span>
+                <span className="text-xs">今天已签到</span>
               ) : (
                 <Sparkles className="size-5 text-secondary-500" />
               )
@@ -194,28 +219,27 @@ export const UserDropdown = () => {
           {(onClose) => (
             <>
               <ModalHeader className="flex flex-col gap-1">
-                您确定要登出网站吗?
+                确认退出登录？
               </ModalHeader>
               <ModalBody>
                 <p>
-                  登出将会清除您的登录状态, 但是不会清除您的编辑草稿 (Galgame,
-                  回复等), 您可以稍后继续登录
+                  退出后会清除当前登录状态，并恢复默认内容显示范围，但不会清除本地未提交的草稿。
                 </p>
               </ModalBody>
               <ModalFooter>
                 <Button color="danger" variant="light" onPress={onClose}>
-                  关闭
+                  取消
                 </Button>
                 <Button
                   color="primary"
                   onPress={() => {
-                    handleLogOut()
+                    void handleLogOut()
                     onClose()
                   }}
                   isLoading={loading}
                   disabled={loading}
                 >
-                  确定
+                  确认退出
                 </Button>
               </ModalFooter>
             </>

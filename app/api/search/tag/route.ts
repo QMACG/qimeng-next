@@ -1,17 +1,18 @@
-import { z } from 'zod'
+﻿import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParsePostBody } from '~/app/api/utils/parseQuery'
 import { prisma } from '~/prisma/index'
 import { searchTagSchema } from '~/validations/search'
+import { parseJsonStringArray } from '~/utils/prismaJson'
 
-export const searchTag = async (input: z.infer<typeof searchTagSchema>) => {
+const searchTag = async (input: z.infer<typeof searchTagSchema>) => {
   const { query } = input
 
   const data = await prisma.patch_tag.findMany({
     where: {
       OR: query.flatMap((q) => [
-        { name: { contains: q, mode: 'insensitive' } },
-        { alias: { has: q } }
+        { name: { contains: q } },
+        { alias: { array_contains: [q] } }
       ])
     },
     select: {
@@ -24,9 +25,10 @@ export const searchTag = async (input: z.infer<typeof searchTagSchema>) => {
     take: 100
   })
 
-  const tags = data.map((t) => ({
+  const tags = data.map((tag) => ({
     type: 'tag',
-    ...t
+    ...tag,
+    alias: parseJsonStringArray(tag.alias)
   }))
 
   return tags
@@ -41,3 +43,4 @@ export const POST = async (req: NextRequest) => {
   const response = await searchTag(input)
   return NextResponse.json(response)
 }
+

@@ -3,8 +3,9 @@
 import { z } from 'zod'
 import { safeParseSchema } from '~/utils/actions/safeParseSchema'
 import { adminPaginationSchema } from '~/validations/admin'
-import { getLog } from '~/app/api/admin/log/route'
+import { GET as getLogRoute } from '~/app/api/admin/log/route'
 import { verifyHeaderCookie } from '~/utils/actions/verifyHeaderCookie'
+import { callRouteGet } from '~/utils/actions/callRouteHandler'
 
 export const kunGetActions = async (
   params: z.infer<typeof adminPaginationSchema>
@@ -15,12 +16,11 @@ export const kunGetActions = async (
   }
   const payload = await verifyHeaderCookie()
   if (!payload) {
-    return '用户登陆失效'
+    return '用户登录失效'
   }
   if (payload.role < 3) {
     return '本页面仅管理员可访问'
   }
 
-  const response = await getLog(input)
-  return response
+  return callRouteGet(getLogRoute, '/api/admin/log', input)
 }

@@ -17,39 +17,48 @@ export const deleteUser = async (
     return '未找到用户'
   }
   if (input.uid === uid) {
-    return '请勿删除自己'
+    return '不能删除当前登录账号'
   }
 
   const admin = await prisma.user.findUnique({
     where: { id: uid }
   })
   if (!admin) {
-    return '未找到管理员'
+    return '未找到当前管理员'
   }
 
-  const patchResourceS3Ids = await prisma.patch_resource.findMany({
-    where: { user_id: input.uid, storage: 's3' },
+  if (user.role === 4) {
+    const superAdminCount = await prisma.user.count({
+      where: { role: 4 }
+    })
+    if (superAdminCount <= 1) {
+      return '至少保留一个超级管理员账号'
+    }
+  }
+
+  const patchResources = await prisma.patch_resource.findMany({
+    where: { user_id: input.uid },
     select: { id: true }
   })
-  const resourceIds = patchResourceS3Ids.map((s) => s.id)
+  const resourceIds = patchResources.map((resource) => resource.id)
 
   return prisma.$transaction(
-    async (prisma) => {
+    async (tx) => {
       if (resourceIds.length) {
-        for (const res of resourceIds) {
-          await deleteResource({ resourceId: res }, uid)
+        for (const resourceId of resourceIds) {
+          await deleteResource({ resourceId }, uid)
         }
       }
 
-      await prisma.user.delete({
+      await tx.user.delete({
         where: { id: input.uid }
       })
 
-      await prisma.admin_log.create({
+      await tx.admin_log.create({
         data: {
           type: 'delete',
           user_id: uid,
-          content: `管理员 ${admin.name} 删除了一个用户\n\n${JSON.stringify(user)}`
+          content: `管理员 ${admin.name} 删除了用户\n\n${JSON.stringify(user)}`
         }
       })
 

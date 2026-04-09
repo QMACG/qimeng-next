@@ -1,27 +1,27 @@
 'use client'
 
+import { useState } from 'react'
 import { z } from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
 import { Button } from '@heroui/button'
 import {
+  Input,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader
 } from '@heroui/react'
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 import toast from 'react-hot-toast'
-import { kunFetchPut } from '~/utils/kunFetch'
 import { patchResourceCreateSchema } from '~/validations/patch'
-import { ResourceLinksInput } from '../publish/ResourceLinksInput'
+import { kunFetchPut } from '~/utils/kunFetch'
 import { kunErrorHandler } from '~/utils/kunErrorHandler'
-import { ResourceDetailsForm } from '../publish/ResourceDetailsForm'
-import { FileUploadContainer } from '../upload/FileUploadContainer'
-import { ResourceSectionSelect } from '../publish/ResourceSectionSelect'
 import type { PatchResource } from '~/types/api/patch'
+import { ResourceLinksInput } from '../publish/ResourceLinksInput'
+import { ResourceSectionSelect } from '../publish/ResourceSectionSelect'
+import { ResourceTypeSelect } from '../publish/ResourceTypeSelect'
 
-type EditResourceFormData = z.infer<typeof patchResourceCreateSchema>
+type EditResourceFormData = z.input<typeof patchResourceCreateSchema>
 
 interface EditResourceDialogProps {
   resource: PatchResource
@@ -37,7 +37,6 @@ export const EditResourceDialog = ({
   type = 'patch'
 }: EditResourceDialogProps) => {
   const [editing, setEditing] = useState(false)
-  const [uploadingResource, setUploadingResource] = useState(false)
 
   const {
     control,
@@ -47,49 +46,37 @@ export const EditResourceDialog = ({
     formState: { errors }
   } = useForm<EditResourceFormData>({
     resolver: zodResolver(patchResourceCreateSchema),
-    defaultValues: resource
+    defaultValues: {
+      patchId: resource.patchId,
+      name: resource.name,
+      section: resource.section,
+      storage: resource.storage,
+      content: resource.content,
+      note: ''
+    }
   })
 
   const handleUpdateResource = async () => {
     setEditing(true)
+
     const res = await kunFetchPut<KunResponse<PatchResource>>(
       `/${type}/resource`,
-      { resourceId: resource.id, ...watch() }
+      { resourceId: resource.id, ...watch(), note: '' }
     )
+
     kunErrorHandler(res, (value) => {
       reset()
       onSuccess(value)
       toast.success('资源更新成功')
     })
+
     setEditing(false)
-  }
-
-  const handleUploadSuccess = (
-    storage: string,
-    hash: string,
-    content: string,
-    size: string
-  ) => {
-    setValue('storage', storage)
-    setValue('hash', hash)
-    setValue('content', content)
-    setValue('size', size)
-  }
-
-  const handleRemoveFile = () => {
-    setValue('hash', '')
-    setValue('content', '')
-    setValue('size', '')
   }
 
   return (
     <ModalContent>
       <ModalHeader className="flex-col space-y-2">
-        <h3 className="text-lg">更改资源链接</h3>
-        <p className="text-sm font-medium text-default-500">
-          若您想要更改您的对象存储链接, 您现在可以直接上传新文件,
-          系统会自动更新云端文件, 无需删除后重新发布
-        </p>
+        <h3 className="text-lg">修改资源</h3>
       </ModalHeader>
 
       <ModalBody>
@@ -97,28 +84,35 @@ export const EditResourceDialog = ({
           <ResourceSectionSelect
             errors={errors}
             section={watch().section}
-            setSection={(content) => setValue('section', content)}
+            setSection={(section) => {
+              setValue('section', section)
+              setValue('storage', section === 'direct' ? 'direct' : 'baidu')
+            }}
           />
 
-          {watch().storage === 's3' && (
-            <FileUploadContainer
-              onSuccess={handleUploadSuccess}
-              handleRemoveFile={handleRemoveFile}
-              setUploadingResource={setUploadingResource}
-            />
-          )}
+          <ResourceTypeSelect
+            section={watch().section}
+            control={control}
+            errors={errors}
+          />
 
-          {(watch().storage === 'user' || watch().content) && (
-            <ResourceLinksInput
-              errors={errors}
-              storage={watch().storage}
-              content={watch().content}
-              size={watch().size}
-              setContent={(content) => setValue('content', content)}
-              setSize={(size) => setValue('size', size)}
-            />
-          )}
-          <ResourceDetailsForm control={control} errors={errors} />
+          <Input
+            label="资源标题"
+            labelPlacement="outside"
+            placeholder="可选，前台会显示在资源卡片中"
+            value={watch().name}
+            onChange={(event) => setValue('name', event.target.value)}
+            isInvalid={!!errors.name}
+            errorMessage={errors.name?.message}
+          />
+
+          <ResourceLinksInput
+            errors={errors}
+            section={watch().section}
+            storage={watch().storage}
+            content={watch().content}
+            setContent={(content) => setValue('content', content)}
+          />
         </form>
       </ModalBody>
 
@@ -128,15 +122,11 @@ export const EditResourceDialog = ({
         </Button>
         <Button
           color="primary"
-          disabled={editing || uploadingResource}
-          isLoading={editing || uploadingResource}
+          isLoading={editing}
+          isDisabled={editing}
           onPress={handleUpdateResource}
         >
-          {editing
-            ? '更新中...'
-            : uploadingResource
-              ? '正在上传补丁资源中...'
-              : '保存'}
+          保存
         </Button>
       </ModalFooter>
     </ModalContent>

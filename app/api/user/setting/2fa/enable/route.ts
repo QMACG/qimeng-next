@@ -4,6 +4,7 @@ import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 import { kunParsePostBody } from '~/app/api/utils/parseQuery'
 import { generateBackupCodes, Totp } from 'time2fa'
 import { enableUser2FASchema } from '~/validations/user'
+import { toJsonStringArray } from '~/utils/prismaJson'
 
 const verifyAndEnable2FA = async (uid: number, token: string) => {
   const user = await prisma.user.findUnique({
@@ -29,7 +30,7 @@ const verifyAndEnable2FA = async (uid: number, token: string) => {
     where: { id: uid },
     data: {
       enable_2fa: true,
-      two_factor_backup: codes
+      two_factor_backup: toJsonStringArray(codes)
     }
   })
 

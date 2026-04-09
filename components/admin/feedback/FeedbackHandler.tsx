@@ -18,41 +18,44 @@ import {
 } from '@heroui/modal'
 import { Textarea } from '@heroui/input'
 import { MoreVertical } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { useUserStore } from '~/store/userStore'
 import { kunFetchPost } from '~/utils/kunFetch'
 import type { AdminFeedback } from '~/types/api/admin'
-import toast from 'react-hot-toast'
 
 interface Props {
   initialFeedback: AdminFeedback
+  onHandled: () => void
 }
 
-export const FeedbackHandler = ({ initialFeedback }: Props) => {
+export const FeedbackHandler = ({ initialFeedback, onHandled }: Props) => {
   const currentUser = useUserStore((state) => state.user)
+  const [handleContent, setHandleContent] = useState('')
+  const [updating, setUpdating] = useState(false)
 
   const {
     isOpen: isOpenHandle,
     onOpen: onOpenHandle,
     onClose: onCloseHandle
   } = useDisclosure()
-  const [handleContent, setHandleContent] = useState('')
-  const [updating, setUpdating] = useState(false)
+
   const handleUpdateFeedback = async () => {
     setUpdating(true)
-    const res = await kunFetchPost<KunResponse<AdminFeedback>>(
-      '/admin/feedback/handle',
-      {
-        messageId: initialFeedback.id,
-        content: handleContent.trim()
-      }
-    )
+
+    const res = await kunFetchPost<KunResponse<{}>>('/admin/feedback/handle', {
+      commentId: initialFeedback.id,
+      content: handleContent.trim()
+    })
+
     if (typeof res === 'string') {
       toast.error(res)
     } else {
       onCloseHandle()
       setHandleContent('')
-      toast.success('处理反馈成功!')
+      onHandled()
+      toast.success('反馈处理成功')
     }
+
     setUpdating(false)
   }
 
@@ -69,9 +72,10 @@ export const FeedbackHandler = ({ initialFeedback }: Props) => {
             <MoreVertical size={16} />
           </Button>
         </DropdownTrigger>
+
         <DropdownMenu disabledKeys={initialFeedback.status ? ['handle'] : []}>
           <DropdownItem key="handle" onPress={onOpenHandle}>
-            处理该反馈
+            处理这条反馈
           </DropdownItem>
         </DropdownMenu>
       </Dropdown>
@@ -82,9 +86,9 @@ export const FeedbackHandler = ({ initialFeedback }: Props) => {
           <ModalBody>
             <Textarea
               value={handleContent}
-              label="反馈回复内容 (可选)"
+              label="回复内容（可选）"
               onChange={(e) => setHandleContent(e.target.value)}
-              placeholder="点击确定会通知用户该反馈已被处理"
+              placeholder="提交后会在前台评论区追加管理员回复，并标记为已处理"
               minRows={2}
               maxRows={8}
             />
@@ -102,8 +106,8 @@ export const FeedbackHandler = ({ initialFeedback }: Props) => {
             <Button
               color="primary"
               onPress={handleUpdateFeedback}
-              disabled={updating}
               isLoading={updating}
+              isDisabled={updating}
             >
               标记为已处理
             </Button>

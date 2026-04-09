@@ -1,60 +1,75 @@
-'use client'
-
-import { kunMoyuMoe } from '~/config/moyu-moe'
-import Link from 'next/link'
 import Image from 'next/image'
+import Link from 'next/link'
+import { kunMoyuMoe } from '~/config/moyu-moe'
+import { KunExternalLink } from './external-link/ExternalLink'
+
+const FOOTER_COPYRIGHT = '© 2026 '
+const FOOTER_DOC = '文章'
+const FOOTER_NAV = '站点导航'
+const FOOTER_FRIEND = '友情链接'
+const FOOTER_GITHUB = 'GitHub 仓库'
+const FOOTER_LINK_CLASS =
+  'flex items-center text-default-700 no-underline transition-colors hover:text-foreground'
 
 export const KunFooter = () => {
   return (
-    <footer className="w-full mt-8 text-sm border-t border-divider">
-      <div className="px-2 mx-auto sm:px-6 max-w-7xl">
+    <footer className="mt-8 w-full border-t border-divider text-sm">
+      <div className="mx-auto max-w-7xl px-2 sm:px-6">
         <div className="flex flex-wrap justify-center gap-4 py-6 md:justify-between">
-          <Link href="/" className="flex items-center space-x-2">
+          <Link href="/" className={FOOTER_LINK_CLASS}>
             <Image
-              src="/favicon.webp"
+              src="/favicon.ico"
               alt={kunMoyuMoe.titleShort}
               width={30}
               height={30}
             />
-            <span>© 2026 {kunMoyuMoe.titleShort}</span>
+            <span className="ml-2">
+              {FOOTER_COPYRIGHT}
+              {kunMoyuMoe.titleShort}
+            </span>
           </Link>
 
-          <div className="flex space-x-8">
-            <Link href="/doc" className="flex items-center">
-              使用指南
+          <div className="flex flex-wrap items-center justify-center gap-6">
+            <Link href="/doc" className={FOOTER_LINK_CLASS}>
+              {FOOTER_DOC}
             </Link>
-            <Link
-              href={kunMoyuMoe.domain.nav}
-              target="_blank"
-              className="flex items-center"
+            <KunExternalLink
+              link={kunMoyuMoe.domain.nav}
+              className={FOOTER_LINK_CLASS}
+              color="foreground"
+              showAnchorIcon={false}
+              isRequireRedirect={false}
             >
-              导航页面
+              {FOOTER_NAV}
+            </KunExternalLink>
+            <Link href="/friend-link" className={FOOTER_LINK_CLASS}>
+              {FOOTER_FRIEND}
             </Link>
-
-            <Link href="/friend-link" className="flex items-center">
-              友情链接
-            </Link>
-
-            <Link
-              href="https://github.com/KUN1007/kun-touchgal-next"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center"
-            >
-              GitHub 仓库
-            </Link>
+            {kunMoyuMoe.domain.github_repo ? (
+              <KunExternalLink
+                link={kunMoyuMoe.domain.github_repo}
+                className={FOOTER_LINK_CLASS}
+                color="foreground"
+                showAnchorIcon={false}
+                isRequireRedirect={false}
+              >
+                {FOOTER_GITHUB}
+              </KunExternalLink>
+            ) : null}
           </div>
 
-          <div className="flex space-x-8">
-            <span className="flex items-center">联系我们</span>
-            <Link
-              href={kunMoyuMoe.domain.discord_group}
-              className="flex items-center"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Discord
-            </Link>
+          <div className="flex flex-wrap items-center justify-center gap-6">
+            {kunMoyuMoe.domain.telegram_group ? (
+              <KunExternalLink
+                link={kunMoyuMoe.domain.telegram_group}
+                className={FOOTER_LINK_CLASS}
+                color="foreground"
+                showAnchorIcon={false}
+                isRequireRedirect={false}
+              >
+                Telegram
+              </KunExternalLink>
+            ) : null}
           </div>
         </div>
       </div>

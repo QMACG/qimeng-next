@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { Card, CardBody, CardFooter, CardHeader } from '@heroui/card'
@@ -14,7 +14,7 @@ interface Props {
   openOnNewTab?: boolean
 }
 
-export const GalgameCard = ({ patch, openOnNewTab = true }: Props) => {
+export const GalgameCard = ({ patch, openOnNewTab = false }: Props) => {
   const [imageLoaded, setImageLoaded] = useState(false)
 
   return (
@@ -43,11 +43,7 @@ export const GalgameCard = ({ patch, openOnNewTab = true }: Props) => {
               imageLoaded ? 'scale-100 opacity-90' : 'scale-105 opacity-0'
             )}
             removeWrapper={true}
-            src={
-              patch.banner
-                ? patch.banner.replace(/\.avif$/, '-mini.avif')
-                : '/touchgal.avif'
-            }
+            src={patch.banner || '/favicon.ico'}
             style={{ aspectRatio: '16/9' }}
             onLoad={() => setImageLoaded(true)}
           />

@@ -1,15 +1,15 @@
-import { z } from 'zod'
+﻿import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParseGetQuery } from '~/app/api/utils/parseQuery'
 import { prisma } from '~/prisma/index'
 import { searchUserSchema } from '~/validations/user'
 
-export const searchUser = async (input: z.infer<typeof searchUserSchema>) => {
+const searchUser = async (input: z.infer<typeof searchUserSchema>) => {
   const { query } = input
 
   const users: KunUser[] = await prisma.user.findMany({
     where: {
-      name: { contains: query, mode: 'insensitive' }
+      name: { contains: query }
     },
     select: {
       id: true,
@@ -31,3 +31,4 @@ export const GET = async (req: NextRequest) => {
   const response = await searchUser(input)
   return NextResponse.json(response)
 }
+

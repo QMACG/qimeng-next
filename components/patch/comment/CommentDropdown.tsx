@@ -75,7 +75,7 @@ export const CommentDropdown = ({ comment, setComments }: Props) => {
         )
       )
       onCloseEdit()
-      toast.success('更新评论成功!')
+      toast.success('更新评论成功')
     })
 
     setUpdating(false)
@@ -129,11 +129,11 @@ export const CommentDropdown = ({ comment, setComments }: Props) => {
       <Dropdown>
         <DropdownTrigger>
           <Button variant="light" isIconOnly className="text-default-400">
-            <MoreHorizontal aria-label="Galgame 评论操作" className="size-4" />
+            <MoreHorizontal aria-label="评论操作" className="size-4" />
           </Button>
         </DropdownTrigger>
         <DropdownMenu
-          aria-label="Comment actions"
+          aria-label="评论操作菜单"
           disabledKeys={
             user.uid !== comment.userId && user.role < 3
               ? ['edit', 'delete']
@@ -201,8 +201,7 @@ export const CommentDropdown = ({ comment, setComments }: Props) => {
           <ModalHeader className="flex flex-col gap-1">删除评论</ModalHeader>
           <ModalBody>
             <p>
-              您确定要删除这条评论吗, 这将会删除该评论,
-              以及所有回复该评论的评论, 该操作不可撤销
+              您确定要删除这条评论吗？删除后，这条评论及其下方的所有回复都会一并移除，该操作不可撤销。
             </p>
             <p className="pl-4 border-l-4 border-primary-500">
               {convert(comment.content)}

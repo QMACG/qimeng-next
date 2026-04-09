@@ -1,5 +1,4 @@
-import { Tags, MessageSquare, FileText } from 'lucide-react'
-import { kunMoyuMoe } from '~/config/moyu-moe'
+import { Tags, Building2, FileText } from 'lucide-react'
 import type { LucideProps } from 'lucide-react'
 import type { ForwardRefExoticComponent, RefAttributes } from 'react'
 
@@ -22,11 +21,11 @@ export const homeNavigationItems: HomeNavItem[] = [
     isExternal: false
   },
   {
-    icon: MessageSquare,
-    label: '论坛',
-    href: kunMoyuMoe.domain.forum,
+    icon: Building2,
+    label: '会社',
+    href: '/company',
     color: 'secondary',
-    isExternal: true
+    isExternal: false
   },
   {
     icon: FileText,

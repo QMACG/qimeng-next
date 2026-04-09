@@ -2,5 +2,5 @@ import { generateNullMetadata } from '~/utils/noIndex'
 import type { Metadata } from 'next'
 
 export const kunMetadata: Metadata = {
-  ...generateNullMetadata(`Galgame 标签`)
+  ...generateNullMetadata('游戏标签')
 }

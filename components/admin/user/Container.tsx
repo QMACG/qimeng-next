@@ -79,7 +79,7 @@ export const User = ({ initialUsers, initialTotal }: Props) => {
       return
     }
     fetchData()
-  }, [page, debouncedQuery, searchType])
+  }, [page, debouncedQuery, searchType, isMounted])
 
   const handleSearch = (value: string) => {
     setSearchQuery(value)
@@ -105,7 +105,7 @@ export const User = ({ initialUsers, initialTotal }: Props) => {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">用户管理</h1>
         <Chip color="primary" variant="flat">
-          杂鱼! 不许视奸!
+          管理站点账户与权限
         </Chip>
       </div>
 
@@ -132,12 +132,12 @@ export const User = ({ initialUsers, initialTotal }: Props) => {
       </div>
 
       {loading ? (
-        <KunLoading hint="正在获取消息数据..." />
+        <KunLoading hint="正在获取用户数据..." />
       ) : (
         <Table
           aria-label="用户管理"
           bottomContent={
-            <div className="flex justify-center w-full">
+            <div className="flex w-full justify-center">
               <KunPagination
                 page={page}
                 total={Math.ceil(total / 30)}

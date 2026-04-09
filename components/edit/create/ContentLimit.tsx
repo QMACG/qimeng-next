@@ -1,8 +1,8 @@
 'use client'
 
 import { Switch } from '@heroui/react'
-import { useCreatePatchStore } from '~/store/editStore'
 import { GALGAME_AGE_LIMIT_MAP } from '~/constants/galgame'
+import { useCreatePatchStore } from '~/store/editStore'
 
 interface Props {
   errors: string | undefined
@@ -13,7 +13,7 @@ export const ContentLimit = ({ errors }: Props) => {
 
   return (
     <div className="space-y-2">
-      <h2 className="text-xl">文章内容分级</h2>
+      <h2 className="text-xl">内容分级</h2>
       <Switch
         defaultSelected
         color="danger"

@@ -8,15 +8,15 @@ interface Props {
 
 export const GameNameInput = ({ name, onChange, error }: Props) => (
   <div className="space-y-2">
-    <h2 className="text-xl">游戏名称 (必须)</h2>
+    <h2 className="text-xl">游戏名称（必填）</h2>
     <Input
       isRequired
       className="mb-4"
       variant="underlined"
       labelPlacement="outside"
-      placeholder="输入游戏名称, 这会作为游戏的标题"
+      placeholder="输入游戏名称，作为文章标题展示"
       value={name}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={(event) => onChange(event.target.value)}
       isInvalid={!!error}
       errorMessage={error}
     />

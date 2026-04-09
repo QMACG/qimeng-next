@@ -5,6 +5,7 @@ import { createRoot } from 'react-dom/client'
 import DOMPurify from 'isomorphic-dompurify'
 import { useMounted } from '~/hooks/useMounted'
 import { KunExternalLink } from '~/components/kun/external-link/ExternalLink'
+import { MarkdownButtonLink } from '~/components/kun/markdown/MarkdownButtonLink'
 import type { PatchComment } from '~/types/api/patch'
 
 interface Props {
@@ -34,6 +35,28 @@ export const CommentContent = ({ comment }: Props) => {
       element.replaceWith(root)
       const videoRoot = createRoot(root)
       videoRoot.render(<KunExternalLink link={href}>{text}</KunExternalLink>)
+    })
+
+    const buttonElements = contentRef.current.querySelectorAll(
+      '[data-kun-button]'
+    )
+    buttonElements.forEach((element) => {
+      const href = element.getAttribute('data-href')
+      const text = element.getAttribute('data-text')
+      const type = element.getAttribute('data-type') ?? 'primary'
+      if (!href || !text) {
+        return
+      }
+
+      const root = document.createElement('div')
+      root.className = element.className
+      element.replaceWith(root)
+      const buttonRoot = createRoot(root)
+      buttonRoot.render(
+        <MarkdownButtonLink href={href} type={type}>
+          {text}
+        </MarkdownButtonLink>
+      )
     })
   }, [isMounted])
 

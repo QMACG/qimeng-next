@@ -10,32 +10,32 @@ import {
 } from '@heroui/react'
 import { usePathname } from 'next/navigation'
 import { ChevronRight } from 'lucide-react'
-import { SidebarContent } from './SidebarContent'
 import { useEffect } from 'react'
+import { SidebarContent } from './SidebarContent'
 
 export const Sidebar = () => {
   const pathname = usePathname()
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure()
 
-  useEffect(() => onClose(), [pathname])
+  useEffect(() => onClose(), [pathname, onClose])
 
   return (
     <>
-      <aside className="fixed z-20 hidden w-64 h-full border-r md:block md:static bg-background border-divider">
-        <div className="flex flex-col size-full">
+      <aside className="fixed z-20 hidden h-full w-64 border-r border-divider bg-background md:static md:block">
+        <div className="flex size-full flex-col">
           <Link
             color="foreground"
-            href="/admin"
+            href="/admin/galgame"
             className="my-4 text-xl font-bold"
           >
-            管理面板
+            后台管理
           </Link>
-          {SidebarContent({ pathname })}
+          <SidebarContent pathname={pathname} />
         </div>
       </aside>
 
       <div
-        className="fixed top-0 left-0 flex items-center h-full cursor-pointer text-default-500 md:hidden"
+        className="fixed left-0 top-0 flex h-full cursor-pointer items-center text-default-500 md:hidden"
         onClick={() => onOpen()}
       >
         <ChevronRight size={24} />
@@ -48,8 +48,10 @@ export const Sidebar = () => {
         size="xs"
       >
         <DrawerContent>
-          <DrawerHeader className="flex flex-col gap-1">管理面板</DrawerHeader>
-          <DrawerBody>{SidebarContent({ pathname })}</DrawerBody>
+          <DrawerHeader className="flex flex-col gap-1">后台管理</DrawerHeader>
+          <DrawerBody>
+            <SidebarContent pathname={pathname} />
+          </DrawerBody>
         </DrawerContent>
       </Drawer>
     </>

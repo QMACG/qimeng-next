@@ -1,25 +1,16 @@
 import { create } from 'zustand'
+import type { Company } from '~/types/api/company'
+
 export interface RewritePatchData {
   id: number
   uniqueId: string
-  vndbId: string
-  vndbRelationId: string
-  bangumiId: string
-  steamId: string
-  dlsiteCode: string
-  dlsiteCircleName: string
-  dlsiteCircleLink: string
-  vndbTags: string[]
-  vndbDevelopers: string[]
-  bangumiTags: string[]
-  bangumiDevelopers: string[]
-  steamTags: string[]
-  steamDevelopers: string[]
-  steamAliases: string[]
+  status: number
+  banner: string
   name: string
   introduction: string
-  alias: string[]
   tag: string[]
+  companies: Company[]
+  resourceNote: string
   contentLimit: string
   released: string
 }
@@ -34,24 +25,13 @@ interface StoreState {
 const initialState: RewritePatchData = {
   id: 0,
   uniqueId: '',
-  vndbId: '',
-  vndbRelationId: '',
-  bangumiId: '',
-  steamId: '',
-  dlsiteCode: '',
-  dlsiteCircleName: '',
-  dlsiteCircleLink: '',
-  vndbTags: [],
-  vndbDevelopers: [],
-  bangumiTags: [],
-  bangumiDevelopers: [],
-  steamTags: [],
-  steamDevelopers: [],
-  steamAliases: [],
+  status: 1,
+  banner: '',
   name: '',
   introduction: '',
-  alias: [],
   tag: [],
+  companies: [],
+  resourceNote: '',
   contentLimit: 'sfw',
   released: ''
 }

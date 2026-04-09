@@ -1,4 +1,4 @@
-import { z } from 'zod'
+﻿import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParsePostBody } from '~/app/api/utils/parseQuery'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
@@ -10,7 +10,7 @@ import {
   KUN_GALGAME_RATING_RECOMMEND_MAP
 } from '~/constants/galgame'
 
-export const createReport = async (
+const createReport = async (
   input: z.infer<typeof createPatchRatingReportSchema>,
   uid: number
 ) => {
@@ -94,3 +94,4 @@ export const POST = async (req: NextRequest) => {
   const response = await createReport(input, payload.uid)
   return NextResponse.json(response)
 }
+

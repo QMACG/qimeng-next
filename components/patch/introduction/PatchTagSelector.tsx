@@ -210,7 +210,7 @@ export const PatchTagSelector = ({
         scrollBehavior="inside"
       >
         <ModalContent>
-          <ModalHeader>更改这个 Galgame 的标签</ModalHeader>
+          <ModalHeader>更改游戏标签</ModalHeader>
           <ModalBody>
             <SearchTags
               query={query}
@@ -270,9 +270,9 @@ export const PatchTagSelector = ({
               </Button>
             </div>
             <div>
-              没有您想要的标签?{' '}
+              没有需要的标签？{' '}
               <Link color="primary" showAnchorIcon href="/tag">
-                去创建标签
+                前往标签页
               </Link>
             </div>
           </ModalFooter>

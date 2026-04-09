@@ -2,13 +2,13 @@
 
 import { z } from 'zod'
 import { safeParseSchema } from '~/utils/actions/safeParseSchema'
-import { getCompanyById } from '~/app/api/company/route'
-import { getPatchByCompany } from '~/app/api/company/galgame/route'
+import { GET as getCompanyByIdRoute } from '~/app/api/company/route'
+import { GET as getPatchByCompanyRoute } from '~/app/api/company/galgame/route'
 import {
   getCompanyByIdSchema,
   getPatchByCompanySchema
 } from '~/validations/company'
-import { getNSFWHeader } from '~/utils/actions/getNSFWHeader'
+import { callRouteGet } from '~/utils/actions/callRouteHandler'
 
 export const kunGetCompanyByIdActions = async (
   params: z.infer<typeof getCompanyByIdSchema>
@@ -18,7 +18,7 @@ export const kunGetCompanyByIdActions = async (
     return input
   }
 
-  const response = await getCompanyById(input)
+  const response = await callRouteGet(getCompanyByIdRoute, '/api/company', input)
   return response
 }
 
@@ -30,8 +30,10 @@ export const kunCompanyGalgameActions = async (
     return input
   }
 
-  const nsfwEnable = await getNSFWHeader()
-
-  const response = await getPatchByCompany(input, nsfwEnable)
+  const response = await callRouteGet(
+    getPatchByCompanyRoute,
+    '/api/company/galgame',
+    input
+  )
   return response
 }

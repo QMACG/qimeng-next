@@ -5,7 +5,7 @@ export interface KunNavItem {
 
 export const kunNavItem: KunNavItem[] = [
   {
-    name: '游戏下载',
+    name: '游戏资源',
     href: '/galgame'
   },
   {
@@ -13,15 +13,11 @@ export const kunNavItem: KunNavItem[] = [
     href: '/tag'
   },
   {
-    name: '游戏会社',
+    name: '会社',
     href: '/company'
   },
-  // {
-  //   name: '游戏排行',
-  //   href: '/ranking'
-  // },
   {
-    name: '帮助文档',
+    name: '文章',
     href: '/doc'
   }
 ]
@@ -29,15 +25,7 @@ export const kunNavItem: KunNavItem[] = [
 export const kunMobileNavItem: KunNavItem[] = [
   ...kunNavItem,
   {
-    name: '评论列表',
-    href: '/comment'
-  },
-  {
-    name: '下载资源列表',
-    href: '/resource'
-  },
-  {
-    name: '联系我们',
-    href: '/doc/notice/feedback'
+    name: '帮助反馈',
+    href: '/doc/help/feedback'
   }
 ]

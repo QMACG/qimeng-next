@@ -3,8 +3,8 @@
 import { z } from 'zod'
 import { safeParseSchema } from '~/utils/actions/safeParseSchema'
 import { rankingSchema } from '~/validations/ranking'
-import { getRanking } from '~/app/api/ranking/route'
-import { getNSFWHeader } from '~/utils/actions/getNSFWHeader'
+import { GET as getRankingRoute } from '~/app/api/ranking/route'
+import { callRouteGet } from '~/utils/actions/callRouteHandler'
 
 export const kunGetRankingActions = async (
   params: z.infer<typeof rankingSchema>
@@ -14,7 +14,6 @@ export const kunGetRankingActions = async (
     return input
   }
 
-  const nsfwEnable = await getNSFWHeader()
-  const response = await getRanking(input, nsfwEnable)
+  const response = await callRouteGet(getRankingRoute, '/api/ranking', input)
   return response
 }

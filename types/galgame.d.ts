@@ -5,6 +5,8 @@ interface GalgameCard {
   banner: string
   view: number
   download: number
+  showViewCount?: boolean
+  showDownloadCount?: boolean
   type: string[]
   language: string[]
   platform: string[]

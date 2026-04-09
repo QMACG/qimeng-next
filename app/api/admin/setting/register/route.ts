@@ -1,14 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server'
+﻿import { NextRequest, NextResponse } from 'next/server'
 import { kunParsePutBody } from '~/app/api/utils/parseQuery'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 import { adminUpdateDisableRegisterSchema } from '~/validations/admin'
 import { delKv, getKv, setKv } from '~/lib/redis'
 import { KUN_PATCH_DISABLE_REGISTER_KEY } from '~/config/redis'
 
-export const getDisableRegisterStatus = async () => {
-  const isDisableKunPatchRegister = await getKv(KUN_PATCH_DISABLE_REGISTER_KEY)
+const getDisableRegisterStatus = async () => {
+  const isDisableRegister = await getKv(KUN_PATCH_DISABLE_REGISTER_KEY)
   return {
-    disableRegister: !!isDisableKunPatchRegister
+    disableRegister: !!isDisableRegister
   }
 }
 
@@ -47,3 +47,4 @@ export const PUT = async (req: NextRequest) => {
 
   return NextResponse.json({})
 }
+

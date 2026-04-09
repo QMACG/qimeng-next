@@ -1,48 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '~/prisma/index'
-import { HomeResource } from '~/types/api/home'
+import { CONTENT_VISIBILITY } from '~/constants/contentVisibility'
 import { GalgameCardSelectField } from '~/constants/api/select'
+import { getFrontDisplayConfig } from '~/app/api/admin/setting/front-display/getFrontDisplayConfig'
 import { getNSFWHeader } from '~/app/api/utils/getNSFWHeader'
+import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
+import { canShowDownloadCount, canShowViewCount } from '~/utils/frontDisplay'
+import { parseJsonStringArray } from '~/utils/prismaJson'
 
-export const getHomeData = async (
-  nsfwEnable: Record<string, string | undefined>
+const getHomeData = async (
+  nsfwEnable: Record<string, string | undefined>,
+  role = 0
 ) => {
-  const [data, resourcesData] = await Promise.all([
+  const frontDisplayConfig = await getFrontDisplayConfig()
+  const showViewCount = canShowViewCount(role, frontDisplayConfig)
+  const showDownloadCount = canShowDownloadCount(role, frontDisplayConfig)
+  const where = {
+    visibility: CONTENT_VISIBILITY.public,
+    ...nsfwEnable
+  }
+
+  const [data, nsfwHiddenCount] = await Promise.all([
     prisma.patch.findMany({
       orderBy: { created: 'desc' },
-      where: nsfwEnable,
+      where,
       select: GalgameCardSelectField,
       take: 20
     }),
-    prisma.patch_resource.findMany({
-      orderBy: { created: 'desc' },
-      where: { patch: nsfwEnable, section: 'patch', status: 0 },
-      include: {
-        patch: {
-          select: {
-            name: true,
-            unique_id: true
+    nsfwEnable.content_limit === 'sfw'
+      ? prisma.patch.count({
+          where: {
+            visibility: CONTENT_VISIBILITY.public,
+            content_limit: 'nsfw'
           }
-        },
-        user: {
-          include: {
-            _count: {
-              select: { patch_resource: true }
-            }
-          }
-        },
-        _count: {
-          select: {
-            like_by: true
-          }
-        }
-      },
-      take: 6
-    })
+        })
+      : Promise.resolve(0)
   ])
 
   const galgames: GalgameCard[] = data.map((gal) => ({
     ...gal,
+    view: showViewCount ? gal.view : 0,
+    download: showDownloadCount ? gal.download : 0,
+    showViewCount,
+    showDownloadCount,
+    type: parseJsonStringArray(gal.type),
+    language: parseJsonStringArray(gal.language),
+    platform: parseJsonStringArray(gal.platform),
     tags: gal.tag.map((t) => t.tag.name).slice(0, 3),
     uniqueId: gal.unique_id,
     averageRating: gal.rating_stat?.avg_overall
@@ -50,37 +53,13 @@ export const getHomeData = async (
       : 0
   }))
 
-  const resources: HomeResource[] = resourcesData.map((resource) => ({
-    id: resource.id,
-    name: resource.name,
-    section: resource.section,
-    uniqueId: resource.patch.unique_id,
-    storage: resource.storage,
-    size: resource.size,
-    type: resource.type,
-    language: resource.language,
-    note: resource.note.slice(0, 233),
-    platform: resource.platform,
-    likeCount: resource._count.like_by,
-    download: resource.download,
-    patchId: resource.patch_id,
-    patchName: resource.patch.name,
-    created: String(resource.created),
-    user: {
-      id: resource.user.id,
-      name: resource.user.name,
-      avatar: resource.user.avatar,
-      patchCount: resource.user._count.patch_resource,
-      role: resource.user.role
-    }
-  }))
-
-  return { galgames, resources }
+  return { galgames, nsfwHiddenCount }
 }
 
 export const GET = async (req: NextRequest) => {
-  const nsfwEnable = getNSFWHeader(req)
+  const nsfwEnable = await getNSFWHeader(req)
+  const payload = await verifyHeaderCookie(req)
 
-  const response = await getHomeData(nsfwEnable)
+  const response = await getHomeData(nsfwEnable, payload?.role ?? 0)
   return NextResponse.json(response)
 }

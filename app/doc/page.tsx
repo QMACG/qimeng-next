@@ -7,12 +7,8 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = kunMetadata
 
-export default function Kun() {
-  const posts = getAllPosts()
-
-  // const filteredPosts = posts.filter((post) =>
-  //   post.title.toLowerCase().includes(searchQuery.toLowerCase())
-  // )
+export default async function Kun() {
+  const posts = await getAllPosts()
 
   return (
     <div className="w-full px-6 pb-6">
@@ -24,12 +20,6 @@ export default function Kun() {
             <KunAboutCard key={post.slug} post={post} />
           ))}
         </KunMasonryGrid>
-
-        {/* {filteredPosts.length === 0 && (
-            <div className="py-12 text-center text-default-500">
-              No posts found matching your search criteria.
-            </div>
-          )} */}
       </div>
     </div>
   )

@@ -1,4 +1,4 @@
-import { z } from 'zod'
+﻿import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParseGetQuery } from '~/app/api/utils/parseQuery'
 import { prisma } from '~/prisma/index'
@@ -7,7 +7,7 @@ import { getNSFWHeader } from '~/app/api/utils/getNSFWHeader'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 import type { UserResource } from '~/types/api/user'
 
-export const getUserPatchResource = async (
+const getUserPatchResource = async (
   input: z.infer<typeof getUserInfoSchema>,
   nsfwEnable: Record<string, string | undefined>
 ) => {
@@ -29,17 +29,17 @@ export const getUserPatchResource = async (
     })
   ])
 
-  const resources: UserResource[] = data.map((res) => ({
-    id: res.id,
-    patchUniqueId: res.patch.unique_id,
-    patchId: res.patch.id,
-    patchName: res.patch.name,
-    patchBanner: res.patch.banner,
-    size: res.size,
-    type: res.type,
-    language: res.language,
-    platform: res.platform,
-    created: String(res.created)
+  const resources: UserResource[] = data.map((resource) => ({
+    id: resource.id,
+    patchUniqueId: resource.patch.unique_id,
+    patchId: resource.patch.id,
+    patchName: resource.patch.name,
+    patchBanner: resource.patch.banner,
+    size: '',
+    type: [],
+    language: [],
+    platform: [],
+    created: String(resource.created)
   }))
 
   return { resources, total }
@@ -52,10 +52,11 @@ export async function GET(req: NextRequest) {
   }
   const payload = await verifyHeaderCookie(req)
   if (!payload) {
-    return NextResponse.json('用户登陆失效')
+    return NextResponse.json('用户登录失效')
   }
-  const nsfwEnable = getNSFWHeader(req)
+  const nsfwEnable = await getNSFWHeader(req)
 
   const response = await getUserPatchResource(input, nsfwEnable)
   return NextResponse.json(response)
 }
+

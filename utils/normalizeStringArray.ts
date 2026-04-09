@@ -12,5 +12,5 @@ export const normalizeStringArray = (values: readonly unknown[]): string[] => {
 }
 
 export const parseCommaSeparatedStringArray = (value: string): string[] => {
-  return normalizeStringArray(value.split(/[,，]/))
+  return normalizeStringArray(value.split(/[，,]/))
 }

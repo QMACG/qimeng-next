@@ -1,44 +1,38 @@
 'use client'
 
+import { useEffect, useMemo, useState } from 'react'
 import { z } from 'zod'
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
 import { Button } from '@heroui/button'
-import { Link } from '@heroui/link'
 import {
+  Input,
   ModalBody,
   ModalContent,
   ModalFooter,
-  ModalHeader,
-  Progress
+  ModalHeader
 } from '@heroui/react'
-import toast from 'react-hot-toast'
-import { kunFetchPost } from '~/utils/kunFetch'
-import { patchResourceCreateSchema } from '~/validations/patch'
-import { ResourceLinksInput } from './ResourceLinksInput'
-import { ResourceDetailsForm } from './ResourceDetailsForm'
-import { ResourceTypeSelect } from './ResourceTypeSelect'
-import { ResourceSectionSelect } from './ResourceSectionSelect'
 import { Upload } from 'lucide-react'
-import { FileUploadContainer } from '../upload/FileUploadContainer'
+import toast from 'react-hot-toast'
+import { patchResourceCreateSchema } from '~/validations/patch'
+import { kunFetchPost } from '~/utils/kunFetch'
 import { kunErrorHandler } from '~/utils/kunErrorHandler'
-import { useUserStore } from '~/store/userStore'
 import type { PatchResource } from '~/types/api/patch'
+import {
+  getDefaultResourceTitle,
+  splitResourceLinks,
+  syncResourceNames
+} from '~/utils/resourceLinks'
+import { ResourceLinksInput } from './ResourceLinksInput'
+import { ResourceSectionSelect } from './ResourceSectionSelect'
+import { ResourceTypeSelect } from './ResourceTypeSelect'
 
-export type ResourceFormData = z.infer<typeof patchResourceCreateSchema>
+export type ResourceFormData = z.input<typeof patchResourceCreateSchema>
 
 interface CreateResourceProps {
   patchId: number
   onClose: () => void
-  onSuccess?: (res: PatchResource) => void
-}
-
-const userRoleStorageMap: Record<number, string> = {
-  1: 'user',
-  2: 's3',
-  3: 'touchgal',
-  4: 'touchgal'
+  onSuccess?: (resources: PatchResource[]) => void
 }
 
 export const PublishResource = ({
@@ -47,8 +41,7 @@ export const PublishResource = ({
   onSuccess
 }: CreateResourceProps) => {
   const [creating, setCreating] = useState(false)
-  const [uploadingResource, setUploadingResource] = useState(false)
-  const user = useUserStore((state) => state.user)
+  const [resourceNames, setResourceNames] = useState<string[]>([''])
 
   const {
     control,
@@ -60,73 +53,106 @@ export const PublishResource = ({
     resolver: zodResolver(patchResourceCreateSchema),
     defaultValues: {
       patchId,
-      storage: userRoleStorageMap[user.role],
       name: '',
-      section: user.role > 2 ? 'galgame' : 'patch',
-      hash: '',
+      storage: 'baidu',
+      section: 'netdisk',
       content: '',
-      code: '',
-      type: [],
-      language: [],
-      platform: [],
-      size: '',
-      password: '',
       note: ''
     }
   })
 
-  const handleRewriteResource = async () => {
-    setCreating(true)
-    const res = await kunFetchPost<KunResponse<PatchResource>>(
-      '/patch/resource',
-      watch()
-    )
-    setCreating(false)
-    kunErrorHandler(res, (value) => {
-      reset()
-      if (value.status === 2) {
-        toast.success('资源已提交审核，通过后将自动显示')
-        onClose()
-      } else {
-        onSuccess?.(value)
-        toast.success('发布成功')
+  const section = watch('section')
+  const storage = watch('storage')
+  const content = watch('content')
+  const singleName = watch('name')
+  const directLinks = useMemo(() => splitResourceLinks(content), [content])
+
+  useEffect(() => {
+    if (section !== 'direct') {
+      return
+    }
+
+    setResourceNames((current) => {
+      const synced = syncResourceNames(current, directLinks.length || 1)
+      if (synced.length === current.length) {
+        const isSame = synced.every((item, index) => item === current[index])
+        if (isSame) {
+          return current
+        }
       }
+
+      return synced
     })
-  }
+  }, [directLinks.length, section])
 
-  const handleUploadSuccess = (
-    storage: string,
-    hash: string,
-    content: string,
-    size: string
-  ) => {
-    setValue('storage', storage)
-    setValue('hash', hash)
-    setValue('content', content)
-    setValue('size', size)
-  }
+  const handleCreateResource = async () => {
+    setCreating(true)
 
-  const progress = Math.min((user.dailyUploadLimit / 5120) * 100, 100)
+    try {
+      if (section === 'direct' && directLinks.length > 1) {
+        const successResources: PatchResource[] = []
+        const failedMessages: string[] = []
+
+        for (const [index, link] of directLinks.entries()) {
+          const res = await kunFetchPost<KunResponse<PatchResource>>(
+            '/patch/resource',
+            {
+              ...watch(),
+              name:
+                resourceNames[index]?.trim() ||
+                getDefaultResourceTitle('direct', index),
+              content: link,
+              note: ''
+            }
+          )
+
+          if (typeof res === 'string') {
+            failedMessages.push(res)
+          } else {
+            successResources.push(res)
+          }
+        }
+
+        if (successResources.length) {
+          reset()
+          setResourceNames([''])
+          onSuccess?.(successResources)
+        }
+
+        if (failedMessages.length) {
+          toast.error(
+            `已成功添加 ${successResources.length} 条资源，另有 ${failedMessages.length} 条添加失败`
+          )
+          return
+        }
+
+        toast.success(`已添加 ${successResources.length} 条直链资源`)
+        return
+      }
+
+      const res = await kunFetchPost<KunResponse<PatchResource>>(
+        '/patch/resource',
+        {
+          ...watch(),
+          note: ''
+        }
+      )
+
+      kunErrorHandler(res, (value) => {
+        reset()
+        setResourceNames([''])
+        onSuccess?.([value])
+        toast.success('资源链接添加成功')
+      })
+    } finally {
+      setCreating(false)
+    }
+  }
 
   return (
     <ModalContent>
       <ModalHeader className="flex-col space-y-2">
-        <h3 className="text-lg">发布资源</h3>
-        <div className="text-sm font-medium text-default-500">
-          {user.role > 1 ? (
-            <div className="space-y-1">
-              <p>每日上传总额度为 5GB (5120MB)，上传越多可用额度越高。</p>
-              <p>{`今日剩余上传额度 ${user.dailyUploadLimit.toFixed(3)} MB`}</p>
-              <Progress size="sm" value={progress} aria-label="今日上传额度" />
-            </div>
-          ) : (
-            <>
-              普通用户至少上传 3
-              个有效资源后可申请创作者，创作者每日上传额度更高，详情见
-              <Link href="/apply">创作者申请页面</Link>
-            </>
-          )}
-        </div>
+        <h3 className="text-lg">添加资源</h3>
       </ModalHeader>
 
       <ModalBody>
@@ -134,38 +160,59 @@ export const PublishResource = ({
           <ResourceSectionSelect
             errors={errors}
             section={watch().section}
-            setSection={(content) => {
-              setValue('section', content)
-              setValue('storage', userRoleStorageMap[user.role])
+            setSection={(section) => {
+              setValue('section', section)
+              setValue('storage', section === 'direct' ? 'direct' : 'baidu')
             }}
           />
 
           <ResourceTypeSelect
-            section={watch().section}
+            section={section}
             control={control}
             errors={errors}
           />
 
-          {watch().storage === 's3' && (
-            <FileUploadContainer
-              onSuccess={handleUploadSuccess}
-              handleRemoveFile={() => reset()}
-              setUploadingResource={setUploadingResource}
+          {section === 'direct' && directLinks.length > 1 ? (
+            <div className="space-y-3">
+              <h3 className="text-lg font-medium">直链标题</h3>
+              {directLinks.map((link, index) => (
+                <div key={`${link}-${index}`} className="space-y-2 rounded-xl border border-default-200 p-3">
+                  <p className="break-all text-sm text-default-500">{link}</p>
+                  <Input
+                    label={`资源标题 ${index + 1}`}
+                    labelPlacement="outside"
+                    placeholder={`例如：直链线路 ${index + 1}`}
+                    value={resourceNames[index] ?? ''}
+                    onChange={(event) =>
+                      setResourceNames((current) => {
+                        const next = syncResourceNames(current, directLinks.length)
+                        next[index] = event.target.value
+                        return next
+                      })
+                    }
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <Input
+              label="资源标题"
+              labelPlacement="outside"
+              placeholder="可选，前台会显示在资源卡片中"
+              value={singleName}
+              onChange={(event) => setValue('name', event.target.value)}
+              isInvalid={!!errors.name}
+              errorMessage={errors.name?.message}
             />
           )}
 
-          {(watch().storage !== 's3' || watch().content) && (
-            <ResourceLinksInput
-              errors={errors}
-              storage={watch().storage}
-              content={watch().content}
-              size={watch().size}
-              setContent={(content) => setValue('content', content)}
-              setSize={(size) => setValue('size', size)}
-            />
-          )}
-
-          <ResourceDetailsForm control={control} errors={errors} />
+          <ResourceLinksInput
+            errors={errors}
+            section={section}
+            storage={storage}
+            content={content}
+            setContent={(content) => setValue('content', content)}
+          />
         </form>
       </ModalBody>
 
@@ -176,20 +223,14 @@ export const PublishResource = ({
           </Button>
           <Button
             color="primary"
-            disabled={creating || uploadingResource}
             isLoading={creating}
+            isDisabled={creating}
             endContent={<Upload className="size-4" />}
-            onPress={handleRewriteResource}
+            onPress={handleCreateResource}
           >
             提交资源
           </Button>
         </div>
-
-        {creating && (
-          <p className="text-xs text-default-500">
-            正在提交资源，请不要关闭此窗口，提交完成后会有提示。
-          </p>
-        )}
       </ModalFooter>
     </ModalContent>
   )

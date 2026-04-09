@@ -1,4 +1,4 @@
-import { z } from 'zod'
+﻿import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParseGetQuery } from '~/app/api/utils/parseQuery'
 import { prisma } from '~/prisma/index'
@@ -6,7 +6,7 @@ import { getUserInfoSchema } from '~/validations/user'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 import type { UserRating } from '~/types/api/user'
 
-export const getUserPatchRating = async (
+const getUserPatchRating = async (
   input: z.infer<typeof getUserInfoSchema>
 ) => {
   const { uid, page, limit } = input
@@ -66,3 +66,4 @@ export const GET = async (req: NextRequest) => {
   const response = await getUserPatchRating(input)
   return NextResponse.json(response)
 }
+

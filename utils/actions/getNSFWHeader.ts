@@ -4,17 +4,17 @@ import { cookies } from 'next/headers'
 
 export const getNSFWHeader = async () => {
   const cookieStore = await cookies()
-  const token = cookieStore.get(
+  const settingToken = cookieStore.get(
     'kun-patch-setting-store|state|data|kunNsfwEnable'
   )?.value
 
-  if (!token) {
-    return { content_limit: 'sfw' }
+  if (settingToken) {
+    if (settingToken === 'all') {
+      return {}
+    }
+
+    return { content_limit: settingToken }
   }
 
-  if (token === 'all') {
-    return {}
-  } else {
-    return { content_limit: token }
-  }
+  return { content_limit: 'sfw' }
 }

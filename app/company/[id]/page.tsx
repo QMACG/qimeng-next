@@ -5,14 +5,9 @@ import { ErrorComponent } from '~/components/error/ErrorComponent'
 import type { SortField, SortOrder } from '~/components/galgame/_sort'
 import type { Metadata } from 'next'
 import {
-  DEFAULT_GALGAME_FILTER_VALUE,
-  DEFAULT_GALGAME_MONTH_STRING,
   DEFAULT_GALGAME_SORT_FIELD,
   DEFAULT_GALGAME_SORT_ORDER,
-  DEFAULT_TAG_COMPANY_MIN_RATING_COUNT,
-  DEFAULT_GALGAME_YEAR_STRING,
   getSearchParamValue,
-  parseNonNegativeIntParam,
   parsePositiveIntParam
 } from '~/utils/galgameFilter'
 
@@ -24,12 +19,6 @@ interface Props {
     page?: string | string[]
     sortField?: SortField | string[]
     sortOrder?: SortOrder | string[]
-    selectedType?: string | string[]
-    selectedLanguage?: string | string[]
-    selectedPlatform?: string | string[]
-    yearString?: string | string[]
-    monthString?: string | string[]
-    minRatingCount?: string | string[]
   }>
 }
 
@@ -54,23 +43,6 @@ export default async function Kun({ params, searchParams }: Props) {
     (getSearchParamValue(res?.sortOrder) as SortOrder | undefined) ||
     DEFAULT_GALGAME_SORT_ORDER
   const currentPage = parsePositiveIntParam(getSearchParamValue(res?.page), 1)
-  const selectedType =
-    getSearchParamValue(res?.selectedType) || DEFAULT_GALGAME_FILTER_VALUE
-  const selectedLanguage =
-    getSearchParamValue(res?.selectedLanguage) || DEFAULT_GALGAME_FILTER_VALUE
-  const selectedPlatform =
-    getSearchParamValue(res?.selectedPlatform) || DEFAULT_GALGAME_FILTER_VALUE
-  const yearString =
-    getSearchParamValue(res?.yearString) || DEFAULT_GALGAME_YEAR_STRING
-  const monthString =
-    getSearchParamValue(res?.monthString) || DEFAULT_GALGAME_MONTH_STRING
-  const minRatingCount =
-    sortField === 'rating'
-      ? parseNonNegativeIntParam(
-          getSearchParamValue(res?.minRatingCount),
-          DEFAULT_TAG_COMPANY_MIN_RATING_COUNT
-        )
-      : 0
 
   const company = await kunGetCompanyByIdActions({ companyId: Number(id) })
   if (typeof company === 'string') {
@@ -81,14 +53,8 @@ export default async function Kun({ params, searchParams }: Props) {
     companyId: Number(id),
     page: currentPage,
     limit: 24,
-    selectedType,
-    selectedLanguage,
-    selectedPlatform,
     sortField,
-    sortOrder,
-    yearString,
-    monthString,
-    minRatingCount
+    sortOrder
   })
   if (typeof response === 'string') {
     return <ErrorComponent error={response} />

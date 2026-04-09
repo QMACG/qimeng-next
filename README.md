@@ -1,81 +1,132 @@
-![kun-touchgal-next](./public/touchgal.avif)
+# 绮梦 ACG
 
-# TouchGal
+绮梦 ACG 是一个基于 Next.js 15、Prisma 7、MySQL/MariaDB 和 Redis 的 Galgame 文章与资源站点。
 
-TouchGal 是一个一站式 Galgame 文化社区。提供Galgame 论坛、Galgame 下载等服务。承诺永久免费, 高质量。为Galgame 爱好者提供一片净土！
+当前项目形态：
 
-## 错误反馈
+- 游戏与资源一体化管理
+- 后台统一管理文章、游戏、标签、会社、广告、友链、反馈、网站统计、直链下载和站点设置
+- 普通用户以浏览、收藏、评论、评分、下载为主
+- 支持多域名访问
+- 支持 Markdown 正文渲染、首页广告、反馈文章、网站统计脚本和后台统计
 
-如果要反馈错误, 请您加入 TouchGal 的官方 Discord 服务器
+本项目修改自 [KUN1007/kun-touchgal-next](https://github.com/KUN1007/kun-touchgal-next)，感谢开源。
 
-https://discord.gg/e4QePvPQTB
+## 技术栈
 
-## 开发联系
+- Next.js 15
+- React 19
+- Prisma 7
+- MySQL / MariaDB
+- Redis
+- HeroUI
+- PM2
 
-如果有对 Web 开发技术 (Node.js, Nuxt, Next.js, SvelteKit, SolidStart 等) 感兴趣的朋友们, 可以加入本项目的 Telegram 开发群组
+## 运行要求
 
-[https://t.me/KUNForum](https://t.me/KUNForum)
+- Node.js 22+
+- pnpm 10+
+- MySQL 8+ 或 MariaDB 10.6+
+- Redis 6+
 
-## 如何运行
+## 本地开发
 
-确保本地安装有 Node.js, pnpm, PostgreSQL, Redis 环境
+1. 安装依赖
 
-- 使用 `git clone` 拉取本项目至本地目录
-- 参考项目根目录的 `.env.example` 文件，新建 `.env` 文件，并自行填写环境变量（`postgresql` 的本地连接配置）
-- 初次运行本项目，可执行 `pnpm prisma:push` 创建此项目所使用的本地数据库
-- 使用 `pnpm dev` 即可运行
-
-```env
-# 数据库 URL, 我们使用 psql
-KUN_DATABASE_URL = "postgresql://postgres:kunloveren@localhost:5432/touchgal?schema=public"
-
-# 网站 URL, 不变即可
-KUN_VISUAL_NOVEL_SITE_URL = "https://www.touchgal.top"
-
-# 开发环境 URL, 不变即可
-NEXT_PUBLIC_KUN_PATCH_ADDRESS_DEV = "http://127.0.0.1:3000"
-NEXT_PUBLIC_KUN_PATCH_ADDRESS_PROD = "https://image.touchgal.moyu.moe"
-
-# 本地 Redis 端口和地址, 一般无需变动
-REDIS_HOST = '127.0.0.1'
-REDIS_PORT = '6379'
-
-# jwt 配置, 开发环境无需变动
-JWT_ISS = 'touchgal'
-JWT_AUD = 'touchgal_admin'
-JWT_SECRET = 'moemoekungalgamekunisthecutest!chinorensukiazkhx'
-
-# NODE_ENV, 开发环境无需变动
-NODE_ENV = "development"
-
-# 邮件服务地址
-KUN_VISUAL_NOVEL_EMAIL_FROM = "鲲 Galgame 补丁"
-KUN_VISUAL_NOVEL_EMAIL_HOST = "moyu.moe"
-KUN_VISUAL_NOVEL_EMAIL_PORT = '587'
-KUN_VISUAL_NOVEL_EMAIL_ACCOUNT = "auth@moyu.moe"
-KUN_VISUAL_NOVEL_EMAIL_PASSWORD = "莲最可爱！"
-
-# S3 相关配置
-KUN_VISUAL_NOVEL_S3_STORAGE_ACCESS_KEY_ID = "kkkkkkkkkkkkkkkkkkkkkkkkkkkk"
-KUN_VISUAL_NOVEL_S3_STORAGE_SECRET_ACCESS_KEY = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
-KUN_VISUAL_NOVEL_S3_STORAGE_BUCKET_NAME = "kun"
-KUN_VISUAL_NOVEL_S3_STORAGE_ENDPOINT = "https://moyu.moe"
-KUN_VISUAL_NOVEL_S3_STORAGE_REGION = "us-west-001"
-NEXT_PUBLIC_KUN_VISUAL_NOVEL_S3_STORAGE_URL = "https://touchgal-patch.moyu.moe"
-
-# 图床相关配置
-KUN_VISUAL_NOVEL_IMAGE_BED_HOST = "touchgal-image.moyu.moe"
-KUN_VISUAL_NOVEL_IMAGE_BED_URL = "https://touchgal-image.moyu.moe"
+```bash
+corepack enable
+corepack pnpm install
 ```
 
-## 贡献指南
+2. 复制环境变量
 
-如果您的更改涉及到对项目源码的变动, **请务必在本地将项目运行成功, 自行测试无误后再 Pull Request**, 否则会严重阻碍代码审计工作
+```bash
+copy .env.example .env
+```
 
-## 开源声明 / 开源协议
+3. 按实际环境填写 `.env`
 
-本项目由 [鲲 Galgame 补丁 - kun-galgame-patch-next](https://github.com/KUN1007/kun-galgame-patch-next) 修改而来, 原仓库地址
+至少需要确认：
 
-https://github.com/KUN1007/kun-galgame-patch-next
+- `KUN_DATABASE_URL`
+- `REDIS_HOST`
+- `REDIS_PORT`
+- `KUN_VISUAL_NOVEL_SITE_URL`
+- `NEXT_PUBLIC_KUN_PATCH_ADDRESS_DEV`
+- `NEXT_PUBLIC_KUN_PATCH_ADDRESS_PROD`
+- `JWT_SECRET`
+- 邮件相关变量
 
-本项目遵从 `AGPL-3.0` 开源协议, 进行任何的修改分发时请注明原始仓库与作者地址
+如果启用站内直链下载，还需要填写：
+
+- `KUN_DIRECT_DOWNLOAD_ACCOUNT_ID`
+- `KUN_DIRECT_DOWNLOAD_APPLICATION_KEY`
+- `KUN_DIRECT_DOWNLOAD_BUCKET_ID`
+- `KUN_DIRECT_DOWNLOAD_HOSTS`
+
+4. 同步 Prisma
+
+```bash
+corepack pnpm prisma:generate
+corepack pnpm prisma:push
+```
+
+5. 启动开发环境
+
+```bash
+corepack pnpm dev
+```
+
+默认访问：
+
+- `http://127.0.0.1:3000`
+
+## 常用命令
+
+```bash
+corepack pnpm dev
+corepack pnpm build
+corepack pnpm typecheck
+corepack pnpm prisma:push
+corepack pnpm prisma:generate
+```
+
+## 多域名配置
+
+项目支持多域名访问。
+
+- `KUN_VISUAL_NOVEL_SITE_URL`：主域名
+- `KUN_VISUAL_NOVEL_SITE_URLS`：其他绑定域名，使用英文逗号分隔
+- `NEXT_PUBLIC_KUN_PATCH_ADDRESS_PROD`：正式环境地址，通常与主域名一致
+
+示例：
+
+```env
+KUN_VISUAL_NOVEL_SITE_URL="https://game.example.com"
+KUN_VISUAL_NOVEL_SITE_URLS="https://www.game.example.com,https://gal.example.com"
+NEXT_PUBLIC_KUN_PATCH_ADDRESS_PROD="https://game.example.com"
+```
+
+## 首号管理员规则
+
+当数据库中还没有任何用户时，第一个成功注册的账号会自动成为最高权限账号。
+
+正式环境建议顺序：
+
+1. 先完成数据库、Redis、邮件配置
+2. 首次启动站点
+3. 注册第一个账号
+4. 进入后台确认权限正常
+5. 再按需开放或关闭注册
+
+## 部署说明
+
+详细部署文档见：
+
+- [docs/DEPLOY.md](./docs/DEPLOY.md)
+
+## 许可
+
+当前仓库保留：
+
+- `AGPL-3.0-only`

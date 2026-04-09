@@ -20,8 +20,7 @@ export const getComment = async (
       return {
         user: {
           name: {
-            contains: normalizedSearch,
-            mode: 'insensitive' as const
+            contains: normalizedSearch
           }
         }
       }
@@ -29,8 +28,7 @@ export const getComment = async (
 
     return {
       content: {
-        contains: normalizedSearch,
-        mode: 'insensitive' as const
+        contains: normalizedSearch
       }
     }
   })()

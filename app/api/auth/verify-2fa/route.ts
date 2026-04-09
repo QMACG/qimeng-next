@@ -1,4 +1,4 @@
-import { z } from 'zod'
+﻿import { z } from 'zod'
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParsePostBody } from '~/app/api/utils/parseQuery'
@@ -9,9 +9,10 @@ import { Totp } from 'time2fa'
 import { parseCookies } from '~/utils/cookies'
 import { verify2FA } from '~/app/api/utils/verify2FA'
 import { verifyLogin2FASchema } from '~/validations/auth'
+import { parseJsonStringArray, toJsonStringArray } from '~/utils/prismaJson'
 import type { UserState } from '~/store/userStore'
 
-export const verifyLogin2FA = async (
+const verifyLogin2FA = async (
   input: z.infer<typeof verifyLogin2FASchema>,
   tempToken: string,
   uid: number
@@ -31,16 +32,17 @@ export const verifyLogin2FA = async (
   }
 
   let isValid = false
+  const backupCodes = parseJsonStringArray(user.two_factor_backup)
 
   if (isBackupCode) {
-    if (user.two_factor_backup.includes(token)) {
+    if (backupCodes.includes(token)) {
       isValid = true
       await prisma.user.update({
         where: { id: uid },
         data: {
-          two_factor_backup: {
-            set: user.two_factor_backup.filter((code) => code !== token)
-          }
+          two_factor_backup: toJsonStringArray(
+            backupCodes.filter((code) => code !== token)
+          )
         }
       })
     }
@@ -107,3 +109,4 @@ export const POST = async (req: NextRequest) => {
   const response = await verifyLogin2FA(input, tempToken, payload.id)
   return NextResponse.json(response)
 }
+

@@ -1,29 +1,29 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { kunFetchGet, kunFetchPut } from '~/utils/kunFetch'
 import { Button } from '@heroui/react'
-import { AtSign, Bell, Globe, MessageSquare, UserPlus } from 'lucide-react'
 import { Card, CardBody } from '@heroui/card'
-import { usePathname } from 'next/navigation'
+import { AtSign, Bell, Globe, MessageSquare, UserPlus } from 'lucide-react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import toast from 'react-hot-toast'
+import { kunFetchGet, kunFetchPut } from '~/utils/kunFetch'
 
 const notificationSubTypes = [
-  { type: 'notice', label: '全部消息', icon: Bell, href: '/message/notice' },
+  { type: 'notice', label: '全部通知', icon: Bell, href: '/message/notice' },
   {
     type: 'follow',
-    label: '关注消息',
+    label: '关注动态',
     icon: UserPlus,
     href: '/message/follow'
   },
   {
     type: 'mention',
-    label: '@ 消息',
+    label: '@我的消息',
     icon: AtSign,
     href: '/message/mention'
   },
-  { type: 'system', label: '系统消息', icon: Globe, href: '/message/system' }
+  { type: 'system', label: '系统通知', icon: Globe, href: '/message/system' }
 ]
 
 export const MessageNav = () => {
@@ -45,11 +45,13 @@ export const MessageNav = () => {
         hasUnreadNotification: boolean
         hasUnreadConversation: boolean
       }>('/message/unread')
+
       if (typeof res !== 'string') {
         setHasUnreadNotification(res.hasUnreadNotification)
         setHasUnreadConversation(res.hasUnreadConversation)
       }
     }
+
     fetchUnread()
   }, [])
 
@@ -66,6 +68,7 @@ export const MessageNav = () => {
         setHasUnreadNotification(false)
       }
     }
+
     readAllMessage()
   }, [isNotificationSection])
 
@@ -76,41 +79,42 @@ export const MessageNav = () => {
           <Button
             color={isNotificationSection ? 'primary' : 'default'}
             as={Link}
-            className="justify-start w-full"
+            className="w-full justify-start"
             variant={isNotificationSection ? 'solid' : 'light'}
             startContent={<Bell className="size-4 shrink-0" />}
             href="/message/notice"
           >
-            <span>消息</span>
+            <span>通知</span>
             {hasUnreadNotification && (
-              <span className="size-2 rounded-full bg-danger shrink-0" />
+              <span className="size-2 shrink-0 rounded-full bg-danger" />
             )}
           </Button>
+
           <Button
             color={isChatSection ? 'primary' : 'default'}
             as={Link}
-            className="justify-start w-full"
+            className="w-full justify-start"
             variant={isChatSection ? 'solid' : 'light'}
             startContent={<MessageSquare className="size-4 shrink-0" />}
             href="/message/chat"
           >
             <span>私聊</span>
             {hasUnreadConversation && (
-              <span className="size-2 rounded-full bg-danger shrink-0" />
+              <span className="size-2 shrink-0 rounded-full bg-danger" />
             )}
           </Button>
         </div>
 
         {isNotificationSection && (
           <>
-            <div className="border-t border-default-200 my-2" />
+            <div className="my-2 border-t border-default-200" />
             <div className="flex flex-row gap-2 lg:flex-col">
               {notificationSubTypes.map(({ type, label, icon: Icon, href }) => (
                 <Button
                   key={type}
                   color={lastSegment === type ? 'secondary' : 'default'}
                   as={Link}
-                  className="justify-start w-full"
+                  className="w-full justify-start"
                   variant={lastSegment === type ? 'flat' : 'light'}
                   size="sm"
                   startContent={<Icon className="size-3.5 shrink-0" />}

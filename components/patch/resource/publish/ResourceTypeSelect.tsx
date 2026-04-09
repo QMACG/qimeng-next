@@ -4,11 +4,13 @@ import { z } from 'zod'
 import { Controller } from 'react-hook-form'
 import { Select, SelectItem } from '@heroui/select'
 import { patchResourceCreateSchema } from '~/validations/patch'
-import { useUserStore } from '~/store/userStore'
-import { storageTypes } from '~/constants/resource'
+import {
+  DIRECT_STORAGE_TYPES,
+  NETDISK_STORAGE_TYPES
+} from '~/constants/resource'
 import type { ControlType, ErrorType } from '../share'
 
-export type ResourceFormData = z.infer<typeof patchResourceCreateSchema>
+export type ResourceFormData = z.input<typeof patchResourceCreateSchema>
 
 interface Props {
   section: string
@@ -17,26 +19,14 @@ interface Props {
 }
 
 export const ResourceTypeSelect = ({ section, control, errors }: Props) => {
-  const user = useUserStore((state) => state.user)
-
-  const calcDisabledKeys = () => {
-    if (user.role > 3 && section === 'patch') {
-      return []
-    }
-    if (user.role > 3 && section === 'galgame') {
-      return ['s3', 'user']
-    }
-    if (user.role > 1 && section === 'patch') {
-      return ['touchgal']
-    }
-    return ['s3', 'touchgal']
-  }
+  const options =
+    section === 'direct' ? DIRECT_STORAGE_TYPES : NETDISK_STORAGE_TYPES
 
   return (
     <div className="space-y-2">
-      <h3 className="text-lg font-medium">选择存储类型</h3>
+      <h3 className="text-lg font-medium">资源来源</h3>
       <p className="text-sm text-default-500">
-        确定您的资源体积大小以便选择合适的存储方式
+        选择具体的网盘平台或直链类型，方便前台区分展示。
       </p>
 
       <Controller
@@ -44,19 +34,18 @@ export const ResourceTypeSelect = ({ section, control, errors }: Props) => {
         control={control}
         render={({ field }) => (
           <Select
-            label="请选择您的资源存储类型"
-            selectedKeys={[field.value]}
+            label="请选择资源来源"
+            selectedKeys={field.value ? [field.value] : []}
             onSelectionChange={(key) => {
               field.onChange(Array.from(key).join(''))
             }}
-            disabledKeys={calcDisabledKeys()}
             isInvalid={!!errors.storage}
             errorMessage={errors.storage?.message}
           >
-            {storageTypes.map((type) => (
+            {options.map((type) => (
               <SelectItem key={type.value} textValue={type.label}>
                 <div className="flex flex-col">
-                  <span className="text">{type.label}</span>
+                  <span>{type.label}</span>
                   <span className="text-small text-default-500">
                     {type.description}
                   </span>

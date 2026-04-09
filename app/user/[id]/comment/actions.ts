@@ -4,7 +4,8 @@ import { z } from 'zod'
 import { getUserInfoSchema } from '~/validations/user'
 import { verifyHeaderCookie } from '~/utils/actions/verifyHeaderCookie'
 import { safeParseSchema } from '~/utils/actions/safeParseSchema'
-import { getUserComment } from '~/app/api/user/profile/comment/route'
+import { GET as getUserCommentRoute } from '~/app/api/user/profile/comment/route'
+import { callRouteGet } from '~/utils/actions/callRouteHandler'
 
 export const kunGetActions = async (
   params: z.infer<typeof getUserInfoSchema>
@@ -18,6 +19,10 @@ export const kunGetActions = async (
     return '用户登陆失效'
   }
 
-  const response = await getUserComment(input)
+  const response = await callRouteGet(
+    getUserCommentRoute,
+    '/api/user/profile/comment',
+    input
+  )
   return response
 }

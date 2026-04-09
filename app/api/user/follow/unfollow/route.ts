@@ -1,4 +1,4 @@
-import { z } from 'zod'
+﻿import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParsePostBody } from '~/app/api/utils/parseQuery'
 import { prisma } from '~/prisma/index'
@@ -8,7 +8,7 @@ const uidSchema = z.object({
   uid: z.coerce.number({ message: '请输入合法的用户 ID' }).min(1).max(9999999)
 })
 
-export const unfollowUser = async (uid: number, currentUserUid: number) => {
+const unfollowUser = async (uid: number, currentUserUid: number) => {
   if (uid === currentUserUid) {
     return '您不能取消关注自己'
   }
@@ -38,3 +38,4 @@ export const POST = async (req: NextRequest) => {
   const response = await unfollowUser(input.uid, payload?.uid)
   return NextResponse.json(response)
 }
+

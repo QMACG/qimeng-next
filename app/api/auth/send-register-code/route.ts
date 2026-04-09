@@ -1,4 +1,4 @@
-import { z } from 'zod'
+﻿import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParsePostBody } from '~/app/api/utils/parseQuery'
 import { sendVerificationCodeEmail } from '~/app/api/utils/sendVerificationCodeEmail'
@@ -8,43 +8,43 @@ import { prisma } from '~/prisma/index'
 import { getKv } from '~/lib/redis'
 import { KUN_PATCH_DISABLE_REGISTER_KEY } from '~/config/redis'
 
-export const sendRegisterCode = async (
+const sendRegisterCode = async (
   input: z.infer<typeof sendRegisterEmailVerificationCodeSchema>,
   headers: Headers
 ) => {
-  const res = await checkKunCaptchaExist(input.captcha)
-  if (!res) {
-    return '人机验证无效, 请完成人机验证'
+  const isCaptchaValid = await checkKunCaptchaExist(input.captcha)
+  if (!isCaptchaValid) {
+    return '人机验证无效，请重新完成验证'
   }
 
+  const userCount = await prisma.user.count()
+  const isBootstrapRegistration = userCount === 0
   const isDisableRegister = await getKv(KUN_PATCH_DISABLE_REGISTER_KEY)
-  if (isDisableRegister) {
-    return '由于网站近日遭受大量攻击，当前时间段暂时不可注册，请明天下午再来，一定要来哦'
+  if (isDisableRegister && !isBootstrapRegistration) {
+    return '当前站点暂未开放新用户注册'
   }
 
   const normalizedName = input.name.toLowerCase()
   const sameUsernameUser = await prisma.user.findFirst({
-    where: { name: { equals: normalizedName, mode: 'insensitive' } }
+    where: { name: { equals: normalizedName } }
   })
   if (sameUsernameUser) {
-    return '您的用户名已经有人注册了, 请修改'
+    return '该用户名已被注册，请更换后重试'
   }
 
-  const sameEmailUser = await prisma.user.findUnique({
-    where: { email: input.email }
+  const normalizedEmail = input.email.toLowerCase()
+  const sameEmailUser = await prisma.user.findFirst({
+    where: { email: { equals: normalizedEmail } }
   })
   if (sameEmailUser) {
-    return '您的邮箱已经有人注册了, 请修改'
+    return '该邮箱已被注册，请更换后重试'
   }
 
-  const result = await sendVerificationCodeEmail(
-    headers,
-    input.email,
-    'register'
-  )
+  const result = await sendVerificationCodeEmail(headers, input.email, 'register')
   if (result) {
     return result
   }
+
   return {}
 }
 
@@ -64,3 +64,4 @@ export const POST = async (req: NextRequest) => {
   const response = await sendRegisterCode(input, req.headers)
   return NextResponse.json(response)
 }
+

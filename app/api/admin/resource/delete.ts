@@ -1,13 +1,9 @@
 import { z } from 'zod'
-import { deleteFileFromS3 } from '~/lib/s3'
 import { prisma } from '~/prisma/index'
 import { recalcPatchType } from '~/app/api/patch/resource/_helper'
 
 const resourceIdSchema = z.object({
-  resourceId: z.coerce
-    .number({ message: '资源 ID 必须为数字' })
-    .min(1)
-    .max(9999999)
+  resourceId: z.coerce.number().min(1).max(9999999)
 })
 
 export const deleteResource = async (
@@ -16,8 +12,9 @@ export const deleteResource = async (
 ) => {
   const admin = await prisma.user.findUnique({ where: { id: uid } })
   if (!admin) {
-    return '未找到该管理员'
+    return '管理员不存在'
   }
+
   const patchResource = await prisma.patch_resource.findUnique({
     where: { id: input.resourceId },
     include: {
@@ -28,14 +25,9 @@ export const deleteResource = async (
       }
     }
   })
-  if (!patchResource) {
-    return '未找到对应的资源'
-  }
 
-  if (patchResource.storage === 's3') {
-    const fileName = patchResource.content.split('/').pop()
-    const s3Key = `patch/${patchResource.patch_id}/${patchResource.hash}/${fileName}`
-    await deleteFileFromS3(s3Key)
+  if (!patchResource) {
+    return '资源不存在'
   }
 
   return prisma.$transaction(async (prisma) => {
@@ -48,7 +40,10 @@ export const deleteResource = async (
       data: {
         type: 'delete',
         user_id: uid,
-        content: `管理员 ${admin.name} 删除了一个补丁资源\n\nGalgame 名:\n${patchResource.patch.name}\n\n补丁资源信息:\n${JSON.stringify(patchResource)}`
+        content:
+          `管理员 ${admin.name} 删除了一条资源链接\n\n` +
+          `所属游戏：\n${patchResource.patch.name}\n\n` +
+          `资源数据：\n${JSON.stringify(patchResource)}`
       }
     })
 

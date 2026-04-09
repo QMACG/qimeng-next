@@ -1,0 +1,70 @@
+'use client'
+
+import { useEffect, useRef } from 'react'
+import { createRoot } from 'react-dom/client'
+import DOMPurify from 'isomorphic-dompurify'
+import { useMounted } from '~/hooks/useMounted'
+import { KunExternalLink } from '~/components/kun/external-link/ExternalLink'
+import { MarkdownButtonLink } from '~/components/kun/markdown/MarkdownButtonLink'
+
+interface Props {
+  content: string
+}
+
+export const FeedbackCommentContent = ({ content }: Props) => {
+  const contentRef = useRef<HTMLDivElement>(null)
+  const isMounted = useMounted()
+
+  useEffect(() => {
+    if (!contentRef.current || !isMounted) {
+      return
+    }
+
+    const externalLinkElements = contentRef.current.querySelectorAll(
+      '[data-kun-external-link]'
+    )
+    externalLinkElements.forEach((element) => {
+      const text = element.getAttribute('data-text')
+      const href = element.getAttribute('data-href')
+      if (!text || !href) {
+        return
+      }
+
+      const root = document.createElement('div')
+      root.className = element.className
+      element.replaceWith(root)
+      const externalLinkRoot = createRoot(root)
+      externalLinkRoot.render(<KunExternalLink link={href}>{text}</KunExternalLink>)
+    })
+
+    const buttonElements = contentRef.current.querySelectorAll(
+      '[data-kun-button]'
+    )
+    buttonElements.forEach((element) => {
+      const href = element.getAttribute('data-href')
+      const text = element.getAttribute('data-text')
+      const type = element.getAttribute('data-type') ?? 'primary'
+      if (!href || !text) {
+        return
+      }
+
+      const root = document.createElement('div')
+      root.className = element.className
+      element.replaceWith(root)
+      const buttonRoot = createRoot(root)
+      buttonRoot.render(
+        <MarkdownButtonLink href={href} type={type}>
+          {text}
+        </MarkdownButtonLink>
+      )
+    })
+  }, [content, isMounted])
+
+  return (
+    <div
+      ref={contentRef}
+      className="kun-prose max-w-none"
+      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }}
+    />
+  )
+}

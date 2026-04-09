@@ -1,6 +1,6 @@
 import { kunMoyuMoe } from '~/config/moyu-moe'
-import { touchgalTemplate } from './templates/touchgal'
 import { announcementTemplate } from './templates/announcement'
+import { siteTemplate } from './templates/site'
 
 export interface EmailTemplate {
   id: string
@@ -10,9 +10,9 @@ export interface EmailTemplate {
 
 export const emailTemplates: EmailTemplate[] = [
   {
-    id: 'touchgal',
-    name: `${kunMoyuMoe.titleShort} 全体消息`,
-    template: touchgalTemplate(
+    id: 'site',
+    name: `${kunMoyuMoe.titleShort} 站点消息`,
+    template: siteTemplate(
       '{{title}}',
       '{{content}}',
       '{{email}}',
@@ -21,7 +21,7 @@ export const emailTemplates: EmailTemplate[] = [
   },
   {
     id: 'announcement',
-    name: `${kunMoyuMoe.titleShort} 重要公告`,
+    name: `${kunMoyuMoe.titleShort} 重要通知`,
     template: announcementTemplate(
       '{{title}}',
       '{{content}}',

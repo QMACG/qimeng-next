@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Image from 'next/image'
 import Lightbox from 'yet-another-react-lightbox'
 import Zoom from 'yet-another-react-lightbox/plugins/zoom'
 import Download from 'yet-another-react-lightbox/plugins/download'
@@ -16,31 +15,21 @@ export const BannerImage = ({ banner, name }: Props) => {
   const [isOpen, setIsOpen] = useState(false)
   const [slides, setSlides] = useState<{ src: string }[]>([])
 
-  const fullBannerUrl = banner.replace('banner.avif', 'banner-full.avif')
-
   useEffect(() => {
-    const img = new window.Image()
-    img.onload = () => {
-      setSlides([{ src: fullBannerUrl }, { src: banner }])
-    }
-    img.onerror = () => {
-      setSlides([{ src: banner }])
-    }
-    img.src = fullBannerUrl
-  }, [banner, fullBannerUrl])
+    setSlides([{ src: banner }])
+  }, [banner])
 
   return (
     <>
-      <Image
+      <img
         src={banner}
         alt={name}
-        className="object-cover cursor-pointer"
-        fill
-        sizes="(max-width: 768px) 100vw, 33vw"
-        priority
-        unoptimized
+        className="h-full w-full cursor-pointer object-cover"
         data-no-lightbox
         onClick={() => setIsOpen(true)}
+        loading="eager"
+        decoding="async"
+        referrerPolicy="no-referrer"
       />
 
       <Lightbox

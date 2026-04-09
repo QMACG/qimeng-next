@@ -5,68 +5,18 @@ import { prisma } from '~/prisma/index'
 import { duplicateSchema } from '~/validations/edit'
 import type { Prisma } from '~/prisma/generated/prisma/client'
 
-export const duplicate = async (input: z.infer<typeof duplicateSchema>) => {
-  const vndbId = input.vndbId?.toLowerCase()
-  const vndbRelationId = input.vndbRelationId?.toLowerCase()
-  const bangumiId = input.bangumiId ? Number(input.bangumiId) : undefined
-  const steamId = input.steamId ? Number(input.steamId) : undefined
-  const dlsiteCode = input.dlsiteCode?.toUpperCase()
+const duplicate = async (input: z.infer<typeof duplicateSchema>) => {
   const title = input.title
   const excludeId = input.excludeId ? Number(input.excludeId) : undefined
 
-  const conditions: Prisma.patchWhereInput[] = []
-
-  if (vndbId && vndbRelationId) {
-    conditions.push({
-      AND: [{ vndb_id: vndbId }, { vndb_relation_id: vndbRelationId }]
-    })
-  }
-
-  if (vndbId) {
-    conditions.push({ vndb_id: vndbId })
-  }
-
-  if (vndbRelationId) {
-    conditions.push({ vndb_relation_id: vndbRelationId })
-  }
-
-  if (bangumiId) {
-    conditions.push({ bangumi_id: bangumiId })
-  }
-
-  if (steamId) {
-    conditions.push({ steam_id: steamId })
-  }
-
-  if (dlsiteCode) {
-    conditions.push({ dlsite_code: dlsiteCode })
-  }
-
-  if (title) {
-    conditions.push({
-      name: {
-        equals: title,
-        mode: 'insensitive'
-      }
-    })
-    conditions.push({
-      alias: {
-        some: {
-          name: {
-            equals: title,
-            mode: 'insensitive'
-          }
-        }
-      }
-    })
-  }
-
-  if (!conditions.length) {
+  if (!title) {
     return {}
   }
 
   const where: Prisma.patchWhereInput = {
-    OR: conditions
+    name: {
+      equals: title
+    }
   }
 
   if (excludeId) {

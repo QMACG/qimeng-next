@@ -16,7 +16,7 @@ const SORT_OPTIONS: Array<{
 }> = [
   { value: 'rating', label: '平均评分' },
   { value: 'rating_count', label: '评分人数' },
-  { value: 'like', label: '点赞数' },
+  { value: 'like', label: '推荐数' },
   { value: 'favorite', label: '收藏数' },
   { value: 'resource', label: '资源数' },
   { value: 'comment', label: '评论数' },
@@ -46,28 +46,29 @@ export const RankingControls = ({
   onMinRatingCountChange
 }: Props) => {
   const selectedLabel =
-    SORT_OPTIONS.find((option) => option.value === sortField)?.label ??
-    '排序字段'
+    SORT_OPTIONS.find((option) => option.value === sortField)?.label ?? '排序字段'
 
   const handleMinCountChange = (value: string) => {
     const parsed = Number(value)
-    if (Number.isNaN(parsed)) return
+    if (Number.isNaN(parsed)) {
+      return
+    }
     onMinRatingCountChange(Math.max(0, parsed))
   }
 
   return (
     <Card>
       <CardBody>
-        <div className="flex gap-3 justify-between">
+        <div className="flex justify-between gap-3">
           <div className="flex gap-3">
-            <div className="flex relative flex-col">
-              <span className="absolute text-sm -top-0.5">排序字段</span>
+            <div className="relative flex flex-col">
+              <span className="absolute -top-0.5 text-sm">排序字段</span>
 
               <Dropdown>
                 <DropdownTrigger>
                   <Button
                     variant="flat"
-                    className="shrink-0 mt-auto"
+                    className="mt-auto shrink-0"
                     isDisabled={isLoading}
                   >
                     {selectedLabel}
@@ -85,9 +86,7 @@ export const RankingControls = ({
                   }}
                 >
                   {SORT_OPTIONS.map((option) => (
-                    <DropdownItem key={option.value}>
-                      {option.label}
-                    </DropdownItem>
+                    <DropdownItem key={option.value}>{option.label}</DropdownItem>
                   ))}
                 </DropdownMenu>
               </Dropdown>
@@ -107,7 +106,7 @@ export const RankingControls = ({
           <Button
             variant="flat"
             color="primary"
-            className="shrink-0 mt-auto"
+            className="mt-auto shrink-0"
             startContent={<ArrowUpDown className="size-4" />}
             onPress={() =>
               onSortOrderChange(sortOrder === 'desc' ? 'asc' : 'desc')

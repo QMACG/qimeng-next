@@ -1,4 +1,4 @@
-import { z } from 'zod'
+﻿import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParseGetQuery } from '~/app/api/utils/parseQuery'
 import { prisma } from '~/prisma/index'
@@ -7,7 +7,7 @@ import { GalgameCardSelectField } from '~/constants/api/select'
 import { getNSFWHeader } from '~/app/api/utils/getNSFWHeader'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 
-export const getUserFavorite = async (
+const getUserFavorite = async (
   input: z.infer<typeof getUserInfoSchema>,
   nsfwEnable: Record<string, string | undefined>
 ) => {
@@ -49,8 +49,9 @@ export const GET = async (req: NextRequest) => {
   if (!payload) {
     return NextResponse.json('用户登陆失效')
   }
-  const nsfwEnable = getNSFWHeader(req)
+  const nsfwEnable = await getNSFWHeader(req)
 
   const response = await getUserFavorite(input, nsfwEnable)
   return NextResponse.json(response)
 }
+

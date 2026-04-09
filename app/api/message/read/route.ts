@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+﻿import { NextRequest, NextResponse } from 'next/server'
 import { kunParseDeleteQuery } from '~/app/api/utils/parseQuery'
 import { prisma } from '~/prisma/index'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
@@ -44,7 +44,7 @@ const processMessageInBatches = async (handler: () => Promise<number>) => {
   }
 }
 
-export const readMessage = async (uid: number) => {
+const readMessage = async (uid: number) => {
   await processMessageInBatches(async () => {
     const result = await prisma.$queryRaw<{ count: number }[]>`
       WITH target AS (
@@ -74,7 +74,7 @@ export const readMessage = async (uid: number) => {
   return {}
 }
 
-export const clearReadMessage = async (uid: number, type: string) => {
+const clearReadMessage = async (uid: number, type: string) => {
   await processMessageInBatches(async () => {
     const result = type
       ? await prisma.$queryRaw<{ count: number }[]>`
@@ -147,3 +147,4 @@ export const DELETE = async (req: NextRequest) => {
   const response = await clearReadMessage(payload.uid, input.type)
   return NextResponse.json(response)
 }
+

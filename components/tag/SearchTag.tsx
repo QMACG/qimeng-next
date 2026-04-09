@@ -21,12 +21,12 @@ export const SearchTags = ({
       <Input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="可以用空格分隔您的搜索关键字"
+        placeholder="可用空格分隔多个关键词"
         endContent={
           <Button
             isIconOnly
             variant="light"
-            aria-label="搜索 Galgame 标签"
+            aria-label="搜索标签"
             onPress={handleSearch}
           >
             <Search />

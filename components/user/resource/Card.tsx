@@ -1,4 +1,4 @@
-import { Chip } from '@heroui/chip'
+﻿import { Chip } from '@heroui/chip'
 import { Card, CardBody } from '@heroui/card'
 import { Image } from '@heroui/image'
 import { formatTimeDifference } from '~/utils/time'
@@ -12,9 +12,7 @@ interface Props {
 }
 
 export const UserResourceCard = ({ resource }: Props) => {
-  const bannerImageSrc = resource.patchBanner
-    ? resource.patchBanner.replace(/\.avif$/, '-mini.avif')
-    : '/touchgal.avif'
+  const bannerImageSrc = resource.patchBanner || '/favicon.ico'
 
   return (
     <Card
@@ -55,3 +53,4 @@ export const UserResourceCard = ({ resource }: Props) => {
     </Card>
   )
 }
+

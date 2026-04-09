@@ -1,13 +1,9 @@
 'use client'
 
+import { useState } from 'react'
+import { Button } from '@heroui/button'
 import { Card, CardBody, CardFooter, CardHeader } from '@heroui/card'
 import { Input } from '@heroui/input'
-import { Button } from '@heroui/button'
-import { useUserStore } from '~/store/userStore'
-import { useState } from 'react'
-import { kunFetchPost } from '~/utils/kunFetch'
-import { kunErrorHandler } from '~/utils/kunErrorHandler'
-import { usernameSchema } from '~/validations/user'
 import {
   Modal,
   ModalBody,
@@ -17,6 +13,10 @@ import {
   useDisclosure
 } from '@heroui/modal'
 import toast from 'react-hot-toast'
+import { useUserStore } from '~/store/userStore'
+import { usernameSchema } from '~/validations/user'
+import { kunFetchPost } from '~/utils/kunFetch'
+import { kunErrorHandler } from '~/utils/kunErrorHandler'
 
 export const Username = () => {
   const { user, setUser } = useUserStore((state) => state)
@@ -27,29 +27,30 @@ export const Username = () => {
 
   const handleSave = async () => {
     if (user.moemoepoint < 30) {
-      toast.error('更改用户名最少需要 30 萌萌点, 您的萌萌点不足')
+      toast.error('修改用户名至少需要 30 萌萌点，当前余额不足')
       return
     }
 
     const result = usernameSchema.safeParse({ username })
     if (!result.success) {
       setError(result.error.errors[0].message)
-    } else {
-      setError('')
-
-      setLoading(true)
-
-      const res = await kunFetchPost<KunResponse<{}>>(
-        '/user/setting/username',
-        { username }
-      )
-      kunErrorHandler(res, () => {
-        toast.success('更新用户名成功')
-        setUser({ ...user, name: username, moemoepoint: user.moemoepoint - 30 })
-        setUsername('')
-      })
-      setLoading(false)
+      return
     }
+
+    setError('')
+    setLoading(true)
+
+    const res = await kunFetchPost<KunResponse<{}>>('/user/setting/username', {
+      username
+    })
+
+    kunErrorHandler(res, () => {
+      toast.success('用户名更新成功')
+      setUser({ ...user, name: username, moemoepoint: user.moemoepoint - 30 })
+      setUsername('')
+    })
+
+    setLoading(false)
   }
 
   return (
@@ -57,13 +58,15 @@ export const Username = () => {
       <CardHeader>
         <h2 className="text-xl font-medium">用户名</h2>
       </CardHeader>
-      <CardBody className="py-0 space-y-4">
+
+      <CardBody className="space-y-4 py-0">
         <div>
-          <p>这是您的用户名设置, 您的用户名是唯一的</p>
+          <p>这里可以修改您的用户名。用户名在站内保持唯一。</p>
         </div>
+
         <Input
           label="用户名"
-          autoComplete="text"
+          autoComplete="nickname"
           defaultValue={user.name}
           value={username}
           onChange={(e) => setUsername(e.target.value)}
@@ -74,15 +77,10 @@ export const Username = () => {
 
       <CardFooter className="flex-wrap">
         <p className="text-default-500">
-          用户名长度最大为 17, 可以是任意字符, 更改用户名需要消耗您 30 萌萌点
+          用户名最长 17 个字符，修改一次会消耗 30 萌萌点，且操作不可撤销。
         </p>
 
-        <Button
-          color="primary"
-          variant="solid"
-          className="ml-auto"
-          onPress={onOpen}
-        >
+        <Button color="primary" variant="solid" className="ml-auto" onPress={onOpen}>
           保存
         </Button>
 
@@ -91,14 +89,14 @@ export const Username = () => {
             {(onClose) => (
               <>
                 <ModalHeader className="flex flex-col gap-1">
-                  您确定要更改用户名吗?
+                  确认修改用户名吗？
                 </ModalHeader>
                 <ModalBody>
-                  <p>更改用户名需要消耗您 30 萌萌点, 该操作不可撤销</p>
+                  <p>修改用户名会消耗 30 萌萌点，提交后不可撤销。</p>
                 </ModalBody>
                 <ModalFooter>
                   <Button color="danger" variant="light" onPress={onClose}>
-                    关闭
+                    取消
                   </Button>
                   <Button
                     color="primary"
@@ -107,9 +105,9 @@ export const Username = () => {
                       onClose()
                     }}
                     isLoading={loading}
-                    disabled={loading}
+                    isDisabled={loading}
                   >
-                    确定
+                    确认
                   </Button>
                 </ModalFooter>
               </>

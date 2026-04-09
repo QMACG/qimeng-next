@@ -26,8 +26,8 @@ export const UserCheckIn = () => {
     kunErrorHandler(res, (value) => {
       showKunSooner(
         value
-          ? `签到成功! 您今天获得了 ${value.randomMoemoepoints} 萌萌点`
-          : '您的运气不好...今天没有获得萌萌点...'
+          ? `签到成功，今天获得了 ${value.randomMoemoepoints} 萌萌点`
+          : '今天没有获得萌萌点，下次再试试吧'
       )
       setUser({
         ...user,
@@ -46,7 +46,7 @@ export const UserCheckIn = () => {
       startContent={<CalendarCheck className="size-4" />}
       endContent={
         user.dailyCheckIn ? (
-          <span className="text-xs">签到过啦</span>
+          <span className="text-xs">今天已签到</span>
         ) : (
           <Sparkles className="size-5 text-secondary-500" />
         )

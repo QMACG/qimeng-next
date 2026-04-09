@@ -1,4 +1,4 @@
-import { z } from 'zod'
+﻿import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParseGetQuery, kunParsePostBody } from '~/app/api/utils/parseQuery'
 import { prisma } from '~/prisma/index'
@@ -9,7 +9,7 @@ import {
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 import type { Conversation } from '~/types/api/conversation'
 
-export const getConversations = async (
+const getConversations = async (
   input: z.infer<typeof getConversationsSchema>,
   uid: number
 ) => {
@@ -62,7 +62,7 @@ export const getConversations = async (
 const MOEMOEPOINT_REQUIRED = 20
 const MOEMOEPOINT_COST = 10
 
-export const checkConversation = async (
+const checkConversation = async (
   input: z.infer<typeof createConversationSchema>,
   uid: number,
   role: number
@@ -127,7 +127,7 @@ export const checkConversation = async (
   }
 }
 
-export const getOrCreateConversation = async (
+const getOrCreateConversation = async (
   input: z.infer<typeof createConversationSchema>,
   uid: number,
   role: number
@@ -228,3 +228,4 @@ export const POST = async (req: NextRequest) => {
   )
   return NextResponse.json(response)
 }
+

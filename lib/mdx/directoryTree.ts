@@ -1,50 +1,89 @@
-import fs from 'fs'
-import path from 'path'
-import matter from 'gray-matter'
-import { docDirectoryLabelMap } from '~/constants/doc'
+import {
+  getDocDirectoryLabel,
+  getDocDirectoryLabelSegments
+} from '~/constants/doc'
+import { getAllPosts } from './getPosts'
 import type { KunTreeNode } from './types'
 
-const POSTS_PATH = path.join(process.cwd(), 'posts')
-
-export const getDirectoryTree = (): KunTreeNode => {
-  const buildTree = (
-    currentPath: string,
-    baseName: string
-  ): KunTreeNode | null => {
-    const stats = fs.statSync(currentPath)
-
-    if (stats.isFile() && currentPath.endsWith('.mdx')) {
-      const fileContents = fs.readFileSync(currentPath, 'utf8')
-      const { data } = matter(fileContents)
-
-      return {
-        name: baseName.replace(/\.mdx$/, ''),
-        label: data.title,
-        path: path
-          .relative(POSTS_PATH, currentPath)
-          .replace(/\.mdx$/, '')
-          .replace(/\\/g, '/'),
-        type: 'file'
-      }
-    }
-
-    if (stats.isDirectory()) {
-      const children = fs
-        .readdirSync(currentPath)
-        .map((child) => buildTree(path.join(currentPath, child), child))
-        .filter((child): child is KunTreeNode => child !== null)
-
-      return {
-        name: baseName,
-        label: docDirectoryLabelMap[baseName],
-        path: path.relative(POSTS_PATH, currentPath).replace(/\\/g, '/'),
-        children,
-        type: 'directory'
-      }
-    }
-
-    return null
+export const getDirectoryTree = async (): Promise<KunTreeNode> => {
+  const posts = await getAllPosts()
+  const root: KunTreeNode = {
+    name: 'doc',
+    label: '文章',
+    path: '',
+    children: [],
+    type: 'directory'
   }
 
-  return buildTree(POSTS_PATH, 'doc') as KunTreeNode
+  for (const post of posts) {
+    const segments = post.slug.split('/').filter(Boolean)
+    const directoryPath = segments.slice(0, -1).join('/')
+    const directoryLabelSegments = getDocDirectoryLabelSegments(
+      directoryPath,
+      post.directoryLabel
+    )
+    const fileName = segments.pop()
+
+    if (!fileName) {
+      continue
+    }
+
+    let current = root
+    const currentPath: string[] = []
+
+    for (const segment of segments) {
+      currentPath.push(segment)
+      const directoryPath = currentPath.join('/')
+      const label = directoryLabelSegments[currentPath.length - 1]
+      const existingNode = current.children?.find(
+        (child) => child.type === 'directory' && child.path === directoryPath
+      )
+
+      if (existingNode) {
+        current = existingNode
+        continue
+      }
+
+      const newNode: KunTreeNode = {
+        name: segment,
+        label: label || getDocDirectoryLabel(directoryPath),
+        path: directoryPath,
+        children: [],
+        type: 'directory'
+      }
+
+      current.children = [...(current.children ?? []), newNode]
+      current = newNode
+    }
+
+    current.children = [
+      ...(current.children ?? []),
+      {
+        name: fileName,
+        label: post.title,
+        path: post.slug,
+        type: 'file'
+      }
+    ]
+  }
+
+  const sortTree = (node: KunTreeNode): KunTreeNode => {
+    if (!node.children?.length) {
+      return node
+    }
+
+    node.children = node.children
+      .map(sortTree)
+      .sort((a, b) => {
+        if (a.type !== b.type) {
+          return a.type === 'directory' ? -1 : 1
+        }
+
+        return a.label.localeCompare(b.label, 'zh-CN')
+      })
+
+    return node
+  }
+
+  return sortTree(root)
 }

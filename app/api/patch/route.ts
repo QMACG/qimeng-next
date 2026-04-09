@@ -23,7 +23,7 @@ export const GET = async (req: NextRequest) => {
   }
   const payload = await verifyHeaderCookie(req)
 
-  const response = await getPatchById(input, payload?.uid ?? 0)
+  const response = await getPatchById(input, payload?.uid ?? 0, payload?.role ?? 0)
   return NextResponse.json(response)
 }
 
@@ -36,8 +36,8 @@ export const DELETE = async (req: NextRequest) => {
   if (!payload) {
     return NextResponse.json('用户未登录')
   }
-  if (payload.role < 3) {
-    return NextResponse.json('本页面仅管理员可访问')
+  if (payload.role < 2) {
+    return NextResponse.json('仅编辑及以上角色可以删除游戏')
   }
 
   const response = await deletePatchById(input)

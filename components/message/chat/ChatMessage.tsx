@@ -1,29 +1,29 @@
 'use client'
 
 import { useState } from 'react'
-import { cn } from '~/utils/cn'
-import { formatTimeDifference } from '~/utils/time'
-import { KunAvatar } from '~/components/kun/floating-card/KunAvatar'
-import {
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem
-} from '@heroui/dropdown'
 import { Button } from '@heroui/react'
 import {
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger
+} from '@heroui/dropdown'
+import {
   Modal,
-  ModalContent,
-  ModalHeader,
   ModalBody,
+  ModalContent,
   ModalFooter,
+  ModalHeader,
   useDisclosure
 } from '@heroui/modal'
 import { Textarea } from '@heroui/input'
 import { Pencil, Trash2 } from 'lucide-react'
-import { kunFetchPut, kunFetchDelete } from '~/utils/kunFetch'
 import toast from 'react-hot-toast'
+import { KunAvatar } from '~/components/kun/floating-card/KunAvatar'
 import type { PrivateMessage } from '~/types/api/conversation'
+import { cn } from '~/utils/cn'
+import { kunFetchDelete, kunFetchPut } from '~/utils/kunFetch'
+import { formatTimeDifference } from '~/utils/time'
 
 type MessageUpdateData =
   | { action: 'delete' }
@@ -72,6 +72,7 @@ export const ChatMessage = ({
         editedAt: response.editedAt
       })
     }
+
     setIsSubmitting(false)
   }
 
@@ -88,27 +89,15 @@ export const ChatMessage = ({
       toast.success('消息已删除')
       onMessageUpdated({ action: 'delete' })
     }
+
     setIsSubmitting(false)
-  }
-
-  const handleContextMenu = (e: React.MouseEvent) => {
-    if (isOwn && !message.isDeleted) {
-      e.preventDefault()
-      setIsMenuOpen(true)
-    }
-  }
-
-  const handleClick = () => {
-    if (isOwn && !message.isDeleted) {
-      setIsMenuOpen(true)
-    }
   }
 
   if (message.isDeleted) {
     return (
       <div
         className={cn(
-          'flex gap-3 mb-4',
+          'mb-4 flex gap-3',
           isOwn ? 'flex-row-reverse' : 'flex-row'
         )}
       >
@@ -120,8 +109,8 @@ export const ChatMessage = ({
             className: 'shrink-0'
           }}
         />
-        <div className="max-w-[70%] rounded-2xl px-4 py-2 bg-default-100 dark:bg-default-200">
-          <p className="text-sm text-default-400 italic">
+        <div className="max-w-[70%] rounded-2xl bg-default-100 px-4 py-2 dark:bg-default-200">
+          <p className="text-sm italic text-default-400">
             {message.sender.name} 删除了一条消息
           </p>
         </div>
@@ -133,7 +122,7 @@ export const ChatMessage = ({
     <>
       <div
         className={cn(
-          'flex gap-3 mb-4',
+          'mb-4 flex gap-3',
           isOwn ? 'flex-row-reverse' : 'flex-row'
         )}
       >
@@ -150,16 +139,19 @@ export const ChatMessage = ({
           <Dropdown isOpen={isMenuOpen} onOpenChange={setIsMenuOpen}>
             <DropdownTrigger>
               <div
-                className="max-w-[70%] rounded-2xl px-4 py-2 cursor-pointer bg-primary-500 text-white"
-                onContextMenu={handleContextMenu}
-                onClick={handleClick}
+                className="max-w-[70%] cursor-pointer rounded-2xl bg-primary-500 px-4 py-2 text-white"
+                onContextMenu={(e) => {
+                  e.preventDefault()
+                  setIsMenuOpen(true)
+                }}
+                onClick={() => setIsMenuOpen(true)}
               >
-                <p className="text-sm whitespace-pre-wrap break-words">
+                <p className="break-words whitespace-pre-wrap text-sm">
                   {message.content}
                 </p>
-                <div className="text-xs mt-1 flex items-center gap-2 text-primary-100">
+                <div className="mt-1 flex items-center gap-2 text-xs text-primary-100">
                   <span>{formatTimeDifference(message.created)}</span>
-                  {message.editedAt && <span>(已编辑)</span>}
+                  {message.editedAt && <span>（已编辑）</span>}
                 </div>
               </div>
             </DropdownTrigger>
@@ -186,13 +178,13 @@ export const ChatMessage = ({
             </DropdownMenu>
           </Dropdown>
         ) : (
-          <div className="max-w-[70%] rounded-2xl px-4 py-2 bg-default-100 dark:bg-default-200">
-            <p className="text-sm whitespace-pre-wrap break-words">
+          <div className="max-w-[70%] rounded-2xl bg-default-100 px-4 py-2 dark:bg-default-200">
+            <p className="break-words whitespace-pre-wrap text-sm">
               {message.content}
             </p>
-            <div className="text-xs mt-1 flex items-center gap-2 text-default-400">
+            <div className="mt-1 flex items-center gap-2 text-xs text-default-400">
               <span>{formatTimeDifference(message.created)}</span>
-              {message.editedAt && <span>(已编辑)</span>}
+              {message.editedAt && <span>（已编辑）</span>}
             </div>
           </div>
         )}

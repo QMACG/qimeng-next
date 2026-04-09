@@ -1,37 +1,36 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
+import type { Company } from '~/types/api/company'
 
 export interface CreatePatchData {
   name: string
   introduction: string
-  vndbId: string
-  vndbRelationId: string
-  bangumiId: string
-  steamId: string
-  dlsiteCode: string
-  dlsiteCircleName: string
-  dlsiteCircleLink: string
-  vndbTags: string[]
-  vndbDevelopers: string[]
-  bangumiTags: string[]
-  bangumiDevelopers: string[]
-  steamTags: string[]
-  steamDevelopers: string[]
-  steamAliases: string[]
-  alias: string[]
+  status: number
   tag: string[]
+  companies: Company[]
+  resourceNote: string
   released: string
   contentLimit: string
+  banner: string
 }
 
-export interface CreatePatchRequestData extends CreatePatchData {
-  banner: Blob | null
+export interface CreatePatchResourceDraft {
+  tempId: string
+  name: string
+  section: string
+  storage: string
+  content: string
+  note: string
 }
+
+export type CreatePatchRequestData = CreatePatchData
 
 interface StoreState {
   data: CreatePatchData
+  resourceDrafts: CreatePatchResourceDraft[]
   getData: () => CreatePatchData
   setData: (data: CreatePatchData) => void
+  setResourceDrafts: (resourceDrafts: CreatePatchResourceDraft[]) => void
   resetData: () => void
 }
 
@@ -40,33 +39,25 @@ export const createPatchEditStoreKey = 'kun-patch-edit-store'
 const initialState: CreatePatchData = {
   name: '',
   introduction: '',
-  vndbId: '',
-  vndbRelationId: '',
-  bangumiId: '',
-  steamId: '',
-  dlsiteCode: '',
-  dlsiteCircleName: '',
-  dlsiteCircleLink: '',
-  vndbTags: [],
-  vndbDevelopers: [],
-  bangumiTags: [],
-  bangumiDevelopers: [],
-  steamTags: [],
-  steamDevelopers: [],
-  steamAliases: [],
-  alias: [],
+  status: 1,
   tag: [],
+  companies: [],
+  resourceNote: '',
   released: '',
-  contentLimit: 'sfw'
+  contentLimit: 'sfw',
+  banner: ''
 }
 
 export const useCreatePatchStore = create<StoreState>()(
   persist(
     (set, get) => ({
       data: initialState,
+      resourceDrafts: [],
       getData: () => get().data,
       setData: (data: CreatePatchData) => set({ data }),
-      resetData: () => set({ data: initialState })
+      setResourceDrafts: (resourceDrafts: CreatePatchResourceDraft[]) =>
+        set({ resourceDrafts }),
+      resetData: () => set({ data: initialState, resourceDrafts: [] })
     }),
     {
       name: createPatchEditStoreKey,

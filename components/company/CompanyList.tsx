@@ -17,11 +17,11 @@ export const CompanyList: FC<CompanyListProps> = ({
   searching
 }) => {
   if (loading) {
-    return <KunLoading hint="正在获取会社数据..." />
+    return <KunLoading hint="正在获取会社列表..." />
   }
 
   if (!searching && companies.length === 0) {
-    return <KunNull message="未找到相关内容, 可能暂未录入哦" />
+    return <KunNull message="暂未找到相关会社" />
   }
 
   return (

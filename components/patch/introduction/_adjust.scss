@@ -1,11 +1,123 @@
 .kun-prose {
+  p {
+    white-space: pre-line;
+  }
+
   h2 {
     font-weight: 500;
 
     &:first-child {
-      padding-top: 0;
       margin-top: 0;
+      padding-top: 0;
       border-top: 0;
     }
+  }
+
+  .data-kun-callout {
+    margin: 1.5rem 0;
+    border-radius: 1rem;
+    border: 1px solid rgb(229 231 235 / 0.9);
+    padding: 1rem 1rem 1rem 1.125rem;
+    background: rgb(249 250 251 / 0.92);
+  }
+
+  .data-kun-callout[data-title]::before {
+    content: attr(data-title);
+    display: block;
+    margin-bottom: 0.625rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+
+  .data-kun-callout__title {
+    margin-bottom: 0.625rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+
+  .data-kun-callout__content > :first-child {
+    margin-top: 0;
+  }
+
+  .data-kun-callout__content > :last-child {
+    margin-bottom: 0;
+  }
+
+  .data-kun-callout-info {
+    border-color: rgb(147 197 253 / 0.9);
+    background: rgb(239 246 255 / 0.92);
+  }
+
+  .data-kun-callout-info[data-title]::before,
+  .data-kun-callout-info .data-kun-callout__title {
+    color: rgb(29 78 216);
+  }
+
+  .data-kun-callout-warning {
+    border-color: rgb(253 224 71 / 0.95);
+    background: rgb(255 251 235 / 0.96);
+  }
+
+  .data-kun-callout-warning[data-title]::before,
+  .data-kun-callout-warning .data-kun-callout__title {
+    color: rgb(161 98 7);
+  }
+
+  .data-kun-callout-success {
+    border-color: rgb(134 239 172 / 0.9);
+    background: rgb(240 253 244 / 0.94);
+  }
+
+  .data-kun-callout-success[data-title]::before,
+  .data-kun-callout-success .data-kun-callout__title {
+    color: rgb(21 128 61);
+  }
+
+  .data-kun-callout-danger {
+    border-color: rgb(252 165 165 / 0.9);
+    background: rgb(254 242 242 / 0.94);
+  }
+
+  .data-kun-callout-danger[data-title]::before,
+  .data-kun-callout-danger .data-kun-callout__title {
+    color: rgb(185 28 28);
+  }
+
+  .data-kun-callout-note {
+    border-color: rgb(196 181 253 / 0.9);
+    background: rgb(245 243 255 / 0.94);
+  }
+
+  .data-kun-callout-note[data-title]::before,
+  .data-kun-callout-note .data-kun-callout__title {
+    color: rgb(109 40 217);
+  }
+
+  .data-kun-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin: 1.75rem 0;
+  }
+
+  .data-kun-gallery > p,
+  .data-kun-gallery > div {
+    margin: 0;
+  }
+
+  .data-kun-gallery img {
+    width: 100%;
+    height: 100%;
+    min-height: 180px;
+    object-fit: cover;
+    margin: 0;
+    border-radius: 1rem;
+    box-shadow: 0 12px 28px rgb(15 23 42 / 0.12);
+  }
+
+  .data-kun-gallery a {
+    display: block;
   }
 }

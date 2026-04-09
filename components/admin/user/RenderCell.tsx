@@ -19,7 +19,7 @@ export const RenderCell = (user: AdminUserType, columnKey: string) => {
           user={user}
           userProps={{
             name: user.name,
-            description: `补丁数 - ${user._count.patch} | 资源数 - ${user._count.patch_resource}`,
+            description: `游戏数 ${user._count.patch} | 资源数 ${user._count.patch_resource}`,
             avatarProps: {
               src: user.avatar
             }
@@ -48,7 +48,7 @@ export const RenderCell = (user: AdminUserType, columnKey: string) => {
     default:
       return (
         <Chip color="primary" variant="flat">
-          咕咕咕
+          未知
         </Chip>
       )
   }

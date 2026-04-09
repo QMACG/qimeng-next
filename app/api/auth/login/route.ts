@@ -1,4 +1,4 @@
-import { z } from 'zod'
+﻿import { z } from 'zod'
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParsePostBody } from '~/app/api/utils/parseQuery'
@@ -13,7 +13,7 @@ import { checkKunCaptchaExist } from '~/app/api/utils/verifyKunCaptcha'
 import { getRedirectConfig } from '~/app/api/admin/setting/redirect/getRedirectConfig'
 import type { UserState } from '~/store/userStore'
 
-export const login = async (
+const login = async (
   input: z.infer<typeof loginSchema>
 ): Promise<UserState | ({ require2FA: boolean } & KunUser) | string> => {
   const { name, password, captcha } = input
@@ -26,8 +26,8 @@ export const login = async (
   const user = await prisma.user.findFirst({
     where: {
       OR: [
-        { email: { equals: normalizedName, mode: 'insensitive' } },
-        { name: { equals: normalizedName, mode: 'insensitive' } }
+        { email: { equals: normalizedName } },
+        { name: { equals: normalizedName } }
       ]
     }
   })
@@ -97,3 +97,4 @@ export const POST = async (req: NextRequest) => {
   const response = await login(input)
   return NextResponse.json(response)
 }
+

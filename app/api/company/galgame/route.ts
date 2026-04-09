@@ -1,42 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '~/prisma'
+import { getFrontDisplayConfig } from '~/app/api/admin/setting/front-display/getFrontDisplayConfig'
 import { getPatchByCompanySchema } from '~/validations/company'
 import { kunParseGetQuery } from '~/app/api/utils/parseQuery'
 import { GalgameCardSelectField } from '~/constants/api/select'
 import { getNSFWHeader } from '~/app/api/utils/getNSFWHeader'
-import {
-  ALL_SUPPORTED_LANGUAGE,
-  ALL_SUPPORTED_PLATFORM,
-  ALL_SUPPORTED_TYPE
-} from '~/constants/resource'
-import {
-  buildGalgameDateFilter,
-  buildGalgameOrderBy,
-  buildGalgameWhere
-} from '~/app/api/utils/galgameQuery'
-import { parseGalgameFilterArray } from '~/utils/galgameFilter'
+import { buildGalgameOrderBy, buildGalgameWhere } from '~/app/api/utils/galgameQuery'
+import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
+import { canShowDownloadCount, canShowViewCount } from '~/utils/frontDisplay'
+import { parseJsonStringArray } from '~/utils/prismaJson'
 
-export const getPatchByCompany = async (
+const getPatchByCompany = async (
   input: z.infer<typeof getPatchByCompanySchema>,
-  nsfwEnable: Record<string, string | undefined>
+  nsfwEnable: Record<string, string | undefined>,
+  role = 0
 ) => {
-  const {
-    companyId,
-    page,
-    limit,
-    sortField,
-    sortOrder,
-    selectedType,
-    selectedLanguage,
-    selectedPlatform,
-    yearString,
-    monthString,
-    minRatingCount
-  } = input
+  const frontDisplayConfig = await getFrontDisplayConfig()
+  const showViewCount = canShowViewCount(role, frontDisplayConfig)
+  const showDownloadCount = canShowDownloadCount(role, frontDisplayConfig)
+  const { companyId, page, limit, sortField, sortOrder } = input
   const offset = (page - 1) * limit
-  const years = parseGalgameFilterArray(yearString)
-  const months = parseGalgameFilterArray(monthString)
   const orderBy = buildGalgameOrderBy(sortField, sortOrder)
   const where = {
     company: {
@@ -44,12 +28,7 @@ export const getPatchByCompany = async (
         company_id: companyId
       }
     },
-    ...buildGalgameDateFilter(years, months),
     ...buildGalgameWhere({
-      selectedType,
-      selectedLanguage,
-      selectedPlatform,
-      minRatingCount: sortField === 'rating' ? minRatingCount : 0,
       nsfwEnable
     })
   }
@@ -69,7 +48,14 @@ export const getPatchByCompany = async (
 
   const galgames: GalgameCard[] = data.map((gal) => ({
     ...gal,
-    tags: gal.tag.map((t) => t.tag.name).slice(0, 3),
+    view: showViewCount ? gal.view : 0,
+    download: showDownloadCount ? gal.download : 0,
+    showViewCount,
+    showDownloadCount,
+    type: parseJsonStringArray(gal.type),
+    language: parseJsonStringArray(gal.language),
+    platform: parseJsonStringArray(gal.platform),
+    tags: gal.tag.map((tag) => tag.tag.name).slice(0, 3),
     uniqueId: gal.unique_id,
     averageRating: gal.rating_stat?.avg_overall
       ? Math.round(gal.rating_stat.avg_overall * 10) / 10
@@ -84,16 +70,10 @@ export const GET = async (req: NextRequest) => {
   if (typeof input === 'string') {
     return NextResponse.json(input)
   }
-  if (
-    !ALL_SUPPORTED_TYPE.includes(input.selectedType) ||
-    !ALL_SUPPORTED_LANGUAGE.includes(input.selectedLanguage) ||
-    !ALL_SUPPORTED_PLATFORM.includes(input.selectedPlatform)
-  ) {
-    return NextResponse.json('请选择我们支持的 Galgame 排序类型')
-  }
 
-  const nsfwEnable = getNSFWHeader(req)
+  const nsfwEnable = await getNSFWHeader(req)
+  const payload = await verifyHeaderCookie(req)
 
-  const response = await getPatchByCompany(input, nsfwEnable)
+  const response = await getPatchByCompany(input, nsfwEnable, payload?.role ?? 0)
   return NextResponse.json(response)
 }

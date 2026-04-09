@@ -23,6 +23,7 @@ import {
   highlightActiveLineGutter,
   highlightSpecialChars,
   keymap,
+  placeholder as placeholderExtension,
   rectangularSelection
 } from '@codemirror/view'
 import { kunCM } from './theme'
@@ -56,15 +57,21 @@ const basicSetup: Extension = [
 interface StateOptions {
   onChange: (getString: () => string) => void
   content: string
+  placeholder?: string
 }
 
-export const createCodeMirrorState = ({ onChange, content }: StateOptions) => {
+export const createCodeMirrorState = ({
+  onChange,
+  content,
+  placeholder
+}: StateOptions) => {
   return EditorState.create({
     doc: content,
     extensions: [
       kunCM(),
       basicSetup,
       markdown(),
+      placeholderExtension(placeholder ?? ''),
       EditorView.updateListener.of((viewUpdate) => {
         if (viewUpdate.docChanged) {
           const getString = () => viewUpdate.state.doc.toString()

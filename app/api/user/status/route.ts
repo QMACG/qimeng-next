@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
+﻿import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '~/prisma/index'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 import { getRedirectConfig } from '~/app/api/admin/setting/redirect/getRedirectConfig'
 import type { UserState } from '~/store/userStore'
 
-export const getStatus = async (uid: number | undefined) => {
+const getStatus = async (uid: number | undefined) => {
   const user = await prisma.user.findUnique({
     where: { id: uid }
   })
@@ -44,3 +44,4 @@ export async function GET(req: NextRequest) {
   const status = await getStatus(payload?.uid)
   return NextResponse.json(status)
 }
+

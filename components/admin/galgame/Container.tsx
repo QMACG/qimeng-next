@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  Button,
   Chip,
   Input,
   Table,
@@ -10,21 +11,25 @@ import {
   TableHeader,
   TableRow
 } from '@heroui/react'
+import Link from 'next/link'
 import { Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useDebounce } from 'use-debounce'
 import { RenderCell } from './RenderCell'
 import { kunFetchGet } from '~/utils/kunFetch'
 import { KunLoading } from '~/components/kun/Loading'
 import { useMounted } from '~/hooks/useMounted'
-import { useDebounce } from 'use-debounce'
 import { KunPagination } from '~/components/kun/Pagination'
 import type { AdminGalgame } from '~/types/api/admin'
 
 const columns = [
+  { name: 'ID', uid: 'id' },
   { name: '封面', uid: 'banner' },
   { name: '标题', uid: 'name' },
-  { name: '用户', uid: 'user' },
-  { name: '时间', uid: 'created' }
+  { name: '状态', uid: 'status' },
+  { name: '作者', uid: 'user' },
+  { name: '创建时间', uid: 'created' },
+  { name: '操作', uid: 'actions' }
 ]
 
 interface Props {
@@ -39,8 +44,8 @@ export const Galgame = ({ initialGalgames, initialTotal }: Props) => {
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedQuery] = useDebounce(searchQuery, 500)
   const isMounted = useMounted()
-
   const [loading, setLoading] = useState(false)
+
   const fetchData = async () => {
     setLoading(true)
 
@@ -62,8 +67,9 @@ export const Galgame = ({ initialGalgames, initialTotal }: Props) => {
     if (!isMounted) {
       return
     }
+
     fetchData()
-  }, [page, debouncedQuery])
+  }, [page, debouncedQuery, isMounted])
 
   const handleSearch = (value: string) => {
     setSearchQuery(value)
@@ -72,29 +78,37 @@ export const Galgame = ({ initialGalgames, initialTotal }: Props) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Galgame 管理</h1>
-        <Chip color="primary" variant="flat">
-          正在开发中...
-        </Chip>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">游戏管理</h1>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Chip color="primary" variant="flat">
+            共 {total} 条
+          </Chip>
+          <Button as={Link} href="/admin/galgame/new" color="primary">
+            新建游戏
+          </Button>
+        </div>
       </div>
 
       <Input
         fullWidth
         isClearable
-        placeholder="输入 Galgame 名搜索 Galgame"
+        placeholder="输入游戏名称搜索"
         startContent={<Search className="text-default-300" size={20} />}
         value={searchQuery}
         onValueChange={handleSearch}
       />
 
       {loading ? (
-        <KunLoading hint="正在获取 Galgame 数据..." />
+        <KunLoading hint="正在获取游戏列表..." />
       ) : (
         <Table
-          aria-label="Galgame 管理"
+          aria-label="游戏管理"
           bottomContent={
-            <div className="flex justify-center w-full">
+            <div className="flex w-full justify-center">
               <KunPagination
                 page={page}
                 total={Math.ceil(total / 30)}
@@ -113,9 +127,7 @@ export const Galgame = ({ initialGalgames, initialTotal }: Props) => {
             {(item) => (
               <TableRow key={item.id}>
                 {(columnKey) => (
-                  <TableCell>
-                    {RenderCell(item, columnKey.toString())}
-                  </TableCell>
+                  <TableCell>{RenderCell(item, columnKey.toString())}</TableCell>
                 )}
               </TableRow>
             )}

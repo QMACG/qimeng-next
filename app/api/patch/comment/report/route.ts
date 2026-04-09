@@ -1,4 +1,4 @@
-import { z } from 'zod'
+﻿import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParsePostBody } from '~/app/api/utils/parseQuery'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
@@ -6,7 +6,7 @@ import { createPatchCommentReportSchema } from '~/validations/patch'
 import { createMessage } from '~/app/api/utils/message'
 import { prisma } from '~/prisma'
 
-export const createReport = async (
+const createReport = async (
   input: z.infer<typeof createPatchCommentReportSchema>,
   uid: number
 ) => {
@@ -68,3 +68,4 @@ export const POST = async (req: NextRequest) => {
   const response = await createReport(input, payload.uid)
   return NextResponse.json(response)
 }
+

@@ -10,8 +10,9 @@ export async function POST(req: NextRequest) {
   }
 
   await deleteKunToken(payload.uid)
-  const cookie = await cookies()
-  cookie.delete('kun-galgame-patch-moe-token')
+  const cookieStore = await cookies()
+  cookieStore.delete('kun-galgame-patch-moe-token')
+  cookieStore.delete('kun-patch-setting-store|state|data|kunNsfwEnable')
 
   return NextResponse.json({ message: '退出登录成功' })
 }

@@ -3,9 +3,9 @@
 import { z } from 'zod'
 import { safeParseSchema } from '~/utils/actions/safeParseSchema'
 import { getTagById } from '~/app/api/tag/get'
-import { getPatchByTag } from '~/app/api/tag/galgame/route'
-import { getNSFWHeader } from '~/utils/actions/getNSFWHeader'
+import { GET as getPatchByTagRoute } from '~/app/api/tag/galgame/route'
 import { getPatchByTagSchema, getTagByIdSchema } from '~/validations/tag'
+import { callRouteGet } from '~/utils/actions/callRouteHandler'
 
 export const kunGetTagByIdActions = async (
   params: z.infer<typeof getTagByIdSchema>
@@ -27,8 +27,10 @@ export const kunTagGalgameActions = async (
     return input
   }
 
-  const nsfwEnable = await getNSFWHeader()
-
-  const response = await getPatchByTag(input, nsfwEnable)
+  const response = await callRouteGet(
+    getPatchByTagRoute,
+    '/api/tag/galgame',
+    input
+  )
   return response
 }

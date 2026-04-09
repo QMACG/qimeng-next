@@ -5,7 +5,7 @@ import { useRewritePatchStore } from '~/store/rewriteStore'
 import { PatchHeaderTabs } from './Tabs'
 import { PatchHeaderInfo } from './Info'
 import { KunAutoImageViewer } from '~/components/kun/image-viewer/AutoImageViewer'
-import { KunNull } from '~/components/kun/Null'
+import { NsfwBlockedNotice } from './NsfwBlockedNotice'
 import type { Patch, PatchIntroduction } from '~/types/api/patch'
 
 interface PatchHeaderProps {
@@ -27,33 +27,22 @@ export const PatchHeaderContainer = ({
     setData({
       id: patch.id,
       uniqueId: patch.uniqueId,
-      vndbId: patch.vndbId ?? '',
-      vndbRelationId: patch.vndbRelationId ?? '',
-      bangumiId: patch.bangumiId ? String(patch.bangumiId) : '',
-      steamId: patch.steamId ? String(patch.steamId) : '',
-      dlsiteCode: patch.dlsiteCode ?? '',
-      dlsiteCircleName: '',
-      dlsiteCircleLink: '',
-      vndbTags: [],
-      vndbDevelopers: [],
-      bangumiTags: [],
-      bangumiDevelopers: [],
-      steamTags: [],
-      steamDevelopers: [],
-      steamAliases: [],
+      status: patch.status,
+      banner: patch.banner,
       name: patch.name,
       introduction: patch.introduction,
-      alias: patch.alias,
       tag: patch.tags,
+      companies: intro.company,
+      resourceNote: intro.resourceNote,
       contentLimit: patch.contentLimit,
       released: intro.released
     })
-  }, [])
+  }, [intro.released, patch, setData])
 
   return (
-    <div className="relative w-full mx-auto max-w-7xl">
+    <div className="relative mx-auto w-full max-w-7xl">
       {patch.contentLimit === 'nsfw' && !uid ? (
-        <KunNull message="请登录后查看 NSFW 游戏" />
+        <NsfwBlockedNotice isLoggedIn={false} />
       ) : (
         <>
           <KunAutoImageViewer />
@@ -69,7 +58,6 @@ export const PatchHeaderContainer = ({
           <div ref={tabsRef}>
             <PatchHeaderTabs
               id={patch.id}
-              vndbId={patch.vndbId || ''}
               intro={intro}
               uid={uid}
               selected={selected}

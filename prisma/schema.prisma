@@ -1,0 +1,570 @@
+generator client {
+  provider = "prisma-client"
+  output   = "./generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model admin_log {
+  id      Int    @id @default(autoincrement())
+  type    String
+  content String @db.VarChar(10007)
+  status  Int    @default(0)
+
+  user_id Int
+  user    user @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+}
+
+model user_conversation {
+  id Int @id @default(autoincrement())
+
+  user_a_id Int
+  user_b_id Int
+
+  user_a user @relation("conversation_user_a", fields: [user_a_id], references: [id], onDelete: Cascade)
+  user_b user @relation("conversation_user_b", fields: [user_b_id], references: [id], onDelete: Cascade)
+
+  last_message_id     Int?
+  last_message_time   DateTime @default(now())
+  user_a_unread_count Int      @default(0)
+  user_b_unread_count Int      @default(0)
+
+  messages user_private_message[]
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+
+  @@unique([user_a_id, user_b_id])
+}
+
+model user_private_message {
+  id              Int               @id @default(autoincrement())
+  conversation_id Int
+  conversation    user_conversation @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
+
+  sender_id Int
+  sender    user @relation("pm_sender", fields: [sender_id], references: [id], onDelete: Cascade)
+
+  content    String    @db.VarChar(2000)
+  status     Int       @default(0)
+  is_deleted Boolean   @default(false)
+  edited_at  DateTime?
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+}
+
+model doc_post {
+  id              Int      @id @default(autoincrement())
+  slug            String   @unique @db.VarChar(255)
+  title           String   @db.VarChar(255)
+  banner          String   @default("") @db.VarChar(1007)
+  directory_label String   @default("") @db.VarChar(255)
+  description     String   @default("") @db.VarChar(1007)
+  content         String   @db.MediumText
+  category        String   @default("notice") @db.VarChar(50)
+  visibility      Int      @default(1)
+  pin             Boolean  @default(false)
+  sort_order      Int      @default(0)
+  published_at    DateTime @default(now())
+  author_name     String   @default("") @db.VarChar(255)
+  author_avatar   String   @default("") @db.VarChar(1007)
+  author_homepage String   @default("") @db.VarChar(1007)
+
+  author_id Int?
+  author    user? @relation(fields: [author_id], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  comment   doc_post_comment[]
+  advertisements site_advertisement[]
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+
+  @@index([category, visibility, pin, sort_order, published_at])
+}
+
+model doc_post_comment {
+  id      Int    @id @default(autoincrement())
+  content String @default("") @db.VarChar(10007)
+  status  Int    @default(0)
+
+  reply     doc_post_comment[] @relation("doc_post_comment_reply")
+  parent_id Int?
+  parent    doc_post_comment?  @relation("doc_post_comment_reply", fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  user_id Int
+  user    user @relation("user_doc_post_comment", fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  doc_post_id Int
+  doc_post    doc_post @relation(fields: [doc_post_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+
+  @@index([doc_post_id, parent_id, created])
+}
+
+model site_advertisement {
+  id                Int      @id @default(autoincrement())
+  kind              String   @db.VarChar(50)
+  title             String   @default("") @db.VarChar(255)
+  banner            String   @default("") @db.VarChar(1007)
+  link              String   @default("") @db.VarChar(1007)
+  target_mode       String   @default("article") @db.VarChar(50)
+  visible_for_guest Boolean  @default(true)
+  sort_order        Int      @default(0)
+  slot              Int?
+
+  doc_post_id Int?
+  doc_post    doc_post? @relation(fields: [doc_post_id], references: [id], onDelete: SetNull, onUpdate: NoAction)
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+
+  @@unique([kind, slot])
+  @@index([kind, sort_order, created])
+}
+
+model site_friend_link {
+  id          Int    @id @default(autoincrement())
+  name        String @db.VarChar(255)
+  avatar      String @default("") @db.VarChar(1007)
+  description String @default("") @db.VarChar(1007)
+  link        String @unique @db.VarChar(767)
+  status      Int    @default(0)
+  sort_order  Int    @default(0)
+
+  applicant_user_id Int?
+  applicant         user? @relation("user_site_friend_link_applicant", fields: [applicant_user_id], references: [id], onDelete: SetNull, onUpdate: NoAction)
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+
+  @@index([status, sort_order, id])
+}
+
+model site_resource_note_config {
+  id           Int     @id @default(1)
+  enable_note  Boolean @default(true)
+  default_note String  @db.MediumText
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+}
+
+model site_direct_download_config {
+  id                        Int     @id @default(1)
+  enable_download           Boolean @default(true)
+  require_captcha           Boolean @default(true)
+  record_logs               Boolean @default(true)
+  rate_limit_window_minutes Int     @default(60)
+  rate_limit_max_count      Int     @default(5)
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+}
+
+model site_direct_download_log {
+  id         Int    @id @default(autoincrement())
+  user_ip    String @default("") @db.VarChar(64)
+  file_path  String @db.VarChar(1007)
+  user_agent String @default("") @db.VarChar(1007)
+  status     String @default("success") @db.VarChar(50)
+  reason     String @default("") @db.VarChar(1007)
+
+  user_id Int?
+  user    user? @relation("user_site_direct_download_log", fields: [user_id], references: [id], onDelete: SetNull, onUpdate: NoAction)
+
+  patch_id Int?
+  patch    patch? @relation("patch_site_direct_download_log", fields: [patch_id], references: [id], onDelete: SetNull, onUpdate: NoAction)
+
+  resource_id Int?
+  resource    patch_resource? @relation("patch_resource_site_direct_download_log", fields: [resource_id], references: [id], onDelete: SetNull, onUpdate: NoAction)
+
+  created DateTime @default(now())
+
+  @@index([created])
+  @@index([status, created])
+  @@index([user_id, created])
+  @@index([patch_id, created])
+  @@index([resource_id, created])
+}
+
+model site_direct_download_ip_blacklist {
+  id     Int    @id @default(autoincrement())
+  ip     String @unique @db.VarChar(64)
+  reason String @default("") @db.VarChar(1007)
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+}
+
+model site_direct_download_user_blacklist {
+  id     Int    @id @default(autoincrement())
+  reason String @default("") @db.VarChar(1007)
+
+  user_id Int  @unique
+  user    user @relation("user_site_direct_download_user_blacklist", fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+}
+
+model site_analytics_script {
+  id         Int      @id @default(autoincrement())
+  name       String   @db.VarChar(255)
+  position   String   @default("body_end") @db.VarChar(50)
+  content    String   @db.MediumText
+  is_enabled Boolean  @default(true)
+  sort_order Int      @default(0)
+  created    DateTime @default(now())
+  updated    DateTime @updatedAt
+
+  @@index([is_enabled, position, sort_order, id])
+}
+
+model patch_comment {
+  id      Int    @id @default(autoincrement())
+  content String @default("") @db.VarChar(10007)
+  edit    String @default("")
+
+  like_by user_patch_comment_like_relation[]
+
+  reply     patch_comment[] @relation("comment_reply")
+  parent_id Int?
+  parent    patch_comment?  @relation("comment_reply", fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user_id   Int
+  user      user            @relation("user_patch_comment", fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  patch_id  Int
+  patch     patch           @relation("patch_comment", fields: [patch_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+}
+
+model user_patch_comment_like_relation {
+  id Int @id @default(autoincrement())
+
+  user_id    Int
+  user       user          @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  comment_id Int
+  comment    patch_comment @relation(fields: [comment_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+
+  @@unique([user_id, comment_id])
+}
+
+model patch_company {
+  id Int @id @default(autoincrement())
+
+  name             String   @db.VarChar(107)
+  introduction     String   @default("") @db.VarChar(10007)
+  count            Int      @default(0)
+  primary_language Json
+  official_website Json
+  parent_brand     Json
+  alias            Json
+
+  patch_relations patch_company_relation[]
+  user_id         Int
+  user            user                     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+}
+
+model patch_company_relation {
+  id Int @id @default(autoincrement())
+
+  patch_id   Int
+  patch      patch         @relation(fields: [patch_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  company_id Int
+  company    patch_company @relation(fields: [company_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+
+  @@unique([patch_id, company_id])
+}
+
+model patch_rating {
+  id Int @id @default(autoincrement())
+
+  recommend     String
+  overall       Int
+  play_status   String @default("not_started")
+  short_summary String @default("") @db.VarChar(1314)
+  spoiler_level String @default("none")
+
+  user_id  Int
+  user     user  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  patch_id Int
+  patch    patch @relation(fields: [patch_id], references: [id], onDelete: Cascade)
+
+  like patch_rating_like[]
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+
+  @@unique([user_id, patch_id])
+  @@index([patch_id])
+}
+
+model patch_rating_like {
+  id Int @id @default(autoincrement())
+
+  patch_rating_id Int
+  patch_rating    patch_rating @relation(fields: [patch_rating_id], references: [id], onDelete: Cascade)
+  user_id         Int
+  user            user         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+
+  @@unique([patch_rating_id, user_id])
+}
+
+model patch_rating_stat {
+  patch_id Int   @id
+  patch    patch @relation(fields: [patch_id], references: [id], onDelete: Cascade)
+
+  avg_overall Float @default(0)
+  count       Int   @default(0)
+
+  rec_strong_no  Int @default(0)
+  rec_no         Int @default(0)
+  rec_neutral    Int @default(0)
+  rec_yes        Int @default(0)
+  rec_strong_yes Int @default(0)
+
+  o1  Int @default(0)
+  o2  Int @default(0)
+  o3  Int @default(0)
+  o4  Int @default(0)
+  o5  Int @default(0)
+  o6  Int @default(0)
+  o7  Int @default(0)
+  o8  Int @default(0)
+  o9  Int @default(0)
+  o10 Int @default(0)
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+
+  @@index([avg_overall])
+  @@index([count])
+}
+
+model patch_resource {
+  id       Int    @id @default(autoincrement())
+  name     String @default("") @db.VarChar(255)
+  storage  String @db.VarChar(107)
+  section  String @db.VarChar(107)
+  content  String @default("")
+  download Int    @default(0)
+  status   Int    @default(0)
+
+  like_by user_patch_resource_like_relation[]
+  direct_download_log site_direct_download_log[] @relation("patch_resource_site_direct_download_log")
+
+  user_id  Int
+  user     user  @relation("user_patch_resource", fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  patch_id Int
+  patch    patch @relation("patch_resource", fields: [patch_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+}
+
+model user_patch_resource_like_relation {
+  id Int @id @default(autoincrement())
+
+  user_id     Int
+  user        user           @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  resource_id Int
+  resource    patch_resource @relation(fields: [resource_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+
+  @@unique([user_id, resource_id])
+}
+
+model patch_tag {
+  id           Int      @id @default(autoincrement())
+  name         String   @unique @db.VarChar(107)
+  introduction String   @default("") @db.VarChar(10007)
+  count        Int      @default(0)
+  alias        Json
+
+  patch_relation patch_tag_relation[]
+  user_id        Int
+  user           user                 @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+}
+
+model patch_tag_relation {
+  id       Int       @id @default(autoincrement())
+  patch_id Int
+  patch    patch     @relation(fields: [patch_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  tag_id   Int
+  tag      patch_tag @relation(fields: [tag_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+
+  @@unique([patch_id, tag_id])
+}
+
+model patch {
+  id                   Int      @id @default(autoincrement())
+  unique_id            String   @unique @db.VarChar(8)
+  name                 String   @db.VarChar(1007)
+  banner               String   @default("") @db.VarChar(1007)
+  introduction         String   @db.MediumText
+  resource_note        String   @db.MediumText
+  released             String   @default("unknown") @db.VarChar(107)
+  content_limit        String   @default("") @db.VarChar(107)
+  visibility           Int      @default(1)
+  download             Int      @default(0)
+  view                 Int      @default(0)
+  resource_update_time DateTime @default(now())
+  type                 Json
+  language             Json
+  platform             Json
+
+  user_id Int
+  user    user @relation("user_patch", fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  tag             patch_tag_relation[]
+  company         patch_company_relation[]
+  favorite_folder user_patch_favorite_folder_relation[]
+
+  rating      patch_rating[]
+  rating_stat patch_rating_stat?
+
+  resource patch_resource[] @relation("patch_resource")
+  comment  patch_comment[]  @relation("patch_comment")
+  direct_download_log site_direct_download_log[] @relation("patch_site_direct_download_log")
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+}
+model user {
+  id            Int      @id @default(autoincrement())
+  name          String   @unique @db.VarChar(17)
+  email         String   @unique @db.VarChar(255)
+  password      String   @db.VarChar(1007)
+  ip            String   @default("") @db.VarChar(233)
+  avatar        String   @default("") @db.VarChar(233)
+  role          Int      @default(1)
+  status        Int      @default(0)
+  register_time DateTime @default(now())
+  moemoepoint   Int      @default(0)
+  bio           String   @default("") @db.VarChar(107)
+
+  enable_email_notice Boolean @default(true)
+  daily_image_count   Int     @default(0)
+  daily_check_in      Int     @default(0)
+  daily_upload_size   Float   @default(0)
+  last_login_time     String  @default("")
+
+  enable_2fa        Boolean @default(false)
+  two_factor_secret String  @default("")
+  two_factor_backup Json
+
+  admin_log admin_log[]
+  patch_tag patch_tag[]
+
+  patch_comment_like    user_patch_comment_like_relation[]
+  patch_resource_like   user_patch_resource_like_relation[]
+  patch_favorite_folder user_patch_favorite_folder[]
+
+  patch_company     patch_company[]
+  patch_rating      patch_rating[]
+  patch_rating_like patch_rating_like[]
+  direct_download_log site_direct_download_log[] @relation("user_site_direct_download_log")
+  direct_download_blacklist site_direct_download_user_blacklist[] @relation("user_site_direct_download_user_blacklist")
+
+  following       user_follow_relation[] @relation("user_following")
+  follower        user_follow_relation[] @relation("user_follower")
+  patch           patch[]                @relation("user_patch")
+  patch_comment   patch_comment[]        @relation("user_patch_comment")
+  doc_post_comment doc_post_comment[]    @relation("user_doc_post_comment")
+  patch_resource  patch_resource[]       @relation("user_patch_resource")
+  doc_post        doc_post[]
+  friend_link_application site_friend_link[] @relation("user_site_friend_link_applicant")
+  send_message    user_message[]         @relation("user_send_message")
+  receive_message user_message[]         @relation("user_receive_message")
+
+  conversation_a  user_conversation[]    @relation("conversation_user_a")
+  conversation_b  user_conversation[]    @relation("conversation_user_b")
+  private_message user_private_message[] @relation("pm_sender")
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+}
+
+model user_follow_relation {
+  id Int @id @default(autoincrement())
+
+  follower_id  Int
+  following_id Int
+
+  follower  user @relation("user_follower", fields: [follower_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  following user @relation("user_following", fields: [following_id], references: [id])
+
+  @@unique([follower_id, following_id])
+}
+
+model user_message {
+  id      Int    @id @default(autoincrement())
+  type    String
+  content String @db.VarChar(10007)
+  status  Int    @default(0)
+  link    String @default("") @db.VarChar(1007)
+
+  sender_id    Int?
+  sender       user? @relation("user_send_message", fields: [sender_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  recipient_id Int?
+  recipient    user? @relation("user_receive_message", fields: [recipient_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+
+  @@index([recipient_id, status, type, id])
+}
+
+model user_patch_favorite_folder {
+  id          Int                                   @id @default(autoincrement())
+  name        String                                @db.VarChar(100)
+  description String                                @default("") @db.VarChar(500)
+  is_public   Boolean                               @default(false)
+  user_id     Int
+  user        user                                  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  patch       user_patch_favorite_folder_relation[]
+  created     DateTime                              @default(now())
+  updated     DateTime                              @updatedAt
+
+  @@unique([user_id, name])
+}
+
+model user_patch_favorite_folder_relation {
+  id        Int                        @id @default(autoincrement())
+  folder_id Int
+  patch_id  Int
+  folder    user_patch_favorite_folder @relation(fields: [folder_id], references: [id], onDelete: Cascade)
+  patch     patch                      @relation(fields: [patch_id], references: [id], onDelete: Cascade)
+  created   DateTime                   @default(now())
+  updated   DateTime                   @updatedAt
+
+  @@unique([folder_id, patch_id])
+}

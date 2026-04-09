@@ -1,6 +1,7 @@
 import type { PatchResource } from '~/types/api/patch'
 import type { PatchComment } from '~/types/api/comment'
 import type { Message } from '~/types/api/message'
+import type { DocComment, DocPost } from '~/types/api/doc'
 
 export type AdminStatsName =
   | 'user'
@@ -56,6 +57,7 @@ export interface AdminGalgame {
   uniqueId: string
   name: string
   banner: string
+  status: number
   user: KunUser
   created: Date | string
 }
@@ -64,9 +66,14 @@ export interface AdminResource extends PatchResource {
   patchName: string
 }
 
+export type AdminDocPost = DocPost
+
 export type AdminComment = PatchComment
 
-export type AdminFeedback = Message
+export interface AdminFeedback extends DocComment {
+  link: string
+  sender: KunUser
+}
 
 export type AdminReportTargetType = 'comment' | 'rating'
 
@@ -90,4 +97,28 @@ export interface AdminRedirectConfig {
   enableRedirect: boolean
   excludedDomains: string[]
   delaySeconds: number
+}
+
+export interface AdminResourceNoteConfig {
+  enableNote: boolean
+  defaultNote: string
+}
+
+export interface AdminFrontDisplayConfig {
+  hideViewCountForVisitor: boolean
+  hideDownloadCountForVisitor: boolean
+  hideCreatorStatsForVisitor: boolean
+}
+
+export type AdminSiteAnalyticsPosition = 'head' | 'body_end'
+
+export interface AdminSiteAnalyticsScript {
+  id: number
+  name: string
+  position: AdminSiteAnalyticsPosition
+  content: string
+  isEnabled: boolean
+  sortOrder: number
+  created: string | Date
+  updated: string | Date
 }

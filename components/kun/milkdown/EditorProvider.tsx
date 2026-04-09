@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
+import type { CSSProperties } from 'react'
 
 import { defaultValueCtx, Editor, rootCtx } from '@milkdown/core'
 import { Milkdown, useEditor } from '@milkdown/react'
@@ -77,17 +78,20 @@ type Props = {
   saveMarkdown: (markdown: string) => void
   disableUserKey?: boolean
   placeholder?: string
+  minHeight?: string
 }
 
 export const EditorProvider = ({
   valueMarkdown,
   saveMarkdown,
   disableUserKey = false,
-  placeholder
+  placeholder,
+  minHeight
 }: Props) => {
   const refreshContentStatus = useKunMilkdownStore(
     (state) => state.data.refreshContentStatus
   )
+  const latestEditorMarkdownRef = useRef(valueMarkdown)
 
   const pluginViewFactory = usePluginViewFactory()
 
@@ -100,6 +104,7 @@ export const EditorProvider = ({
 
         const listener = ctx.get(listenerCtx)
         listener.markdownUpdated((_, markdown) => {
+          latestEditorMarkdownRef.current = markdown
           saveMarkdown(markdown)
         })
 
@@ -179,15 +184,31 @@ export const EditorProvider = ({
   )
 
   useEffect(() => {
-    if (editor.get()) {
-      requestAnimationFrame(() => {
-        editor.get()?.action(replaceAll(valueMarkdown, true))
-      })
+    const editorInstance = editor.get()
+    if (!editorInstance) {
+      return
     }
-  }, [refreshContentStatus])
+
+    if (latestEditorMarkdownRef.current === valueMarkdown) {
+      return
+    }
+
+    requestAnimationFrame(() => {
+      editorInstance.action(replaceAll(valueMarkdown, true))
+      latestEditorMarkdownRef.current = valueMarkdown
+    })
+  }, [editor, refreshContentStatus, valueMarkdown])
 
   return (
-    <div className="w-full min-h-64" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="w-full min-h-64"
+      style={
+        minHeight
+          ? ({ ['--kun-editor-min-height' as string]: minHeight } as CSSProperties)
+          : undefined
+      }
+      onClick={(e) => e.stopPropagation()}
+    >
       <KunMilkdownPluginsMenu
         editorInfo={editor}
         disableUserKey={disableUserKey}

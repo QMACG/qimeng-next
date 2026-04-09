@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState, type Key } from 'react'
 import { Button, Chip, Input, Select, SelectItem } from '@heroui/react'
 import {
   Modal,
@@ -10,15 +11,14 @@ import {
   useDisclosure
 } from '@heroui/modal'
 import { Search } from 'lucide-react'
-import { useEffect, useState, type Key } from 'react'
-import { kunFetchDelete, kunFetchGet } from '~/utils/kunFetch'
-import { KunLoading } from '~/components/kun/Loading'
-import { useMounted } from '~/hooks/useMounted'
-import { CommentCard } from './Card'
-import { useDebounce } from 'use-debounce'
-import { KunPagination } from '~/components/kun/Pagination'
-import type { AdminComment } from '~/types/api/admin'
 import toast from 'react-hot-toast'
+import { useDebounce } from 'use-debounce'
+import { KunLoading } from '~/components/kun/Loading'
+import { KunPagination } from '~/components/kun/Pagination'
+import { useMounted } from '~/hooks/useMounted'
+import { kunFetchDelete, kunFetchGet } from '~/utils/kunFetch'
+import type { AdminComment } from '~/types/api/admin'
+import { CommentCard } from './Card'
 
 type AdminCommentSearchType = 'content' | 'user'
 
@@ -27,8 +27,16 @@ const searchTypeOptions: Array<{
   label: string
   placeholder: string
 }> = [
-  { key: 'content', label: '评论内容', placeholder: '输入评论内容搜索评论' },
-  { key: 'user', label: '用户', placeholder: '输入用户名搜索评论' }
+  {
+    key: 'content',
+    label: '评论内容',
+    placeholder: '输入评论内容搜索评论'
+  },
+  {
+    key: 'user',
+    label: '用户',
+    placeholder: '输入用户名搜索评论'
+  }
 ]
 
 interface Props {
@@ -46,16 +54,17 @@ export const Comment = ({ initialComments, initialTotal }: Props) => {
   const [selectedCommentIds, setSelectedCommentIds] = useState<Set<number>>(
     new Set()
   )
+  const [loading, setLoading] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [debouncedQuery] = useDebounce(searchQuery, 500)
   const isMounted = useMounted()
+
   const {
     isOpen: isOpenDelete,
     onOpen: onOpenDelete,
     onClose: onCloseDelete
   } = useDisclosure()
 
-  const [loading, setLoading] = useState(false)
-  const [deleting, setDeleting] = useState(false)
   const fetchData = async () => {
     setLoading(true)
 
@@ -82,6 +91,7 @@ export const Comment = ({ initialComments, initialTotal }: Props) => {
         const currentCommentIds = new Set(
           response.comments.map((comment) => comment.id)
         )
+
         return new Set(
           [...prev].filter((commentId) => currentCommentIds.has(commentId))
         )
@@ -97,11 +107,6 @@ export const Comment = ({ initialComments, initialTotal }: Props) => {
     }
     fetchData()
   }, [page, debouncedQuery, searchType])
-
-  const handleSearch = (value: string) => {
-    setSearchQuery(value)
-    setPage(1)
-  }
 
   const handleSearchTypeChange = (keys: 'all' | Set<Key>) => {
     const key = Array.from(keys)[0] as AdminCommentSearchType | undefined
@@ -119,11 +124,13 @@ export const Comment = ({ initialComments, initialTotal }: Props) => {
   ) => {
     setSelectedCommentIds((prev) => {
       const next = new Set(prev)
+
       if (isSelected) {
         next.add(commentId)
       } else {
         next.delete(commentId)
       }
+
       return next
     })
   }
@@ -146,10 +153,6 @@ export const Comment = ({ initialComments, initialTotal }: Props) => {
     })
   }
 
-  const handleClearSelection = () => {
-    setSelectedCommentIds(new Set())
-  }
-
   const handleBatchDelete = async () => {
     if (!selectedCommentIds.size) {
       return
@@ -157,6 +160,7 @@ export const Comment = ({ initialComments, initialTotal }: Props) => {
 
     const deleteCount = selectedCommentIds.size
     setDeleting(true)
+
     try {
       const res = await kunFetchDelete<KunResponse<{}>>('/admin/comment', {
         commentIds: Array.from(selectedCommentIds).join(',')
@@ -179,6 +183,7 @@ export const Comment = ({ initialComments, initialTotal }: Props) => {
   const currentPlaceholder =
     searchTypeOptions.find((option) => option.key === searchType)
       ?.placeholder ?? '输入评论内容搜索评论'
+
   const isAllSelected =
     comments.length > 0 &&
     comments.every((comment) => selectedCommentIds.has(comment.id))
@@ -206,16 +211,20 @@ export const Comment = ({ initialComments, initialTotal }: Props) => {
             placeholder={currentPlaceholder}
             startContent={<Search className="text-default-300" size={20} />}
             value={searchQuery}
-            onValueChange={handleSearch}
+            onValueChange={(value) => {
+              setSearchQuery(value)
+              setPage(1)
+            }}
           />
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           {selectedCommentIds.size ? (
             <Chip color="primary" variant="flat">
-              {`已选择 ${selectedCommentIds.size} 条`}
+              已选择 {selectedCommentIds.size} 条
             </Chip>
           ) : null}
+
           <Button
             variant="flat"
             onPress={handleToggleSelectAll}
@@ -223,13 +232,15 @@ export const Comment = ({ initialComments, initialTotal }: Props) => {
           >
             {isAllSelected ? '取消全选' : '全选当前页'}
           </Button>
+
           <Button
             variant="light"
-            onPress={handleClearSelection}
+            onPress={() => setSelectedCommentIds(new Set())}
             isDisabled={!selectedCommentIds.size || loading}
           >
             清空选择
           </Button>
+
           <Button
             color="danger"
             onPress={onOpenDelete}
@@ -244,20 +255,18 @@ export const Comment = ({ initialComments, initialTotal }: Props) => {
         {loading ? (
           <KunLoading hint="正在获取评论数据..." />
         ) : comments.length ? (
-          <>
-            {comments.map((comment) => (
-              <CommentCard
-                key={comment.id}
-                comment={comment}
-                isSelected={selectedCommentIds.has(comment.id)}
-                isSelectionDisabled={deleting}
-                onSelectionChange={(isSelected) =>
-                  handleCommentSelectionChange(comment.id, isSelected)
-                }
-                onRefresh={fetchData}
-              />
-            ))}
-          </>
+          comments.map((comment) => (
+            <CommentCard
+              key={comment.id}
+              comment={comment}
+              isSelected={selectedCommentIds.has(comment.id)}
+              isSelectionDisabled={deleting}
+              onSelectionChange={(isSelected) =>
+                handleCommentSelectionChange(comment.id, isSelected)
+              }
+              onRefresh={fetchData}
+            />
+          ))
         ) : (
           <div className="py-12 text-center text-default-500">暂无评论</div>
         )}
@@ -274,13 +283,11 @@ export const Comment = ({ initialComments, initialTotal }: Props) => {
 
       <Modal isOpen={isOpenDelete} onClose={onCloseDelete} placement="center">
         <ModalContent>
-          <ModalHeader className="flex flex-col gap-1">
-            批量删除评论
-          </ModalHeader>
+          <ModalHeader className="flex flex-col gap-1">批量删除评论</ModalHeader>
           <ModalBody>
             <p>
-              您确定要删除已选择的 {selectedCommentIds.size} 条评论吗?
-              如果这些评论存在回复, 相关回复也会一并删除, 该操作不可撤销
+              确认删除已选中的 {selectedCommentIds.size} 条评论吗？如果这些评论存在回复，
+              相关回复也会一并删除，且不可撤销。
             </p>
           </ModalBody>
           <ModalFooter>
@@ -291,7 +298,7 @@ export const Comment = ({ initialComments, initialTotal }: Props) => {
               color="danger"
               onPress={handleBatchDelete}
               isLoading={deleting}
-              disabled={deleting}
+              isDisabled={deleting}
             >
               删除
             </Button>

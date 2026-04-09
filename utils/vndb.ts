@@ -21,6 +21,7 @@ export const fetchVNDBDetails = async (
     if (response === '未找到对应的 VNDB 条目') {
       throw new Error('VNDB_NOT_FOUND')
     }
+
     throw new Error('VNDB_API_ERROR')
   }
 

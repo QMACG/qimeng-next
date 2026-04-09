@@ -11,8 +11,7 @@ import type { KunBreadcrumbItem } from './constants'
 
 type NextParams = Record<string, string | Array<string> | undefined>
 
-// Some path's length is equal to galgame uniqueId (8 digits and chars)
-const pathToIgnore = ['/resource', '/register', '/redirect', '/settings']
+const pathToIgnore = ['/register', '/redirect', '/settings']
 
 const createPatchBreadcrumb = (
   params: NextParams,
@@ -49,7 +48,7 @@ const createUserBreadcrumb = (
     ...defaultItem,
     key: `/user/${params.id}`,
     label: pageTitle,
-    href: `/user/${params.id}/resource`
+    href: `/user/${params.id}/comment`
   }
 }
 
@@ -116,7 +115,7 @@ export const createBreadcrumbItem = (
   if (isPatchPath(pathname)) {
     const allGalgameRoute: KunBreadcrumbItem = {
       key: 'galgame',
-      label: 'Galgame',
+      label: '游戏列表',
       href: '/galgame'
     }
     return [
@@ -127,7 +126,7 @@ export const createBreadcrumbItem = (
   if (isTagPath(pathname)) {
     const allTagRoute: KunBreadcrumbItem = {
       key: 'tag',
-      label: '补丁标签',
+      label: '游戏标签',
       href: '/tag'
     }
     return [allTagRoute, createTagBreadcrumb(params, defaultItem, pageTitle)]
@@ -138,7 +137,7 @@ export const createBreadcrumbItem = (
   if (isDocPath(pathname)) {
     const allDocRoute: KunBreadcrumbItem = {
       key: 'doc',
-      label: '帮助文档',
+      label: '文章',
       href: '/doc'
     }
     return [allDocRoute, createDocBreadcrumb(params, defaultItem, pageTitle)]

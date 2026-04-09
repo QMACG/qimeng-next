@@ -1,13 +1,13 @@
 'use client'
 
-import { Tab, Tabs } from '@heroui/react'
 import { useEffect, useState } from 'react'
-import { kunFetchGet } from '~/utils/kunFetch'
+import { Tab, Tabs } from '@heroui/react'
 import { KunLoading } from '~/components/kun/Loading'
-import { useMounted } from '~/hooks/useMounted'
-import { ReportCard } from './ReportCard'
 import { KunPagination } from '~/components/kun/Pagination'
+import { useMounted } from '~/hooks/useMounted'
+import { kunFetchGet } from '~/utils/kunFetch'
 import type { AdminReport, AdminReportTargetType } from '~/types/api/admin'
+import { ReportCard } from './ReportCard'
 
 type ReportTab = 'pending' | 'handled'
 
@@ -23,9 +23,9 @@ export const Report = ({ initialReports, total, title, targetType }: Props) => {
   const [activeTab, setActiveTab] = useState<ReportTab>('pending')
   const [totalCount, setTotalCount] = useState(total)
   const [page, setPage] = useState(1)
+  const [loading, setLoading] = useState(false)
   const isMounted = useMounted()
 
-  const [loading, setLoading] = useState(false)
   const fetchData = async (targetPage = page, targetTab = activeTab) => {
     setLoading(true)
 
@@ -54,6 +54,7 @@ export const Report = ({ initialReports, total, title, targetType }: Props) => {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">{title}</h1>
+
       <Tabs
         selectedKey={activeTab}
         onSelectionChange={(key) => {
@@ -73,16 +74,14 @@ export const Report = ({ initialReports, total, title, targetType }: Props) => {
         {loading ? (
           <KunLoading hint="正在获取举报数据..." />
         ) : reports.length ? (
-          <>
-            {reports.map((report) => (
-              <ReportCard
-                key={report.id}
-                report={report}
-                targetType={targetType}
-                onHandled={() => fetchData(page, activeTab)}
-              />
-            ))}
-          </>
+          reports.map((report) => (
+            <ReportCard
+              key={report.id}
+              report={report}
+              targetType={targetType}
+              onHandled={() => fetchData(page, activeTab)}
+            />
+          ))
         ) : (
           <p className="text-default-500">
             {activeTab === 'pending' ? '暂无未处理举报' : '暂无已处理举报'}

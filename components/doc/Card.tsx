@@ -2,11 +2,11 @@
 
 import { useState } from 'react'
 import { Card, CardBody, CardFooter } from '@heroui/react'
-import { Calendar, Type } from 'lucide-react'
 import { Image } from '@heroui/image'
-import { KunPostMetadata } from '~/lib/mdx/types'
-import { formatTimeDifference } from '~/utils/time'
+import { Calendar, Type } from 'lucide-react'
 import Link from 'next/link'
+import { formatTimeDifference } from '~/utils/time'
+import { KunPostMetadata } from '~/lib/mdx/types'
 
 interface Props {
   post: KunPostMetadata
@@ -22,9 +22,9 @@ export const KunAboutCard = ({ post }: Props) => {
       href={`/doc/${post.slug}`}
       className="w-full transition-transform duration-200 hover:scale-[1.02]"
     >
-      <CardBody className="p-4 space-y-3">
+      <CardBody className="space-y-3 p-4">
         <h2 className="mb-2 text-xl font-bold">{post.title}</h2>
-        <div className="relative w-full mx-auto overflow-hidden text-center rounded-t-lg opacity-90">
+        <div className="relative mx-auto w-full overflow-hidden rounded-t-lg text-center opacity-90">
           <div
             className={`absolute inset-0 animate-pulse bg-default-100 ${
               imageLoaded ? 'opacity-0' : 'opacity-90'
@@ -52,8 +52,8 @@ export const KunAboutCard = ({ post }: Props) => {
           </div>
         </div>
       </CardBody>
-      <CardFooter className="px-5 py-3 border-t border-default-200 bg-default-50">
-        <span className="text-sm text-default-600">点击阅读更多 →</span>
+      <CardFooter className="border-t border-default-200 bg-default-50 px-5 py-3">
+        <span className="text-sm text-default-600">点击阅读更多</span>
       </CardFooter>
     </Card>
   )

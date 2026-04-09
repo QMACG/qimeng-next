@@ -38,7 +38,7 @@ export const KunTopBarUser = () => {
         toast.error(res)
         router.push('/login')
       } else {
-        setUser(user)
+        setUser(res)
       }
     }
 
@@ -57,7 +57,7 @@ export const KunTopBarUser = () => {
 
     getUserStatus()
     getUserUnreadMessage()
-  }, [isMounted])
+  }, [isMounted, router, setUser, user.uid])
 
   return (
     <NavbarContent as="div" className="items-center" justify="end">

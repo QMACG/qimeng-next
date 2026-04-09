@@ -1,27 +1,28 @@
-import { kunMoyuMoe } from '~/config/moyu-moe'
 import { Card, CardBody, CardHeader } from '@heroui/card'
 import { Avatar } from '@heroui/avatar'
 import { Chip } from '@heroui/chip'
 import { Divider } from '@heroui/divider'
 import { Progress } from '@heroui/progress'
-import { formatTimeDifference } from '~/utils/time'
 import { Calendar, Link as LinkIcon } from 'lucide-react'
+import { formatTimeDifference } from '~/utils/time'
+import { USER_ROLE_MAP, USER_STATUS_COLOR_MAP } from '~/constants/user'
 import { UserFollow } from './follow/Follow'
 import { Stats } from './follow/Stats'
 import { SelfButton } from './SelfButton'
 import { StartChatButton } from './StartChatButton'
-import { USER_ROLE_MAP, USER_STATUS_COLOR_MAP } from '~/constants/user'
 import type { UserInfo } from '~/types/api/user'
 
 export const UserProfile = ({ user }: { user: UserInfo }) => {
+  const profilePath = `/user/${user.id}`
+
   return (
     <div className="lg:col-span-1">
       <Card className="w-full">
         <CardHeader className="justify-center pt-8">
           <div className="flex flex-col items-center gap-3">
             <Avatar
-              src={user.avatar.replace('-mini', '')}
-              className="w-32 h-32"
+              src={user.avatar}
+              className="h-32 w-32"
               isBordered
               color="primary"
             />
@@ -54,12 +55,12 @@ export const UserProfile = ({ user }: { user: UserInfo }) => {
             <div className="flex items-center gap-2">
               <LinkIcon className="size-4 text-default-400" />
               <a
-                href={`${kunMoyuMoe.domain.main}/user/${user.id}`}
+                href={profilePath}
                 className="text-small text-primary hover:underline"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                {`${kunMoyuMoe.domain.main}/user/${user.id}`}
+                {profilePath}
               </a>
             </div>
             <div className="flex items-center gap-2">
@@ -72,7 +73,7 @@ export const UserProfile = ({ user }: { user: UserInfo }) => {
           <Divider className="my-4" />
           <div className="flex flex-col gap-4">
             <div>
-              <div className="flex justify-between mb-2">
+              <div className="mb-2 flex justify-between">
                 <span className="text-small">萌萌点</span>
                 <span className="text-small text-default-500">
                   {user.moemoepoint}

@@ -1,6 +1,7 @@
 import { prisma } from '~/prisma/index'
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
+import { parseJsonStringArray } from '~/utils/prismaJson'
 
 const get2FAStatus = async (uid?: number) => {
   if (!uid) {
@@ -19,9 +20,7 @@ const get2FAStatus = async (uid?: number) => {
   return {
     enabled: user?.enable_2fa || false,
     hasSecret: !!user?.two_factor_secret,
-    backupCodeLength: user?.two_factor_backup
-      ? user.two_factor_backup.length
-      : 0
+    backupCodeLength: user ? parseJsonStringArray(user.two_factor_backup).length : 0
   }
 }
 

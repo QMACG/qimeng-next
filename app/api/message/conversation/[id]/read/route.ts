@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+﻿import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '~/prisma/index'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 
-export const markConversationAsRead = async (
+const markConversationAsRead = async (
   conversationId: number,
   uid: number
 ) => {
@@ -55,3 +55,4 @@ export const PUT = async (
   const response = await markConversationAsRead(conversationId, payload.uid)
   return NextResponse.json(response)
 }
+

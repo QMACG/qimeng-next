@@ -1,63 +1,45 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useDebounce } from 'use-debounce'
-import { kunFetchGet } from '~/utils/kunFetch'
-import { Chip } from '@heroui/chip'
-import { Button } from '@heroui/button'
-import { useDisclosure } from '@heroui/modal'
-import { Pencil } from 'lucide-react'
-import { TagDetail } from '~/types/api/tag'
-import { KunLoading } from '~/components/kun/Loading'
-import { KunHeader } from '~/components/kun/Header'
-import { useMounted } from '~/hooks/useMounted'
-import { GalgameCard } from '~/components/galgame/Card'
-import { KunNull } from '~/components/kun/Null'
-import { EditTagModal } from './EditTagModal'
-import { DeleteTagModal } from './DeleteTagModal'
-import { KunUser } from '~/components/kun/floating-card/KunUser'
-import { formatTimeDifference } from '~/utils/time'
-import { useUserStore } from '~/store/userStore'
 import { useSearchParams } from 'next/navigation'
-import { KunPagination } from '~/components/kun/Pagination'
+import { Chip } from '@heroui/chip'
+import { kunFetchGet } from '~/utils/kunFetch'
+import { GalgameCard } from '~/components/galgame/Card'
 import { FilterBar } from '~/components/galgame/FilterBar'
-import type { SortField, SortOrder } from '~/components/galgame/_sort'
+import { KunHeader } from '~/components/kun/Header'
+import { KunLoading } from '~/components/kun/Loading'
+import { KunNull } from '~/components/kun/Null'
+import { KunPagination } from '~/components/kun/Pagination'
+import { NsfwVisibilityHint } from '~/components/kun/NsfwVisibilityHint'
+import { KunUser } from '~/components/kun/floating-card/KunUser'
+import { useMounted } from '~/hooks/useMounted'
+import { errorReporter, kunErrorHandler } from '~/utils/kunErrorHandler'
 import {
-  DEFAULT_GALGAME_FILTER_VALUE,
   DEFAULT_GALGAME_SORT_FIELD,
   DEFAULT_GALGAME_SORT_ORDER,
-  DEFAULT_TAG_COMPANY_MIN_RATING_COUNT,
-  parseGalgameFilterArray,
-  parseNonNegativeIntParam,
   parsePositiveIntParam
 } from '~/utils/galgameFilter'
-import { errorReporter, kunErrorHandler } from '~/utils/kunErrorHandler'
+import { formatTimeDifference } from '~/utils/time'
+import type { SortField, SortOrder } from '~/components/galgame/_sort'
+import type { TagDetail } from '~/types/api/tag'
 
 interface Props {
   initialTag: TagDetail
   initialPatches: GalgameCard[]
   total: number
+  initialNsfwHiddenCount: number
 }
 
 export const TagDetailContainer = ({
   initialTag,
   initialPatches,
-  total
+  total,
+  initialNsfwHiddenCount
 }: Props) => {
   const isMounted = useMounted()
-  const user = useUserStore((state) => state.user)
   const searchParams = useSearchParams()
   const [page, setPage] = useState(
     parsePositiveIntParam(searchParams.get('page'), 1)
-  )
-  const [selectedType, setSelectedType] = useState(
-    searchParams.get('selectedType') || DEFAULT_GALGAME_FILTER_VALUE
-  )
-  const [selectedLanguage, setSelectedLanguage] = useState(
-    searchParams.get('selectedLanguage') || DEFAULT_GALGAME_FILTER_VALUE
-  )
-  const [selectedPlatform, setSelectedPlatform] = useState(
-    searchParams.get('selectedPlatform') || DEFAULT_GALGAME_FILTER_VALUE
   )
   const [sortField, setSortField] = useState<SortField>(
     (searchParams.get('sortField') as SortField) || DEFAULT_GALGAME_SORT_FIELD
@@ -65,25 +47,13 @@ export const TagDetailContainer = ({
   const [sortOrder, setSortOrder] = useState<SortOrder>(
     (searchParams.get('sortOrder') as SortOrder) || DEFAULT_GALGAME_SORT_ORDER
   )
-  const [selectedYears, setSelectedYears] = useState<string[]>(
-    parseGalgameFilterArray(searchParams.get('yearString'))
-  )
-  const [selectedMonths, setSelectedMonths] = useState<string[]>(
-    parseGalgameFilterArray(searchParams.get('monthString'))
-  )
-  const [minRatingCount, setMinRatingCount] = useState(
-    parseNonNegativeIntParam(
-      searchParams.get('minRatingCount'),
-      DEFAULT_TAG_COMPANY_MIN_RATING_COUNT
-    )
-  )
-  const [debouncedMinRatingCount] = useDebounce(minRatingCount, 400)
 
-  const [tag, setTag] = useState(initialTag)
+  const [tag] = useState(initialTag)
   const [patches, setPatches] = useState<GalgameCard[]>(initialPatches)
   const [totalCount, setTotalCount] = useState(total)
+  const [nsfwHiddenCount, setNsfwHiddenCount] = useState(initialNsfwHiddenCount)
   const [loading, setLoading] = useState(false)
-  const { isOpen, onOpen, onClose } = useDisclosure()
+
   const withPageReset = <T,>(setter: (value: T) => void) => {
     return (value: T) => {
       setPage(1)
@@ -99,34 +69,32 @@ export const TagDetailContainer = ({
         | {
             galgames: GalgameCard[]
             total: number
+            nsfwHiddenCount: number
           }
         | string
       >('/tag/galgame', {
         tagId: tag.id,
         page,
         limit: 24,
-        selectedType,
-        selectedLanguage,
-        selectedPlatform,
         sortField,
-        sortOrder,
-        yearString: JSON.stringify(selectedYears),
-        monthString: JSON.stringify(selectedMonths),
-        minRatingCount: sortField === 'rating' ? debouncedMinRatingCount : 0
+        sortOrder
       })
 
       if (typeof response === 'string') {
         kunErrorHandler(response, () => {})
         setPatches([])
         setTotalCount(0)
+        setNsfwHiddenCount(0)
         return
       }
 
       setPatches(response.galgames)
       setTotalCount(response.total)
+      setNsfwHiddenCount(response.nsfwHiddenCount)
     } catch (error) {
       setPatches([])
       setTotalCount(0)
+      setNsfwHiddenCount(0)
       errorReporter(error)
     } finally {
       setLoading(false)
@@ -137,27 +105,18 @@ export const TagDetailContainer = ({
     if (!isMounted) {
       return
     }
-    fetchPatches()
-  }, [
-    page,
-    selectedType,
-    selectedLanguage,
-    selectedPlatform,
-    sortField,
-    sortOrder,
-    selectedYears,
-    selectedMonths,
-    sortField === 'rating' ? debouncedMinRatingCount : null
-  ])
+
+    void fetchPatches()
+  }, [isMounted, page, sortField, sortOrder])
 
   return (
-    <div className="w-full my-4 space-y-6">
+    <div className="my-4 w-full space-y-6">
       <KunHeader
         name={tag.name}
         description={tag.introduction}
         headerEndContent={
           <Chip size="lg" color="primary">
-            {tag.count} 个 Galgame
+            {tag.count} 部作品
           </Chip>
         }
         endContent={
@@ -172,52 +131,15 @@ export const TagDetailContainer = ({
                 }
               }}
             />
-
-            <div className="flex items-center gap-2">
-              <DeleteTagModal tag={tag} />
-
-              {user.role > 2 && (
-                <Button
-                  variant="flat"
-                  color="primary"
-                  onPress={onOpen}
-                  startContent={<Pencil />}
-                >
-                  编辑该标签
-                </Button>
-              )}
-              <EditTagModal
-                tag={tag}
-                isOpen={isOpen}
-                onClose={onClose}
-                onSuccess={(newTag) => {
-                  setTag(newTag)
-                  onClose()
-                }}
-              />
-            </div>
           </div>
         }
       />
 
       <FilterBar
-        selectedType={selectedType}
-        setSelectedType={withPageReset(setSelectedType)}
-        selectedLanguage={selectedLanguage}
-        setSelectedLanguage={withPageReset(setSelectedLanguage)}
-        selectedPlatform={selectedPlatform}
-        setSelectedPlatform={withPageReset(setSelectedPlatform)}
         sortField={sortField}
         setSortField={withPageReset(setSortField)}
         sortOrder={sortOrder}
         setSortOrder={withPageReset(setSortOrder)}
-        selectedYears={selectedYears}
-        setSelectedYears={withPageReset(setSelectedYears)}
-        selectedMonths={selectedMonths}
-        setSelectedMonths={withPageReset(setSelectedMonths)}
-        minRatingCount={minRatingCount}
-        setMinRatingCount={withPageReset(setMinRatingCount)}
-        defaultMinRatingCount={DEFAULT_TAG_COMPANY_MIN_RATING_COUNT}
       />
 
       {tag.alias.length > 0 && (
@@ -234,10 +156,12 @@ export const TagDetailContainer = ({
       )}
 
       {loading ? (
-        <KunLoading hint="正在获取 Galgame 中..." />
+        <KunLoading hint="正在加载作品..." />
       ) : (
-        <div>
-          <div className="grid grid-cols-2 gap-2 mx-auto sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="space-y-4">
+          <NsfwVisibilityHint count={nsfwHiddenCount} />
+
+          <div className="mx-auto grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
             {patches.map((pa) => (
               <GalgameCard key={pa.id} patch={pa} />
             ))}
@@ -254,7 +178,9 @@ export const TagDetailContainer = ({
             </div>
           )}
 
-          {!totalCount && <KunNull message="这个标签暂无 Galgame 使用" />}
+          {!totalCount && nsfwHiddenCount <= 0 && (
+            <KunNull message="这个标签下暂时还没有作品" />
+          )}
         </div>
       )}
     </div>

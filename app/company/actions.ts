@@ -3,7 +3,8 @@
 import { z } from 'zod'
 import { safeParseSchema } from '~/utils/actions/safeParseSchema'
 import { getCompanySchema } from '~/validations/company'
-import { getCompany } from '~/app/api/company/all/route'
+import { GET as getCompanyRoute } from '~/app/api/company/all/route'
+import { callRouteGet } from '~/utils/actions/callRouteHandler'
 
 export const kunGetActions = async (
   params: z.infer<typeof getCompanySchema>
@@ -13,6 +14,10 @@ export const kunGetActions = async (
     return input
   }
 
-  const response = await getCompany(input)
+  const response = await callRouteGet(
+    getCompanyRoute,
+    '/api/company/all',
+    input
+  )
   return response
 }

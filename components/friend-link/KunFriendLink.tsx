@@ -1,11 +1,15 @@
 'use client'
 
-import { Card, CardBody, CardFooter, Image, Link } from '@heroui/react'
+import { Button, Card, CardBody, CardFooter, Link } from '@heroui/react'
 import { motion } from 'framer-motion'
-import { kunMoyuMoe } from '~/config/moyu-moe'
-import { kunFriends } from '~/config/friend'
+import { resolveFriendLinkAvatar } from '~/utils/friendLink'
+import type { FriendLinkItem } from '~/types/api/friend-link'
 
-export const KunFriendLink = () => {
+interface Props {
+  links: FriendLinkItem[]
+}
+
+export const KunFriendLink = ({ links }: Props) => {
   return (
     <div className="container mx-auto my-8">
       <motion.div
@@ -13,70 +17,59 @@ export const KunFriendLink = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h1 className="mb-4 text-4xl text-center text-primary-500">友情链接</h1>
-        <p className="mb-12 text-center text-default-500">
-          下方是我们的友站, 您可以点击以访问这些网站
+        <h1 className="mb-4 text-center text-4xl text-primary-500">友情链接</h1>
+        <p className="mb-6 text-center text-default-500">
+          这里收录了本站的友情链接，点击卡片即可前往对应站点。
         </p>
+        <div className="mb-12 flex justify-center">
+          <Button as={Link} href="/friend-link/apply" color="primary" variant="flat">
+            申请友情链接
+          </Button>
+        </div>
       </motion.div>
 
       <div className="grid grid-cols-2 gap-2 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
-        {kunFriends.map((friend, index) => (
+        {links.map((friend, index) => (
           <motion.div
-            key={friend.name}
+            key={friend.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
-            className="w-full h-full"
+            transition={{ duration: 0.5, delay: index * 0.06 }}
+            className="h-full w-full"
           >
             <Card
               isPressable
               isHoverable
-              onPress={() => window.open(friend.link, '_blank')}
-              className="w-full h-full border border-default-200"
+              onPress={() => window.open(friend.link, '_blank', 'noopener,noreferrer')}
+              className="h-full w-full border border-default-200"
             >
-              <CardBody className="p-0 overflow-visible">
-                <div className="flex justify-center w-full pt-4">
-                  <Image
+              <CardBody className="overflow-visible p-0">
+                <div className="flex w-full justify-center pt-4">
+                  <img
                     alt={friend.name}
-                    className="object-cover w-24 h-24 rounded-lg"
-                    src={friend.avatar}
+                    className="h-24 w-24 rounded-lg object-cover"
+                    src={resolveFriendLinkAvatar(friend.link, friend.avatar)}
+                    loading="lazy"
+                    decoding="async"
+                    referrerPolicy="no-referrer"
+                    onError={(event) => {
+                      event.currentTarget.src = '/favicon.ico'
+                    }}
                   />
                 </div>
               </CardBody>
-              <CardFooter className="flex flex-col items-center pt-4 pb-6">
+              <CardFooter className="flex flex-col items-center pb-6 pt-4">
                 <h4 className="font-bold text-large">{friend.name}</h4>
-                <p className="mt-1 text-sm text-center text-default-500 line-clamp-4">
-                  {friend.label}
-                </p>
+                {friend.description ? (
+                  <p className="mt-1 line-clamp-4 text-center text-sm text-default-500">
+                    {friend.description}
+                  </p>
+                ) : null}
               </CardFooter>
             </Card>
           </motion.div>
         ))}
       </div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="mt-16">
-          <h2 className="mb-4 text-2xl text-center text-default-800">
-            加入我们
-          </h2>
-          <p className="mb-12 text-center text-default-500">
-            要加入我们, 请加入我们的{' '}
-            <Link
-              isExternal
-              showAnchorIcon
-              href={kunMoyuMoe.domain.discord_group}
-              rel="noopener noreferrer"
-            >
-              Discord 服务器
-            </Link>
-            联系我们
-          </p>
-        </div>
-      </motion.div>
     </div>
   )
 }

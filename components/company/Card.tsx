@@ -21,7 +21,7 @@ export const CompanyCard = ({ company }: Props) => {
             {company.name}
           </h2>
           <Chip size="sm" variant="flat">
-            {company.count} 个 Galgame
+            {company.count} 部作品
           </Chip>
         </div>
         {company.alias.length > 0 && (

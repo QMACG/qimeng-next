@@ -6,7 +6,7 @@ import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 import { adminSendEmailSchema } from '~/validations/admin'
 import { sendEmailHTML } from './_send'
 
-export const sendBulkEmail = async (
+const sendBulkEmail = async (
   input: z.infer<typeof adminSendEmailSchema>,
   uid: number
 ) => {
@@ -28,9 +28,14 @@ export const sendBulkEmail = async (
   for (let i = 0; i < emailList.length; i += batchSize) {
     const batch = emailList.slice(i, i + batchSize)
 
-    await Promise.all(
+    const results = await Promise.all(
       batch.map((email) => sendEmailHTML(templateId, variables, email))
     )
+
+    const failedResult = results.find((result) => typeof result === 'string')
+    if (failedResult) {
+      return failedResult
+    }
   }
 
   await prisma.admin_log.create({

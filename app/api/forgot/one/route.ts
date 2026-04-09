@@ -5,7 +5,7 @@ import { stepOneSchema } from '~/validations/forgot'
 import { prisma } from '~/prisma/index'
 import { sendVerificationCodeEmail } from '~/app/api/utils/sendVerificationCodeEmail'
 
-export const stepOne = async (
+const stepOne = async (
   input: z.infer<typeof stepOneSchema>,
   headers: Headers
 ) => {
@@ -13,8 +13,8 @@ export const stepOne = async (
   const user = await prisma.user.findFirst({
     where: {
       OR: [
-        { email: { equals: normalizedInput, mode: 'insensitive' } },
-        { name: { equals: normalizedInput, mode: 'insensitive' } }
+        { email: { equals: normalizedInput } },
+        { name: { equals: normalizedInput } }
       ]
     }
   })
@@ -36,7 +36,7 @@ export const POST = async (req: NextRequest) => {
 
   const response = await stepOne(input, req.headers)
   if (typeof response === 'string') {
-    return NextResponse.json(input)
+    return NextResponse.json(response)
   }
 
   return NextResponse.json({})

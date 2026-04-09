@@ -1,17 +1,17 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useMounted } from '~/hooks/useMounted'
-import { KunLoading } from '~/components/kun/Loading'
-import { MessageCard } from './MessageCard'
-import { kunFetchDelete, kunFetchGet } from '~/utils/kunFetch'
-import { KunNull } from '~/components/kun/Null'
-import { MESSAGE_TYPE } from '~/constants/message'
-import toast from 'react-hot-toast'
-import { KunPagination } from '~/components/kun/Pagination'
 import { Button } from '@heroui/react'
 import { Trash2 } from 'lucide-react'
+import toast from 'react-hot-toast'
+import { MESSAGE_TYPE } from '~/constants/message'
+import { useMounted } from '~/hooks/useMounted'
+import { KunLoading } from '~/components/kun/Loading'
+import { KunNull } from '~/components/kun/Null'
+import { KunPagination } from '~/components/kun/Pagination'
+import { kunFetchDelete, kunFetchGet } from '~/utils/kunFetch'
 import type { Message } from '~/types/api/message'
+import { MessageCard } from './MessageCard'
 
 interface Props {
   initialMessages: Message[]
@@ -42,6 +42,7 @@ export const MessageContainer = ({ initialMessages, total, type }: Props) => {
         page: targetPage,
         limit: 30
       })
+
       if (typeof response === 'string') {
         toast.error(response)
       } else {
@@ -49,7 +50,7 @@ export const MessageContainer = ({ initialMessages, total, type }: Props) => {
         setMessageTotal(response.total)
       }
     } catch {
-      toast.error('获取消息失败, 请稍后重试')
+      toast.error('获取消息失败，请稍后重试')
     } finally {
       setLoading(false)
     }
@@ -62,12 +63,13 @@ export const MessageContainer = ({ initialMessages, total, type }: Props) => {
       const response = await kunFetchDelete<KunResponse<{}>>('/message/read', {
         type: currentType
       })
+
       if (typeof response === 'string') {
         toast.error(response)
         return
       }
 
-      toast.success('已清理已读信息')
+      toast.success('已清理已读消息')
 
       if (page !== 1) {
         setPage(1)
@@ -75,7 +77,7 @@ export const MessageContainer = ({ initialMessages, total, type }: Props) => {
         await fetchMessages(1)
       }
     } catch {
-      toast.error('清理已读信息失败, 请稍后重试')
+      toast.error('清理已读消息失败，请稍后重试')
     } finally {
       setClearing(false)
     }
@@ -99,7 +101,7 @@ export const MessageContainer = ({ initialMessages, total, type }: Props) => {
         onPress={handleClearReadMessages}
         fullWidth
       >
-        清理已读信息
+        清理已读消息
       </Button>
 
       {loading ? (

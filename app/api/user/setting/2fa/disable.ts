@@ -1,4 +1,5 @@
 import { prisma } from '~/prisma/index'
+import { toJsonStringArray } from '~/utils/prismaJson'
 
 type TwoFactorDB = {
   user: Pick<typeof prisma.user, 'update'>
@@ -10,7 +11,7 @@ export const disable2FA = async (uid: number, db: TwoFactorDB = prisma) => {
     data: {
       enable_2fa: false,
       two_factor_secret: '',
-      two_factor_backup: []
+      two_factor_backup: toJsonStringArray([])
     }
   })
 

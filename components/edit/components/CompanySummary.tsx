@@ -7,44 +7,18 @@ interface Props {
   data: PatchFormDataShape
 }
 
-interface CompanyEntry {
-  name: string
-  source: string
-}
-
 export const CompanySummary = ({ data }: Props) => {
-  const entries: CompanyEntry[] = []
+  const companies = data.companies ?? []
 
-  for (const name of data.vndbDevelopers) {
-    if (name.trim()) entries.push({ name: name.trim(), source: 'VNDB' })
-  }
-  for (const name of data.bangumiDevelopers) {
-    if (name.trim()) entries.push({ name: name.trim(), source: 'Bangumi' })
-  }
-  for (const name of data.steamDevelopers) {
-    if (name.trim()) entries.push({ name: name.trim(), source: 'Steam' })
-  }
-  if (data.dlsiteCircleName?.trim()) {
-    entries.push({ name: data.dlsiteCircleName.trim(), source: 'DLsite' })
-  }
-
-  const unique = entries.filter(
-    (entry, i, arr) => arr.findIndex((e) => e.name === entry.name) === i
-  )
-
-  if (!unique.length) return null
+  if (!companies.length) return null
 
   return (
     <div className="w-full space-y-2">
-      <h2 className="text-xl">游戏会社 (自动获取)</h2>
-      <p className="text-sm text-default-500">
-        以下会社信息来自各外部数据源，将在提交时自动关联
-      </p>
+      <h2 className="text-xl">已选会社</h2>
       <div className="flex flex-wrap gap-2">
-        {unique.map((entry) => (
-          <Chip key={`${entry.source}-${entry.name}`} variant="flat" size="sm">
-            {entry.name}
-            <span className="ml-1 text-default-400">({entry.source})</span>
+        {companies.map((company) => (
+          <Chip key={company.id} variant="flat" size="sm">
+            {company.name}
           </Chip>
         ))}
       </div>

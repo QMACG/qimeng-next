@@ -37,7 +37,7 @@ export const RegisterForm = () => {
 
   const handleRegister = async () => {
     if (!isAgree) {
-      toast.error('请您勾选同意我们的用户协议')
+      toast.error('请先勾选并同意用户协议')
       return
     }
 
@@ -52,13 +52,13 @@ export const RegisterForm = () => {
     kunErrorHandler(res, (value) => {
       setUser(value)
       reset()
-      toast.success('注册成功!')
+      toast.success('注册成功')
       redirect(`/user/${value.uid}/comment`)
     })
   }
 
   return (
-    <form className="flex flex-col space-y-4 w-72">
+    <form className="flex w-72 flex-col space-y-4">
       <Controller
         name="name"
         control={control}
@@ -135,7 +135,7 @@ export const RegisterForm = () => {
         <Checkbox isSelected={isAgree} onValueChange={setIsAgree}>
           <span>我同意</span>
         </Checkbox>
-        <Link className="ml-1" href="/doc/notice/privacy">
+        <Link className="ml-1" href="/doc/help/privacy">
           {kunMoyuMoe.titleShort} 用户协议
         </Link>
       </div>
@@ -154,14 +154,14 @@ export const RegisterForm = () => {
       <Button
         color="primary"
         variant="bordered"
-        className="w-full mb-4"
+        className="mb-4 w-full"
         onPress={() => router.push('/auth/forgot')}
       >
         忘记密码
       </Button>
 
       <div className="flex items-center">
-        <span className="mr-2">已经有账号了?</span>
+        <span className="mr-2">已经有账号了？</span>
         <Link href="/login">登录账号</Link>
       </div>
     </form>

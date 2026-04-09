@@ -1,16 +1,16 @@
 import { parseCookies } from '~/utils/cookies'
 import type { NextRequest } from 'next/server'
 
-export const getNSFWHeader = (req: NextRequest) => {
+export const getNSFWHeader = async (req: NextRequest) => {
   const cookies = parseCookies(req.headers.get('cookie') ?? '')
-  const token = cookies['kun-patch-setting-store|state|data|kunNsfwEnable']
-  if (!token) {
-    return { content_limit: 'sfw' }
+  const settingToken = cookies['kun-patch-setting-store|state|data|kunNsfwEnable']
+  if (settingToken) {
+    if (settingToken === 'all') {
+      return {}
+    }
+
+    return { content_limit: settingToken }
   }
 
-  if (token === 'all') {
-    return {}
-  } else {
-    return { content_limit: token }
-  }
+  return { content_limit: 'sfw' }
 }

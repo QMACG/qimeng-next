@@ -1,5 +1,4 @@
 import type { PatchComment } from './comment'
-import type { PatchResource } from './resource'
 
 export interface HomeCarousel {
   id: number
@@ -10,5 +9,4 @@ export interface HomeCarousel {
   platform: string[]
 }
 
-export type HomeResource = PatchResource
 export type HomeComment = PatchComment

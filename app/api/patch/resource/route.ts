@@ -15,17 +15,13 @@ import { getPatchResource } from './get'
 import { createPatchResource } from './create'
 import { updatePatchResource } from './update'
 import { deleteResource } from './delete'
-import { prisma } from '~/prisma/index'
 
 const patchIdSchema = z.object({
   patchId: z.coerce.number().min(1).max(9999999)
 })
 
 const resourceIdSchema = z.object({
-  resourceId: z.coerce
-    .number({ message: '资源 ID 必须为数字' })
-    .min(1)
-    .max(9999999)
+  resourceId: z.coerce.number().min(1).max(9999999)
 })
 
 export const GET = async (req: NextRequest) => {
@@ -35,7 +31,11 @@ export const GET = async (req: NextRequest) => {
   }
   const payload = await verifyHeaderCookie(req)
 
-  const response = await getPatchResource(input, payload?.uid ?? 0)
+  const response = await getPatchResource(
+    input,
+    payload?.uid ?? 0,
+    payload?.role ?? 0
+  )
   return NextResponse.json(response)
 }
 
@@ -48,28 +48,11 @@ export const POST = async (req: NextRequest) => {
   if (!payload) {
     return NextResponse.json('用户未登录')
   }
-  if (payload.role < 3 && input.storage === 'touchgal') {
-    return NextResponse.json('仅管理员可使用 TouchGal 资源盘')
+  if (payload.role < 2) {
+    return NextResponse.json('仅编辑及以上角色可以维护游戏资源')
   }
 
-  const user = await prisma.user.findUnique({ where: { id: payload.uid } })
-  if (!user) {
-    return NextResponse.json('未找到该用户')
-  }
-  if (user.moemoepoint < 20) {
-    return NextResponse.json('仅限萌萌点大于 20 的用户才可以发布资源')
-  }
-
-  const resource = await prisma.patch_resource.findFirst({
-    where: { user_id: payload.uid, status: 2 }
-  })
-  if (resource) {
-    return NextResponse.json(
-      '您有至少一个 Galgame 资源在待审核阶段, 请等待审核结束后再发布资源'
-    )
-  }
-
-  const response = await createPatchResource(input, payload.uid, payload.role)
+  const response = await createPatchResource(input, payload.uid)
   return NextResponse.json(response)
 }
 

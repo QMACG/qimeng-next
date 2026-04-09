@@ -3,9 +3,9 @@
 import { z } from 'zod'
 import { safeParseSchema } from '~/utils/actions/safeParseSchema'
 import { adminPaginationSchema } from '~/validations/admin'
-import { getGalgame } from '~/app/api/admin/galgame/route'
-import { getNSFWHeader } from '~/utils/actions/getNSFWHeader'
+import { GET as getAdminGalgameRoute } from '~/app/api/admin/galgame/route'
 import { verifyHeaderCookie } from '~/utils/actions/verifyHeaderCookie'
+import { callRouteGet } from '~/utils/actions/callRouteHandler'
 
 export const kunGetActions = async (
   params: z.infer<typeof adminPaginationSchema>
@@ -14,16 +14,14 @@ export const kunGetActions = async (
   if (typeof input === 'string') {
     return input
   }
+
   const payload = await verifyHeaderCookie()
   if (!payload) {
-    return '用户登陆失效'
+    return '用户登录失效'
   }
-  if (payload.role < 3) {
-    return '本页面仅管理员可访问'
+  if (payload.role < 2) {
+    return '仅编辑及以上角色可以访问后台管理'
   }
 
-  const nsfwEnable = await getNSFWHeader()
-
-  const response = await getGalgame(input, nsfwEnable)
-  return response
+  return callRouteGet(getAdminGalgameRoute, '/api/admin/galgame', input)
 }

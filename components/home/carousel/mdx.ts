@@ -1,6 +1,5 @@
-import fs from 'fs'
-import path from 'path'
-import matter from 'gray-matter'
+import { prisma } from '~/prisma/index'
+import { canAccessRestrictedContent } from '~/utils/contentVisibility'
 
 export interface HomeCarouselMetadata {
   title: string
@@ -11,56 +10,71 @@ export interface HomeCarouselMetadata {
   authorAvatar: string
   pin: boolean
   directory: string
+  directoryLabel: string
   link: string
 }
 
-const POSTS_PATH = path.join(process.cwd(), 'posts')
+interface ViewerContext {
+  uid?: number
+  role?: number
+}
 
-export const getKunPosts = (): HomeCarouselMetadata[] => {
-  if (!fs.existsSync(POSTS_PATH)) {
-    return []
-  }
+const mapPost = (post: {
+  slug: string
+  title: string
+  banner: string
+  description: string
+  published_at: Date
+  author_name: string
+  author_avatar: string
+  pin: boolean
+  category: string
+  directory_label: string
+}): HomeCarouselMetadata => ({
+  title: post.title,
+  banner: post.banner || '/favicon.ico',
+  description: post.description,
+  date: post.published_at.toISOString(),
+  authorName: post.author_name || '绮梦编辑部',
+  authorAvatar: post.author_avatar || '/favicon.ico',
+  pin: post.pin,
+  directory: post.category,
+  directoryLabel: post.directory_label,
+  link: `/doc/${post.slug}`
+})
 
-  const posts: HomeCarouselMetadata[] = []
+export const getKunPosts = async (
+  viewer: ViewerContext = {}
+): Promise<HomeCarouselMetadata[]> => {
+  const pinnedPosts = await prisma.doc_post.findMany({
+    where: {
+      pin: true
+    },
+    orderBy: [{ sort_order: 'desc' }, { published_at: 'desc' }],
+    select: {
+      slug: true,
+      title: true,
+      banner: true,
+      description: true,
+      published_at: true,
+      author_name: true,
+      author_avatar: true,
+      pin: true,
+      category: true,
+      directory_label: true,
+      visibility: true,
+      author_id: true
+    }
+  })
 
-  const traverseDirectory = (currentPath: string) => {
-    const files = fs.readdirSync(currentPath)
-
-    files.forEach((file) => {
-      const filePath = path.join(currentPath, file)
-      const stat = fs.statSync(filePath)
-
-      if (stat.isDirectory()) {
-        traverseDirectory(filePath)
-      } else if (file.endsWith('.mdx')) {
-        const fileContents = fs.readFileSync(filePath, 'utf8')
-        const { data } = matter(fileContents)
-
-        if (!data.pin) {
-          return
-        }
-
-        const parentDirectory = path.basename(path.dirname(filePath))
-        const fileName = path.basename(file, '.mdx')
-
-        posts.push({
-          title: data.title,
-          banner: data.banner,
-          description: data.description,
-          date: new Date(data.date).toISOString(),
-          authorName: data.authorName,
-          authorAvatar: data.authorAvatar,
-          pin: data.pin,
-          directory: parentDirectory,
-          link: `/doc/${parentDirectory}/${fileName}`
-        })
-      }
-    })
-  }
-
-  traverseDirectory(POSTS_PATH)
-
-  return posts.sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-  )
+  return pinnedPosts
+    .filter((post) =>
+      canAccessRestrictedContent({
+        visibility: post.visibility,
+        authorId: post.author_id,
+        uid: viewer.uid ?? 0,
+        role: viewer.role ?? 0
+      })
+    )
+    .map((post) => mapPost(post))
 }

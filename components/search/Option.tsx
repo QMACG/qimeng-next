@@ -32,14 +32,6 @@ export const SearchOption = () => {
             包含简介
           </Checkbox>
           <Checkbox
-            isSelected={searchData.searchInAlias}
-            onValueChange={(checked) =>
-              setSearchData({ ...searchData, searchInAlias: checked })
-            }
-          >
-            包含别名
-          </Checkbox>
-          <Checkbox
             isSelected={searchData.searchInTag}
             onValueChange={(checked) =>
               setSearchData({ ...searchData, searchInTag: checked })

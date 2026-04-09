@@ -1,11 +1,15 @@
 export interface KunPostMetadata {
+  id: number
   title: string
   banner: string
+  directoryLabel: string
   date: string
   description: string
   textCount: number
   slug: string
   path: string
+  category: string
+  pin: boolean
 }
 
 export interface KunTreeNode {
@@ -19,6 +23,7 @@ export interface KunTreeNode {
 export interface KunFrontmatter {
   title: string
   banner: string
+  directoryLabel: string
   description: string
   date: string
   authorUid: number
@@ -26,9 +31,11 @@ export interface KunFrontmatter {
   authorAvatar: string
   authorHomepage: string
   pin: boolean
+  category: string
 }
 
 export interface KunBlog {
+  id: number
   slug: string
   content: string
   frontmatter: KunFrontmatter

@@ -1,6 +1,6 @@
 import Redis from 'ioredis'
 
-const KUN_PATCH_REDIS_PREFIX = 'kun:touchgal'
+const KUN_PATCH_REDIS_PREFIX = 'qimeng:site'
 
 export const redis = new Redis({
   port: parseInt(process.env.REDIS_PORT!),
@@ -25,4 +25,14 @@ export const getKv = async (key: string) => {
 export const delKv = async (key: string) => {
   const keyString = `${KUN_PATCH_REDIS_PREFIX}:${key}`
   await redis.del(keyString)
+}
+
+export const incrKv = async (key: string) => {
+  const keyString = `${KUN_PATCH_REDIS_PREFIX}:${key}`
+  return redis.incr(keyString)
+}
+
+export const expireKv = async (key: string, time: number) => {
+  const keyString = `${KUN_PATCH_REDIS_PREFIX}:${key}`
+  return redis.expire(keyString, time)
 }

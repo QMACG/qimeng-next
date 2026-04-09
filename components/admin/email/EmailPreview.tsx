@@ -14,7 +14,7 @@ export const EmailPreview = ({ content, previewOnly = false }: Props) => {
       <iframe
         srcDoc={content}
         style={{ width: '100%', height: '500px', border: 'none' }}
-        title="Email preview"
+        title="邮件预览"
       />
     )
   }
@@ -23,16 +23,16 @@ export const EmailPreview = ({ content, previewOnly = false }: Props) => {
     <Card>
       <CardBody className="space-y-4">
         <div className="flex items-center gap-2 text-default-500">
-          <Mail className="w-4 h-4" />
+          <Mail className="h-4 w-4" />
           <h3 className="text-sm font-medium">邮件预览</h3>
         </div>
 
-        <Tabs aria-label="预览选项">
+        <Tabs aria-label="邮件预览选项">
           <Tab
             key="preview"
             title={
               <div className="flex items-center gap-2">
-                <Eye className="w-4 h-4" />
+                <Eye className="h-4 w-4" />
                 <span>实时预览</span>
               </div>
             }
@@ -41,7 +41,7 @@ export const EmailPreview = ({ content, previewOnly = false }: Props) => {
               <iframe
                 srcDoc={content}
                 style={{ width: '100%', height: '500px', border: 'none' }}
-                title="Email preview"
+                title="邮件预览"
               />
             </div>
           </Tab>
@@ -49,12 +49,12 @@ export const EmailPreview = ({ content, previewOnly = false }: Props) => {
             key="source"
             title={
               <div className="flex items-center gap-2">
-                <Code className="w-4 h-4" />
-                <span>源代码</span>
+                <Code className="h-4 w-4" />
+                <span>源码</span>
               </div>
             }
           >
-            <pre className="p-4 mt-4 overflow-auto text-sm rounded-lg bg-default-50">
+            <pre className="mt-4 overflow-auto rounded-lg bg-default-50 p-4 text-sm">
               {content}
             </pre>
           </Tab>

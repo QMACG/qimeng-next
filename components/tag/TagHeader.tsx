@@ -1,45 +1,17 @@
 'use client'
 
-import { Button } from '@heroui/button'
-import { useDisclosure } from '@heroui/modal'
-import { Plus } from 'lucide-react'
-import { CreateTagModal } from '~/components/tag/CreateTagModal'
 import { KunHeader } from '../kun/Header'
-import { useUserStore } from '~/store/userStore'
 import type { Tag as TagType } from '~/types/api/tag'
 
 interface Props {
   setNewTag: (tag: TagType) => void
 }
 
-export const TagHeader = ({ setNewTag }: Props) => {
-  const { isOpen, onOpen, onClose } = useDisclosure()
-  const user = useUserStore((state) => state.user)
-
+export const TagHeader = ({ setNewTag: _setNewTag }: Props) => {
   return (
-    <>
-      <KunHeader
-        name="标签列表"
-        description="这里是本站 Galgame 中的所有标签"
-        headerEndContent={
-          <>
-            {user.role > 2 && (
-              <Button color="primary" onPress={onOpen} startContent={<Plus />}>
-                创建标签
-              </Button>
-            )}
-          </>
-        }
-      />
-
-      <CreateTagModal
-        isOpen={isOpen}
-        onClose={onClose}
-        onSuccess={(newTag) => {
-          setNewTag(newTag)
-          onClose()
-        }}
-      />
-    </>
+    <KunHeader
+      name="标签列表"
+      description="这里汇总站内游戏标签。"
+    />
   )
 }

@@ -2,13 +2,9 @@
 
 import { useState } from 'react'
 import { Button } from '@heroui/react'
-import toast from 'react-hot-toast'
 import Link from 'next/link'
-import localforage from 'localforage'
-import {
-  createPatchEditStoreKey,
-  useCreatePatchStore
-} from '~/store/editStore'
+import toast from 'react-hot-toast'
+import { createPatchEditStoreKey, useCreatePatchStore } from '~/store/editStore'
 import { kunFetchGet } from '~/utils/kunFetch'
 
 interface DuplicateResponse {
@@ -22,37 +18,21 @@ export const DuplicateCheckButton = () => {
     null
   )
 
-  const buildPayload = () => ({
-    vndbId: data.vndbId.trim().toLowerCase(),
-    vndbRelationId: data.vndbRelationId.trim().toLowerCase(),
-    dlsiteCode: data.dlsiteCode.trim().toUpperCase(),
-    title: data.name.trim()
-  })
-
   const handleCheckDuplicate = async () => {
-    const payload = buildPayload()
+    const title = data.name.trim()
 
-    if (
-      !payload.vndbId &&
-      !payload.vndbRelationId &&
-      !payload.dlsiteCode &&
-      !payload.title
-    ) {
-      toast.error('请至少填写一个可用的查重字段')
+    if (!title) {
+      toast.error('请先填写游戏标题后再查重')
       return
     }
 
     setChecking(true)
     setDuplicateUniqueId(null)
+
     try {
       const response = await kunFetchGet<KunResponse<DuplicateResponse>>(
         '/edit/duplicate',
-        {
-          vndbId: payload.vndbId,
-          vndbRelationId: payload.vndbRelationId,
-          dlsiteCode: payload.dlsiteCode,
-          title: payload.title
-        }
+        { title }
       )
 
       if (typeof response === 'string') {
@@ -62,13 +42,13 @@ export const DuplicateCheckButton = () => {
 
       if (response?.uniqueId) {
         setDuplicateUniqueId(response.uniqueId)
-        toast.error('发现重复记录, 点击跳转到重复的游戏')
+        toast.error('发现同名游戏，请先检查是否已经存在')
       } else {
-        toast.success('检查完成, 未找到重复游戏')
+        toast.success('查重完成，未发现同名游戏')
       }
     } catch (error) {
       console.error(error)
-      toast.error('查重失败, 请稍后再试')
+      toast.error('查重失败，请稍后再试')
     } finally {
       setChecking(false)
     }
@@ -76,8 +56,6 @@ export const DuplicateCheckButton = () => {
 
   const handleClearDraft = async () => {
     localStorage.removeItem(createPatchEditStoreKey)
-    await localforage.removeItem('kun-patch-banner')
-    await localforage.removeItem('kun-patch-banner-original')
     window.location.reload()
   }
 
@@ -90,7 +68,7 @@ export const DuplicateCheckButton = () => {
         isDisabled={checking}
         isLoading={checking}
       >
-        检查重复
+        检查重名
       </Button>
 
       <Button
@@ -111,7 +89,7 @@ export const DuplicateCheckButton = () => {
           variant="flat"
           size="sm"
         >
-          跳转到重复游戏
+          查看已有游戏
         </Button>
       )}
     </div>

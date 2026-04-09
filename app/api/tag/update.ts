@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { prisma } from '~/prisma/index'
 import { updateTagSchema } from '~/validations/tag'
+import { parseJsonStringArray, toJsonStringArray } from '~/utils/prismaJson'
 import type { TagDetail } from '~/types/api/tag'
 
 export const updateTag = async (input: z.infer<typeof updateTagSchema>) => {
@@ -8,19 +9,19 @@ export const updateTag = async (input: z.infer<typeof updateTagSchema>) => {
 
   const existingTag = await prisma.patch_tag.findFirst({
     where: {
-      OR: [{ name }, { alias: { has: name } }]
+      OR: [{ name }, { alias: { array_contains: [name] } }]
     }
   })
   if (existingTag && existingTag.id !== tagId) {
-    return '这个标签已经存在了'
+    return '这个标签已经存在'
   }
 
-  const newTag: TagDetail = await prisma.patch_tag.update({
+  const newTag = await prisma.patch_tag.update({
     where: { id: tagId },
     data: {
       name,
       introduction,
-      alias
+      alias: toJsonStringArray(alias)
     },
     include: {
       user: {
@@ -33,5 +34,10 @@ export const updateTag = async (input: z.infer<typeof updateTagSchema>) => {
     }
   })
 
-  return newTag
+  const result: TagDetail = {
+    ...newTag,
+    alias: parseJsonStringArray(newTag.alias)
+  }
+
+  return result
 }

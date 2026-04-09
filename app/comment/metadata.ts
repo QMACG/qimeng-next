@@ -1,19 +1,22 @@
 import { kunMoyuMoe } from '~/config/moyu-moe'
 import type { Metadata } from 'next'
 
+const title = `游戏评论 - ${kunMoyuMoe.titleShort}`
+const description = `${kunMoyuMoe.titleShort} 的评论页面，集中查看用户对游戏内容、下载资源与游玩体验的讨论。`
+
 export const kunMetadata: Metadata = {
-  title: 'Galgame 评论',
-  description: `最新发布的 Galgame 评论列表, 包括对下载的看法, 对 Galgame 的评分, 对 Galgame 的吐槽等等`,
+  title,
+  description,
   openGraph: {
-    title: 'Galgame 评论',
-    description: `最新发布的 Galgame 评论列表, 包括对下载的看法, 对 Galgame 的评分, 对 Galgame 的吐槽等等`,
+    title,
+    description,
     type: 'website',
     images: kunMoyuMoe.images
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Galgame 评论',
-    description: `最新发布的 Galgame 评论列表, 包括对下载的看法, 对 Galgame 的评分, 对 Galgame 的吐槽等等`
+    title,
+    description
   },
   alternates: {
     canonical: `${kunMoyuMoe.domain.main}/comment`

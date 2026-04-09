@@ -1,4 +1,4 @@
-import { z } from 'zod'
+﻿import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import {
   kunParseDeleteQuery,
@@ -17,7 +17,7 @@ import { updateTag } from './update'
 import { getTagById } from './get'
 import { deleteTag } from './delete'
 
-export const tagIdSchema = z.object({
+const tagIdSchema = z.object({
   tagId: z.coerce.number().min(1).max(9999999)
 })
 
@@ -36,12 +36,13 @@ export const POST = async (req: NextRequest) => {
   if (typeof input === 'string') {
     return NextResponse.json(input)
   }
+
   const payload = await verifyHeaderCookie(req)
   if (!payload) {
     return NextResponse.json('用户未登录')
   }
-  if (payload.role < 3) {
-    return NextResponse.json('本页面仅管理员可访问')
+  if (payload.role < 2) {
+    return NextResponse.json('仅编辑及以上角色可以创建标签')
   }
 
   const response = await createTag(input, payload.uid)
@@ -53,12 +54,13 @@ export const PUT = async (req: NextRequest) => {
   if (typeof input === 'string') {
     return NextResponse.json(input)
   }
+
   const payload = await verifyHeaderCookie(req)
   if (!payload) {
     return NextResponse.json('用户未登录')
   }
-  if (payload.role < 3) {
-    return NextResponse.json('本页面仅管理员可访问')
+  if (payload.role < 2) {
+    return NextResponse.json('仅编辑及以上角色可以编辑标签')
   }
 
   const response = await updateTag(input)
@@ -70,14 +72,16 @@ export const DELETE = async (req: NextRequest) => {
   if (typeof input === 'string') {
     return NextResponse.json(input)
   }
+
   const payload = await verifyHeaderCookie(req)
   if (!payload) {
     return NextResponse.json('用户未登录')
   }
   if (payload.role < 3) {
-    return NextResponse.json('本页面仅管理员可访问')
+    return NextResponse.json('仅管理员可以删除标签')
   }
 
   const response = await deleteTag(input.tagId)
   return NextResponse.json(response)
 }
+

@@ -1,35 +1,63 @@
 'use client'
 
-import { useState } from 'react'
-import { kunMoyuMoe } from '~/config/moyu-moe'
+import { useCallback, useMemo } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Button, Card, CardBody, CardFooter, Snippet } from '@heroui/react'
 import { ExternalLink, ShieldAlert } from 'lucide-react'
-import { CountdownTimer } from './CountdownTimer'
-import { useSearchParams } from 'next/navigation'
-import { useUserStore } from '~/store/userStore'
-import { useMounted } from '~/hooks/useMounted'
+import { kunMoyuMoe } from '~/config/moyu-moe'
+
+const navigateWithoutReferrer = (url: string) => {
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.rel = 'noreferrer noopener'
+  anchor.referrerPolicy = 'no-referrer'
+  anchor.target = '_self'
+  anchor.style.display = 'none'
+  document.body.appendChild(anchor)
+  anchor.click()
+  anchor.remove()
+}
+
+const parseTargetUrl = (value: string | null) => {
+  if (!value) {
+    return null
+  }
+
+  try {
+    const url = new URL(value)
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      return null
+    }
+    return url.toString()
+  } catch {
+    return null
+  }
+}
 
 export const KunRedirectCard = () => {
-  const isMounted = useMounted()
   const searchParams = useSearchParams()
-  const userConfig = useUserStore((state) => state.user)
+  const rawUrl = searchParams.get('url')
+  const url = useMemo(() => parseTargetUrl(rawUrl), [rawUrl])
 
-  const [isCountdownComplete, setIsCountdownComplete] = useState(false)
-  const url = searchParams.get('url') || kunMoyuMoe.domain.main
+  const handleRedirect = useCallback(() => {
+    if (!url) {
+      return
+    }
 
-  const handleRedirect = () => {
-    window.location.href = url
-  }
+    navigateWithoutReferrer(url)
+  }, [url])
 
   return (
     <Card className="w-full max-w-2xl">
       <CardBody className="gap-4">
         <div className="flex items-center gap-2 text-warning-500">
-          <ShieldAlert className="w-5 h-5" />
-          <p className="text-lg">您即将离开 {kunMoyuMoe.titleShort}</p>
+          <ShieldAlert className="h-5 w-5" />
+          <p className="text-lg">你即将离开 {kunMoyuMoe.titleShort}</p>
         </div>
 
-        <p className="text-default-500">您将会被跳转到:</p>
+        <p className="text-default-500">
+          请确认目标链接可信后，再点击下方按钮继续访问。
+        </p>
 
         <div className="overflow-auto">
           <Snippet
@@ -40,16 +68,9 @@ export const KunRedirectCard = () => {
             color="primary"
             copyIcon={<ExternalLink />}
           >
-            {url}
+            {url || '无效的目标链接'}
           </Snippet>
         </div>
-
-        {isMounted && (
-          <CountdownTimer
-            delay={userConfig.delaySeconds}
-            onComplete={() => setIsCountdownComplete(true)}
-          />
-        )}
       </CardBody>
 
       <CardFooter className="justify-center">
@@ -58,9 +79,9 @@ export const KunRedirectCard = () => {
           color="primary"
           variant="shadow"
           onPress={handleRedirect}
-          isDisabled={!isCountdownComplete}
+          isDisabled={!url}
         >
-          点击跳转
+          确认继续访问
         </Button>
       </CardFooter>
     </Card>

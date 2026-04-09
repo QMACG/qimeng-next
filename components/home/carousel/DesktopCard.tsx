@@ -1,7 +1,7 @@
 'use client'
 
 import { Card, Chip, Link } from '@heroui/react'
-import { docDirectoryLabelMap } from '~/constants/doc'
+import { getDocDirectoryLabel } from '~/constants/doc'
 import { formatTimeDifference } from '~/utils/time'
 import type { HomeCarouselMetadata } from './mdx'
 
@@ -47,7 +47,7 @@ export const KunDesktopCard = ({ posts, currentSlide }: Props) => {
           </p>
           <div className="flex flex-wrap gap-2">
             <Chip variant="flat" size="sm" color="primary">
-              {docDirectoryLabelMap[post.directory]}
+              {getDocDirectoryLabel(post.directory, post.directoryLabel)}
             </Chip>
 
             <Chip variant="flat" size="sm">

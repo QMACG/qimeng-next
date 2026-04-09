@@ -61,8 +61,8 @@ export const CardContainer = ({
   return (
     <div className="container mx-auto my-4 space-y-6">
       <KunHeader
-        name="Galgame 评论"
-        description="这里展示了所有的 Galgame 评论"
+        name="游戏评论"
+        description="这里展示站内最新的游戏评论与讨论"
       />
 
       {uid ? (
@@ -96,7 +96,7 @@ export const CardContainer = ({
           )}
         </>
       ) : (
-        <KunNull message="请登录后查看所有游戏评论" />
+        <KunNull message="请登录后查看评论内容" />
       )}
     </div>
   )

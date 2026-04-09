@@ -1,4 +1,4 @@
-import { z } from 'zod'
+﻿import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParseGetQuery } from '~/app/api/utils/parseQuery'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
@@ -6,7 +6,7 @@ import { prisma } from '~/prisma/index'
 import { adminPaginationSchema } from '~/validations/admin'
 import type { AdminLog } from '~/types/api/admin'
 
-export const getLog = async (input: z.infer<typeof adminPaginationSchema>) => {
+const getLog = async (input: z.infer<typeof adminPaginationSchema>) => {
   const { page, limit } = input
   const offset = (page - 1) * limit
 
@@ -55,3 +55,4 @@ export async function GET(req: NextRequest) {
   const res = await getLog(input)
   return NextResponse.json(res)
 }
+

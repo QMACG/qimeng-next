@@ -1,8 +1,8 @@
 import Link from 'next/link'
 import { Card, CardBody } from '@heroui/card'
 import { Chip } from '@heroui/chip'
-import { formatTimeDifference } from '~/utils/time'
 import { KunAvatar } from '~/components/kun/floating-card/KunAvatar'
+import { formatTimeDifference } from '~/utils/time'
 import type { Conversation } from '~/types/api/conversation'
 
 interface Props {
@@ -26,16 +26,16 @@ export const ConversationCard = ({ conversation }: Props) => {
           }}
         />
 
-        <div className="flex-1 min-w-0 space-y-1">
+        <div className="min-w-0 flex-1 space-y-1">
           <div className="flex items-center justify-between">
-            <span className="font-semibold truncate">
+            <span className="truncate font-semibold">
               {conversation.otherUser.name}
             </span>
-            <span className="text-xs text-default-400 shrink-0 ml-2">
+            <span className="ml-2 shrink-0 text-xs text-default-400">
               {formatTimeDifference(conversation.lastMessageTime)}
             </span>
           </div>
-          <p className="text-sm text-default-600 truncate">
+          <p className="truncate text-sm text-default-600">
             {conversation.lastMessage || '暂无消息'}
           </p>
         </div>

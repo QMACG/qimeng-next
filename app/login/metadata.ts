@@ -1,19 +1,15 @@
 import { kunMoyuMoe } from '~/config/moyu-moe'
 import type { Metadata } from 'next'
 
+const description = `登录 ${kunMoyuMoe.titleShort}，继续浏览游戏文章、查看资源链接、发表评论与管理站内内容。`
+
 export const kunMetadata: Metadata = {
   title: `登录 - ${kunMoyuMoe.titleShort}`,
-  description: `登录 ${kunMoyuMoe.titleShort} 网站, 随心所欲的收藏, 点赞, 下载任何 Galgame 资源。欢迎您回家! 辛苦了!`,
-  keywords: [
-    '登录',
-    'Galgame 网站登录',
-    '登录账户',
-    'Galgame 资源下载',
-    '用户认证'
-  ],
+  description,
+  keywords: ['登录', '账户登录', '用户认证', '绮梦登录', '游戏资源'],
   openGraph: {
     title: `登录 - ${kunMoyuMoe.titleShort}`,
-    description: `登录 ${kunMoyuMoe.titleShort} 网站, 随心所欲的收藏, 点赞, 下载任何 Galgame 资源。欢迎您回家! 辛苦了!`,
+    description,
     url: `${kunMoyuMoe.domain.main}/login`,
     siteName: kunMoyuMoe.title,
     images: [

@@ -1,151 +1,62 @@
 import crypto from 'crypto'
 import { z } from 'zod'
 import { prisma } from '~/prisma/index'
-import { uploadPatchBanner } from './_upload'
 import { patchCreateSchema } from '~/validations/edit'
-import { kunMoyuMoe } from '~/config/moyu-moe'
-import { postToIndexNow } from './_postToIndexNow'
-import { processSubmittedExternalData } from './processExternalData'
+import { toJsonStringArray } from '~/utils/prismaJson'
+import { handleBatchPatchTags } from './batchTag'
+import { syncPatchCompanies } from './syncPatchCompanies'
 
 export const createGalgame = async (
-  input: Omit<z.infer<typeof patchCreateSchema>, 'alias' | 'tag'> & {
-    alias: string[]
-    tag: string[]
-    bannerOriginal?: ArrayBuffer
-  },
+  input: Omit<z.infer<typeof patchCreateSchema>, 'tag'> & { tag: string[] },
   uid: number
 ) => {
   const {
     name,
-    vndbId,
-    vndbRelationId,
-    bangumiId,
-    steamId,
-    dlsiteCode,
-    dlsiteCircleName,
-    dlsiteCircleLink,
-    vndbTags,
-    vndbDevelopers,
-    bangumiTags,
-    bangumiDevelopers,
-    steamTags,
-    steamDevelopers,
-    steamAliases,
-    alias,
+    companyIds,
+    resourceNote,
     banner,
-    bannerOriginal,
     tag,
     introduction,
+    status,
     released,
     contentLimit
   } = input
 
-  const bannerArrayBuffer = banner as ArrayBuffer
-  const bannerOriginalArrayBuffer = bannerOriginal as ArrayBuffer | undefined
   const galgameUniqueId = crypto.randomBytes(4).toString('hex')
 
-  const normalizedDlsiteCode = dlsiteCode?.trim()
-    ? dlsiteCode.trim().toUpperCase()
-    : ''
-  if (normalizedDlsiteCode) {
-    const dlsitePatch = await prisma.patch.findFirst({
-      where: { dlsite_code: normalizedDlsiteCode }
-    })
-    if (dlsitePatch) {
-      return `Galgame DLSite Code 与游戏 ID 为 ${dlsitePatch.unique_id} 的游戏重复`
-    }
-  }
-
   const res = await prisma.$transaction(
-    async (prisma) => {
-      const patch = await prisma.patch.create({
+    async (tx) => {
+      const patch = await tx.patch.create({
         data: {
           name,
           unique_id: galgameUniqueId,
-          vndb_id: vndbId ? vndbId : null,
-          vndb_relation_id: vndbRelationId ? vndbRelationId : null,
-          bangumi_id: bangumiId ? Number(bangumiId) : null,
-          steam_id: steamId ? Number(steamId) : null,
-          dlsite_code: normalizedDlsiteCode ? normalizedDlsiteCode : null,
           introduction,
           user_id: uid,
-          banner: '',
+          banner,
           released,
-          content_limit: contentLimit
+          resource_note: resourceNote,
+          visibility: status,
+          content_limit: contentLimit,
+          type: toJsonStringArray([]),
+          language: toJsonStringArray([]),
+          platform: toJsonStringArray([])
         }
       })
 
-      const newId = patch.id
-
-      const uploadResult = await uploadPatchBanner(
-        bannerArrayBuffer,
-        newId,
-        bannerOriginalArrayBuffer
-      )
-      if (typeof uploadResult === 'string') {
-        return uploadResult
-      }
-      const imageLink = `${process.env.KUN_VISUAL_NOVEL_IMAGE_BED_URL}/patch/${newId}/banner/banner.avif`
-
-      await prisma.patch.update({
-        where: { id: newId },
-        data: { banner: imageLink }
+      await tx.patch_rating_stat.create({
+        data: { patch_id: patch.id }
       })
 
-      // Ensure rating_stat row exists for this patch
-      await prisma.patch_rating_stat.create({
-        data: { patch_id: newId }
-      })
-
-      if (alias.length) {
-        const aliasData = alias.map((name) => ({
-          name,
-          patch_id: newId
-        }))
-        await prisma.patch_alias.createMany({
-          data: aliasData,
-          skipDuplicates: true
-        })
-      }
-
-      await prisma.user.update({
-        where: { id: uid },
-        data: {
-          daily_image_count: { increment: 1 },
-          moemoepoint: { increment: 3 }
-        }
-      })
-
-      return { patchId: newId }
+      return { patchId: patch.id }
     },
     { timeout: 60000 }
   )
 
-  if (typeof res === 'string') {
-    return res
+  if (tag.length) {
+    await handleBatchPatchTags(res.patchId, tag, uid)
   }
 
-  await processSubmittedExternalData(
-    res.patchId,
-    {
-      vndbTags,
-      vndbDevelopers,
-      bangumiTags,
-      bangumiDevelopers,
-      steamTags,
-      steamDevelopers,
-      steamAliases,
-      dlsiteCircleName: dlsiteCircleName ?? '',
-      dlsiteCircleLink: dlsiteCircleLink ?? ''
-    },
-    tag,
-    uid
-  )
+  await syncPatchCompanies(res.patchId, companyIds ?? [])
 
-  if (contentLimit === 'sfw') {
-    const newPatchUrl = `${kunMoyuMoe.domain.main}/${galgameUniqueId}`
-    await postToIndexNow(newPatchUrl)
-  }
-
-  return { uniqueId: galgameUniqueId }
+  return { uniqueId: galgameUniqueId, patchId: res.patchId }
 }

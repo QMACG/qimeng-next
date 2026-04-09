@@ -48,8 +48,8 @@ export const LoginForm = () => {
           const state = value as UserState
           setUser(state)
           reset()
-          toast.success('登录成功!')
-          router.push(`/user/${state.uid}/comment`)
+          toast.success('登录成功！')
+          router.push('/')
         }
       })
     })
@@ -120,14 +120,14 @@ export const LoginForm = () => {
       <Button
         color="primary"
         variant="bordered"
-        className="w-full mb-4"
+        className="mb-4 w-full"
         onPress={() => router.push('/auth/forgot')}
       >
         忘记密码
       </Button>
 
       <div className="flex items-center">
-        <span className="mr-2">没有账号?</span>
+        <span className="mr-2">没有账号？</span>
         <Link href="register">注册账号</Link>
       </div>
     </form>

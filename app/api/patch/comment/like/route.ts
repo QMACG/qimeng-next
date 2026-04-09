@@ -1,4 +1,4 @@
-import { z } from 'zod'
+﻿import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParsePutBody } from '~/app/api/utils/parseQuery'
 import { prisma } from '~/prisma/index'
@@ -12,7 +12,7 @@ const commentIdSchema = z.object({
     .max(9999999)
 })
 
-export const toggleCommentLike = async (
+const toggleCommentLike = async (
   input: z.infer<typeof commentIdSchema>,
   uid: number
 ) => {
@@ -89,3 +89,4 @@ export const PUT = async (req: NextRequest) => {
   const response = await toggleCommentLike(input, payload.uid)
   return NextResponse.json(response)
 }
+

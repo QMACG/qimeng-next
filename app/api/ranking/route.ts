@@ -1,12 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server'
+﻿import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '~/prisma/index'
 import { GalgameCardSelectField } from '~/constants/api/select'
+import { getFrontDisplayConfig } from '~/app/api/admin/setting/front-display/getFrontDisplayConfig'
+import { CONTENT_VISIBILITY } from '~/constants/contentVisibility'
 import { rankingSchema } from '~/validations/ranking'
 import { kunParseGetQuery } from '~/app/api/utils/parseQuery'
 import { getNSFWHeader } from '~/app/api/utils/getNSFWHeader'
+import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 import type { RankingSortField, RankingCard } from '~/types/api/ranking'
 import type { Prisma } from '~/prisma/generated/prisma/client'
+import { canShowDownloadCount, canShowViewCount } from '~/utils/frontDisplay'
+import { parseJsonStringArray } from '~/utils/prismaJson'
 
 const MAX_RANKING_ITEMS = 300
 
@@ -22,15 +27,20 @@ const RankingSelectField = {
   }
 } as const
 
-export const getRanking = async (
+const getRanking = async (
   input: z.infer<typeof rankingSchema>,
-  nsfwEnable: Record<string, string | undefined>
+  nsfwEnable: Record<string, string | undefined>,
+  role = 0
 ) => {
+  const frontDisplayConfig = await getFrontDisplayConfig()
+  const showViewCount = canShowViewCount(role, frontDisplayConfig)
+  const showDownloadCount = canShowDownloadCount(role, frontDisplayConfig)
   const { sortField, sortOrder, minRatingCount, page, limit } = input
   const safeLimit = Math.min(limit, 50)
   const offset = (page - 1) * safeLimit
 
   const where: Prisma.patchWhereInput = {
+    visibility: CONTENT_VISIBILITY.public,
     ...nsfwEnable,
     rating_stat: {
       count: {
@@ -63,12 +73,14 @@ export const getRanking = async (
       uniqueId: gal.unique_id,
       name: gal.name,
       banner: gal.banner,
-      view: gal.view,
-      download: gal.download,
-      type: gal.type,
-      language: gal.language,
-      platform: gal.platform,
-      tags: gal.tag.map((t) => t.tag.name).slice(0, 3),
+      view: showViewCount ? gal.view : 0,
+      download: showDownloadCount ? gal.download : 0,
+      showViewCount,
+      showDownloadCount,
+      type: parseJsonStringArray(gal.type),
+      language: parseJsonStringArray(gal.language),
+      platform: parseJsonStringArray(gal.platform),
+      tags: gal.tag.map((tag) => tag.tag.name).slice(0, 3),
       created: gal.created,
       _count: gal._count,
       averageRating: ratingCount > 0 ? Math.round(ratingAvg * 10) / 10 : 0,
@@ -118,8 +130,9 @@ export const GET = async (req: NextRequest) => {
     return NextResponse.json(input)
   }
 
-  const nsfwEnable = getNSFWHeader(req)
-
-  const response = await getRanking(input, nsfwEnable)
+  const nsfwEnable = await getNSFWHeader(req)
+  const payload = await verifyHeaderCookie(req)
+  const response = await getRanking(input, nsfwEnable, payload?.role ?? 0)
   return NextResponse.json(response)
 }
+

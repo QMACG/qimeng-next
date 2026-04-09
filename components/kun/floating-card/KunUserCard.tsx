@@ -17,28 +17,28 @@ export const KunUserCard = ({ uid }: UserCardProps) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const user = await kunFetchGet<FloatingCardUser>(
-        '/user/profile/floating',
-        { uid }
-      )
-      setUser(user)
+      const profile = await kunFetchGet<FloatingCardUser>('/user/profile/floating', {
+        uid
+      })
+      setUser(profile)
     }
+
     fetchData()
-  }, [])
+  }, [uid])
 
   return (
-    <div className="p-2 w-[300px]">
+    <div className="w-[300px] p-2">
       {user ? (
         <>
           <div className="flex items-center justify-between">
             <User
               name={user.name}
-              description={user.bio || '这只笨萝莉还没有签名'}
+              description={user.bio || '这个用户还没有留下简介'}
               avatarProps={{
                 src: user.avatar,
                 isBordered: true,
                 color: 'secondary',
-                className: 'w-12 h-12 shrink-0'
+                className: 'h-12 w-12 shrink-0'
               }}
               className="mb-2"
             />
@@ -51,17 +51,19 @@ export const KunUserCard = ({ uid }: UserCardProps) => {
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-3 mt-4">
+          <div className="mt-4 grid grid-cols-2 gap-3">
             <KunUserStatCard value={user._count.follower} label="关注者" />
-            <KunUserStatCard value={user._count.patch} label="Galgame 数" />
-            <KunUserStatCard
-              value={user._count.patch_resource}
-              label="补丁数"
-            />
+            <KunUserStatCard value={user.receivedFavoriteCount} label="收到喜欢" />
+            {user.showContributionStats ? (
+              <KunUserStatCard value={user._count.patch} label="游戏数" />
+            ) : null}
+            {user.showContributionStats ? (
+              <KunUserStatCard value={user._count.patch_resource} label="资源数" />
+            ) : null}
           </div>
         </>
       ) : (
-        <div className="flex items-center justify-center min-h-36">
+        <div className="flex min-h-36 items-center justify-center">
           <KunLoading hint="正在加载用户信息..." />
         </div>
       )}

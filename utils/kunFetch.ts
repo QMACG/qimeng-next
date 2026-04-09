@@ -1,8 +1,52 @@
+import { formatUnknownErrorMessage } from './formatErrorMessage'
+
 type FetchOptions = {
   headers?: Record<string, string>
   query?: Record<string, string | number>
   body?: Record<string, unknown>
   formData?: FormData
+}
+
+const getBaseUrl = () => {
+  if (typeof window !== 'undefined') {
+    return ''
+  }
+
+  if (process.env.NODE_ENV === 'development') {
+    return process.env.NEXT_PUBLIC_KUN_PATCH_ADDRESS_DEV || ''
+  }
+
+  return (
+    process.env.KUN_VISUAL_NOVEL_SITE_URL ||
+    process.env.NEXT_PUBLIC_KUN_PATCH_ADDRESS_PROD ||
+    ''
+  )
+}
+
+const buildQueryString = (query?: Record<string, string | number>) => {
+  if (!query) {
+    return ''
+  }
+
+  const params = new URLSearchParams()
+  for (const [key, value] of Object.entries(query)) {
+    params.set(key, String(value))
+  }
+
+  const output = params.toString()
+  return output ? `?${output}` : ''
+}
+
+const parseErrorResponse = async (response: Response) => {
+  const contentType = response.headers.get('content-type') || ''
+
+  if (contentType.includes('application/json')) {
+    const json = await response.json()
+    return formatUnknownErrorMessage(json)
+  }
+
+  const text = await response.text()
+  return formatUnknownErrorMessage(text || `请求失败，状态码 ${response.status}`)
 }
 
 const kunFetchRequest = async <T>(
@@ -12,24 +56,13 @@ const kunFetchRequest = async <T>(
 ): Promise<T> => {
   try {
     const { headers = {}, query, body, formData } = options || {}
-
-    const queryString = query
-      ? '?' +
-        Object.entries(query)
-          .map(([key, value]) => `${key}=${value}`)
-          .join('&')
-      : ''
-
-    const fetchAddress =
-      process.env.NODE_ENV === 'development'
-        ? process.env.NEXT_PUBLIC_KUN_PATCH_ADDRESS_DEV
-        : process.env.NEXT_PUBLIC_KUN_PATCH_ADDRESS_PROD
-    const fullUrl = `${fetchAddress}/api${url}${queryString}`
+    const queryString = buildQueryString(query)
+    const baseUrl = getBaseUrl()
+    const fullUrl = `${baseUrl}/api${url}${queryString}`
 
     const fetchOptions: RequestInit = {
       method,
       credentials: 'include',
-      mode: 'cors',
       headers: {
         ...headers
       }
@@ -39,20 +72,23 @@ const kunFetchRequest = async <T>(
       fetchOptions.body = formData
     } else if (body) {
       fetchOptions.body = JSON.stringify(body)
+      fetchOptions.headers = {
+        'Content-Type': 'application/json',
+        ...headers
+      }
     }
 
     const response = await fetch(fullUrl, fetchOptions)
 
     if (!response.ok) {
-      throw new Error(`Kun Fetch error! Status: ${response.status}`)
+      throw new Error(await parseErrorResponse(response))
     }
 
-    const res = await response.json()
-
-    return res
+    return response.json()
   } catch (error) {
-    console.error(`Kun Fetch error: ${error}`)
-    throw error
+    const message = formatUnknownErrorMessage(error)
+    console.error(`Kun Fetch error: ${message}`)
+    throw new Error(message)
   }
 }
 
@@ -89,7 +125,8 @@ export const kunFetchFormData = async <T>(
   formData?: FormData
 ): Promise<T> => {
   if (!formData) {
-    throw new Error('formData is required for kunFetchFormData')
+    throw new Error('提交表单时缺少必要数据')
   }
+
   return kunFetchRequest<T>(url, 'POST', { formData })
 }

@@ -18,7 +18,7 @@ export const KunNavigationBreadcrumb = () => {
   const initialItem: KunBreadcrumbItem[] = [
     {
       key: '/',
-      label: '主页',
+      label: '首页',
       href: '/'
     }
   ]
@@ -34,8 +34,6 @@ export const KunNavigationBreadcrumb = () => {
 
   const hideBreadcrumbRoutes = [
     '/',
-    '/edit/create',
-    '/edit/rewrite',
     '/redirect',
     '/friend-link'
   ]
@@ -43,8 +41,8 @@ export const KunNavigationBreadcrumb = () => {
   return (
     <>
       {!hideBreadcrumbRoutes.includes(pathname) && (
-        <div className="w-full my-4 bg-background/60 backdrop-blur-lg">
-          <div className="px-3 mx-auto sm:px-6 max-w-7xl">
+        <div className="my-4 w-full bg-background/60 backdrop-blur-lg">
+          <div className="mx-auto max-w-7xl px-3 sm:px-6">
             <Breadcrumbs
               underline="hover"
               separator={<ChevronRight className="size-4" />}
@@ -66,7 +64,7 @@ export const KunNavigationBreadcrumb = () => {
                         {ellipsisIcon}
                       </Button>
                     </DropdownTrigger>
-                    <DropdownMenu aria-label="Routes">
+                    <DropdownMenu aria-label="路由导航">
                       {items.map((item, index) => (
                         <DropdownItem
                           key={index}

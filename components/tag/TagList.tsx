@@ -13,7 +13,7 @@ interface TagListProps {
 
 export const TagList = ({ tags, loading, searching }: TagListProps) => {
   const settings = useSettingStore((state) => state.data)
-  const isNSFWEnabled =
+  const isNsfwEnabled =
     settings.kunNsfwEnable === 'nsfw' || settings.kunNsfwEnable === 'all'
 
   if (loading) {
@@ -24,9 +24,9 @@ export const TagList = ({ tags, loading, searching }: TagListProps) => {
     return (
       <KunNull
         message={
-          isNSFWEnabled
-            ? '您已启用显示 NSFW 内容, 但未找到相关内容, 请尝试使用游戏的日文原名搜索'
-            : '未找到相关内容, 请尝试使用游戏的日文原名搜索或打开 NSFW'
+          isNsfwEnabled
+            ? '暂未找到相关内容，请尝试使用游戏的日文原名搜索。'
+            : '暂未找到相关内容，请尝试使用游戏的日文原名搜索，或调整内容显示范围。'
         }
       />
     )

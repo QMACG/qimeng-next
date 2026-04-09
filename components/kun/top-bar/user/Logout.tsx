@@ -29,7 +29,7 @@ export const UserDropdown = () => {
     setLoading(false)
     logout()
     router.push('/login')
-    toast.success('您已经成功登出!')
+    toast.success('已退出登录')
   }
 
   return (
@@ -48,17 +48,16 @@ export const UserDropdown = () => {
           {(onClose) => (
             <>
               <ModalHeader className="flex flex-col gap-1">
-                您确定要登出网站吗?
+                确认退出登录？
               </ModalHeader>
               <ModalBody>
                 <p>
-                  登出将会清除您的登录状态, 但是不会清除您的编辑草稿 (Galgame,
-                  回复等), 您可以稍后继续登录
+                  退出后会清除当前登录状态，但不会清除本地未提交的编辑草稿，稍后重新登录仍可继续编辑。
                 </p>
               </ModalBody>
               <ModalFooter>
                 <Button color="danger" variant="light" onPress={onClose}>
-                  关闭
+                  取消
                 </Button>
                 <Button
                   color="primary"
@@ -69,7 +68,7 @@ export const UserDropdown = () => {
                   isLoading={loading}
                   disabled={loading}
                 >
-                  确定
+                  确认退出
                 </Button>
               </ModalFooter>
             </>

@@ -1,4 +1,4 @@
-import { z } from 'zod'
+﻿import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParseGetQuery, kunParsePostBody } from '~/app/api/utils/parseQuery'
 import { prisma } from '~/prisma/index'
@@ -34,7 +34,7 @@ const verifyConversationAccess = async (
   return conversation
 }
 
-export const getConversationMessages = async (
+const getConversationMessages = async (
   conversationId: number,
   input: z.infer<typeof getConversationMessagesSchema>,
   uid: number
@@ -80,7 +80,7 @@ export const getConversationMessages = async (
   return { messages, total, otherUser }
 }
 
-export const sendMessage = async (
+const sendMessage = async (
   conversationId: number,
   input: z.infer<typeof sendPrivateMessageSchema>,
   uid: number
@@ -119,7 +119,7 @@ export const sendMessage = async (
   }
 }
 
-export const updateMessage = async (
+const updateMessage = async (
   conversationId: number,
   input: z.infer<typeof updatePrivateMessageSchema>,
   uid: number
@@ -166,7 +166,7 @@ export const updateMessage = async (
   }
 }
 
-export const deleteMessage = async (
+const deleteMessage = async (
   conversationId: number,
   input: z.infer<typeof deletePrivateMessageSchema>,
   uid: number
@@ -202,7 +202,7 @@ export const deleteMessage = async (
   return {}
 }
 
-export const deleteConversation = async (
+const deleteConversation = async (
   conversationId: number,
   uid: number
 ) => {
@@ -328,3 +328,4 @@ export const DELETE = async (
   const response = await deleteConversation(conversationId, payload.uid)
   return NextResponse.json(response)
 }
+

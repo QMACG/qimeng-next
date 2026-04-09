@@ -1,4 +1,4 @@
-import { z } from 'zod'
+﻿import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParsePutBody } from '~/app/api/utils/parseQuery'
 import { prisma } from '~/prisma/index'
@@ -10,7 +10,7 @@ import {
   invalidatePatchContentCache
 } from '../cache'
 
-export const togglePatchFavorite = async (
+const togglePatchFavorite = async (
   input: z.infer<typeof togglePatchFavoriteSchema>,
   uid: number
 ) => {
@@ -18,7 +18,7 @@ export const togglePatchFavorite = async (
     where: { id: input.patchId }
   })
   if (!patch) {
-    return '未找到 Galgame'
+    return '未找到游戏'
   }
 
   const folder = await prisma.user_patch_favorite_folder.findUnique({
@@ -100,3 +100,4 @@ export const PUT = async (req: NextRequest) => {
   const response = await togglePatchFavorite(input, payload.uid)
   return NextResponse.json(response)
 }
+

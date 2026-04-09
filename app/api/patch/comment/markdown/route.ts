@@ -1,4 +1,4 @@
-import { z } from 'zod'
+﻿import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParseGetQuery } from '~/app/api/utils/parseQuery'
 import { prisma } from '~/prisma/index'
@@ -10,7 +10,7 @@ const commentIdSchema = z.object({
     .max(9999999)
 })
 
-export const getCommentMarkdown = async (
+const getCommentMarkdown = async (
   input: z.infer<typeof commentIdSchema>
 ) => {
   const { commentId } = input
@@ -34,3 +34,4 @@ export const GET = async (req: NextRequest) => {
   const response = await getCommentMarkdown(input)
   return NextResponse.json(response)
 }
+

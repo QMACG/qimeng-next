@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { NextRequest } from 'next/server'
 import type { ZodSchema } from 'zod'
+import { formatZodError } from '~/utils/formatErrorMessage'
 
 export const kunParseGetQuery = <T extends ZodSchema>(
   req: NextRequest,
@@ -11,7 +12,7 @@ export const kunParseGetQuery = <T extends ZodSchema>(
 
   const result = schema.safeParse(queryParams)
   if (!result.success) {
-    return result.error.message
+    return formatZodError(result.error)
   }
 
   return result.data
@@ -25,7 +26,7 @@ export const kunParsePostBody = async <T extends ZodSchema>(
 
   const result = schema.safeParse(body)
   if (!result.success) {
-    return result.error.message
+    return formatZodError(result.error)
   }
 
   return result.data
@@ -39,7 +40,7 @@ export const kunParsePutBody = async <T extends ZodSchema>(
 
   const result = schema.safeParse(body)
   if (!result.success) {
-    return result.error.message
+    return formatZodError(result.error)
   }
 
   return result.data
@@ -54,7 +55,7 @@ export const kunParseDeleteQuery = <T extends ZodSchema>(
   const queryParams = Object.fromEntries(searchParams.entries())
   const result = schema.safeParse(queryParams)
   if (!result.success) {
-    return result.error.message
+    return formatZodError(result.error)
   }
 
   return result.data
@@ -77,7 +78,7 @@ export const kunParseFormData = async <T extends ZodSchema>(
 
   const result = schema.safeParse(rawData)
   if (!result.success) {
-    return result.error.message
+    return formatZodError(result.error)
   }
 
   return result.data

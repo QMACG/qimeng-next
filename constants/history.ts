@@ -23,8 +23,8 @@ export const HISTORY_TYPE = [
 ] as const
 
 export const HISTORY_TYPE_MAP: Record<string, string> = {
-  galgame: 'Galgame',
-  tag: 'Galgame 标签',
+  galgame: '游戏',
+  tag: '游戏标签',
   pr: '更新请求',
   banner: '预览图'
 }

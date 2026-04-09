@@ -18,11 +18,11 @@ export const ErrorComponent = ({
   const router = useRouter()
 
   return (
-    <div className="flex items-center justify-center p-8 size-full">
+    <div className="flex size-full items-center justify-center p-8">
       <Card className="w-full max-w-lg shadow-2xl">
         <CardHeader className="flex gap-3 px-8 pt-8">
           <div className="flex items-center gap-4">
-            <div className="p-3 rounded-full bg-danger-50">
+            <div className="rounded-full bg-danger-50 p-3">
               <AlertTriangle className="size-8 text-danger" />
             </div>
             <div>
@@ -32,7 +32,7 @@ export const ErrorComponent = ({
           </div>
         </CardHeader>
         <CardBody className="px-8">
-          <div className="p-4 mt-4 rounded-lg bg-danger-50">
+          <div className="mt-4 rounded-lg bg-danger-50 p-4">
             <p className="font-mono text-sm text-danger">{error}</p>
           </div>
         </CardBody>

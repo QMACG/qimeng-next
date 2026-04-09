@@ -1,4 +1,4 @@
-import { z } from 'zod'
+﻿import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParseGetQuery } from '~/app/api/utils/parseQuery'
 import { prisma } from '~/prisma/index'
@@ -7,7 +7,7 @@ import { markdownToText } from '~/utils/markdownToText'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 import type { UserComment } from '~/types/api/user'
 
-export const getUserComment = async (
+const getUserComment = async (
   input: z.infer<typeof getUserInfoSchema>
 ) => {
   const { uid, page, limit } = input
@@ -68,3 +68,4 @@ export const GET = async (req: NextRequest) => {
   const response = await getUserComment(input)
   return NextResponse.json(response)
 }
+

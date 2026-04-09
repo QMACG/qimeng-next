@@ -17,13 +17,13 @@ import {
   Switch,
   useDisclosure
 } from '@heroui/react'
-import { useUserStore } from '~/store/userStore'
-import { kunFetchGet, kunFetchPost } from '~/utils/kunFetch'
-import toast from 'react-hot-toast'
-import { kunMoyuMoe } from '~/config/moyu-moe'
 import * as QRCode from 'qrcode'
 import { Totp } from 'time2fa'
+import toast from 'react-hot-toast'
+import { kunMoyuMoe } from '~/config/moyu-moe'
 import { useMounted } from '~/hooks/useMounted'
+import { useUserStore } from '~/store/userStore'
+import { kunFetchGet, kunFetchPost } from '~/utils/kunFetch'
 import { kunErrorHandler } from '~/utils/kunErrorHandler'
 
 interface AuthStatus {
@@ -37,21 +37,21 @@ interface AuthStatus {
   backupCode: string[]
 }
 
+const initialStatus: AuthStatus = {
+  isEnabled2FA: false,
+  hasSecret: false,
+  backupCodeLength: 0,
+  secret: '',
+  authUrl: '',
+  qrCodeUrl: '',
+  token: '',
+  backupCode: []
+}
+
 export const TwoFactorAuth = () => {
   const user = useUserStore((state) => state.user)
   const isMounted = useMounted()
   const [isPending, startTransition] = useTransition()
-
-  const initialStatus: AuthStatus = {
-    isEnabled2FA: false,
-    hasSecret: false,
-    backupCodeLength: 0,
-    secret: '',
-    authUrl: '',
-    qrCodeUrl: '',
-    token: '',
-    backupCode: [] as string[]
-  }
   const [authStatus, setAuthStatus] = useState<AuthStatus>(initialStatus)
 
   const { isOpen, onOpen, onClose } = useDisclosure()
@@ -68,12 +68,13 @@ export const TwoFactorAuth = () => {
         hasSecret: boolean
         backupCodeLength: number
       }>('/user/setting/2fa/status')
-      setAuthStatus({
-        ...authStatus,
+
+      setAuthStatus((prev) => ({
+        ...prev,
         isEnabled2FA: response.enabled,
         hasSecret: response.hasSecret,
         backupCodeLength: response.backupCodeLength
-      })
+      }))
     }
 
     if (isMounted) {
@@ -82,20 +83,22 @@ export const TwoFactorAuth = () => {
   }, [isMounted])
 
   useEffect(() => {
-    if (authStatus.authUrl) {
-      QRCode.toDataURL(authStatus.authUrl)
-        .then((url) => {
-          setAuthStatus({ ...authStatus, qrCodeUrl: url })
-        })
-        .catch((err) => {
-          throw err
-        })
+    if (!authStatus.authUrl) {
+      return
     }
+
+    QRCode.toDataURL(authStatus.authUrl)
+      .then((url) => {
+        setAuthStatus((prev) => ({ ...prev, qrCodeUrl: url }))
+      })
+      .catch((err) => {
+        throw err
+      })
   }, [authStatus.authUrl])
 
   const generateSecret = async () => {
     if (!user.uid) {
-      toast.error('请登陆后再启用 2FA')
+      toast.error('请登录后再启用两步验证')
       return
     }
 
@@ -111,14 +114,15 @@ export const TwoFactorAuth = () => {
       )
 
       kunErrorHandler(res, () => {
-        setAuthStatus({
-          ...authStatus,
+        setAuthStatus((prev) => ({
+          ...prev,
           secret: key.secret,
           authUrl: key.url,
-          hasSecret: true
-        })
+          hasSecret: true,
+          token: ''
+        }))
         onOpen()
-        toast.success('密钥已生成，请使用身份验证器应用扫描二维码')
+        toast.success('密钥已生成，请使用身份验证器扫描二维码')
       })
     })
   }
@@ -134,8 +138,9 @@ export const TwoFactorAuth = () => {
         passcode: authStatus.token,
         secret: authStatus.secret
       })
+
       if (!isValid) {
-        toast.error('验证码无效，请重试')
+        toast.error('验证码无效，请重新输入')
         return
       }
 
@@ -145,11 +150,12 @@ export const TwoFactorAuth = () => {
       )
 
       kunErrorHandler(res, (value) => {
-        setAuthStatus({
-          ...authStatus,
+        setAuthStatus((prev) => ({
+          ...prev,
           isEnabled2FA: true,
-          backupCode: value.backupCode
-        })
+          backupCode: value.backupCode,
+          backupCodeLength: value.backupCode.length
+        }))
         onClose()
         onBackupOpen()
         toast.success('两步验证已启用')
@@ -165,7 +171,7 @@ export const TwoFactorAuth = () => {
 
       kunErrorHandler(res, () => {
         setAuthStatus(initialStatus)
-        toast.success('两步验证已禁用')
+        toast.success('两步验证已关闭')
       })
     })
   }
@@ -176,15 +182,18 @@ export const TwoFactorAuth = () => {
         <CardHeader>
           <h2 className="text-xl font-medium">两步验证</h2>
         </CardHeader>
-        <CardBody className="py-0 space-y-4">
+
+        <CardBody className="space-y-4 py-0">
           <div>
             <p>
-              两步验证可以为您的账户提供额外的安全保护。启用后，每次登录时除了密码外，
-              还需要输入身份验证器应用生成的验证码。{' '}
-              <b>您当前还有 {authStatus.backupCodeLength} 个备用验证码</b>,
-              当备用验证码过少时, 建议您重新进行两步验证
+              两步验证可以为您的账户增加额外保护。启用后，登录时除了密码，还需要输入身份验证器生成的验证码。
+            </p>
+            <p>
+              当前剩余 <b>{authStatus.backupCodeLength}</b> 个备用验证码。若数量过少，
+              建议重新关闭并启用一次两步验证以生成新的备用码。
             </p>
           </div>
+
           <div className="flex items-center justify-between">
             <p>是否启用两步验证</p>
             <Switch
@@ -205,7 +214,7 @@ export const TwoFactorAuth = () => {
 
         <CardFooter className="flex-wrap">
           <p className="text-default-500">
-            启用两步验证后，即使密码泄露，他人也无法登录您的账户
+            启用后，即使密码泄露，其他人也无法直接登录您的账户。
           </p>
         </CardFooter>
       </Card>
@@ -216,16 +225,16 @@ export const TwoFactorAuth = () => {
           <ModalBody>
             <div className="space-y-6">
               <div className="space-y-2">
-                <h3 className="text-lg font-medium">步骤 1: 扫描二维码</h3>
+                <h3 className="text-lg font-medium">步骤 1：扫描二维码</h3>
                 <p className="text-sm text-default-500">
                   使用 Google Authenticator、Microsoft Authenticator
-                  或其他身份验证器应用扫描下方的二维码
+                  或其他身份验证器应用扫描下方二维码。
                 </p>
                 {authStatus.qrCodeUrl && (
-                  <div className="flex justify-center my-4">
+                  <div className="my-4 flex justify-center">
                     <img
                       src={authStatus.qrCodeUrl}
-                      alt="2FA QR Code"
+                      alt="两步验证二维码"
                       width={200}
                       height={200}
                     />
@@ -234,32 +243,28 @@ export const TwoFactorAuth = () => {
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-lg font-medium">步骤 2: 输入验证码</h3>
+                <h3 className="text-lg font-medium">步骤 2：输入验证码</h3>
                 <p className="text-sm text-default-500">
-                  打开身份验证器应用，输入显示的 6 位验证码
+                  打开身份验证器应用，输入当前显示的 6 位验证码。
                 </p>
                 <Input
                   value={authStatus.token}
                   onValueChange={(value) =>
-                    setAuthStatus({ ...authStatus, token: value })
+                    setAuthStatus((prev) => ({ ...prev, token: value }))
                   }
-                  placeholder="6位验证码"
+                  placeholder="6 位验证码"
                   maxLength={6}
-                  className="text-lg tracking-widest text-center"
+                  className="text-center text-lg tracking-widest"
                 />
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-lg font-medium">密钥</h3>
+                <h3 className="text-lg font-medium">手动密钥</h3>
                 <p className="text-sm text-default-500">
-                  如果无法扫描二维码，您可以手动将此密钥输入到身份验证器应用中
+                  如果无法扫描二维码，也可以将下方密钥手动输入到身份验证器应用中。
                 </p>
                 <div className="flex gap-2">
-                  <Input
-                    value={authStatus.secret}
-                    readOnly
-                    className="font-mono"
-                  />
+                  <Input value={authStatus.secret} readOnly className="font-mono" />
                   <Button
                     color="primary"
                     variant="flat"
@@ -301,13 +306,13 @@ export const TwoFactorAuth = () => {
           <ModalBody>
             <div className="space-y-4">
               <p className="text-sm text-default-500">
-                请保存这些备用验证码，每个代码只能使用一次。如果您无法使用身份验证器应用，可以使用这些备用码登录
+                请妥善保存这些备用验证码。每个验证码只能使用一次，当您无法使用身份验证器时，可以用它们登录。
               </p>
               <div className="grid grid-cols-3 gap-2">
                 {authStatus.backupCode.map((code, index) => (
                   <Chip
                     key={index}
-                    className="p-2 mx-auto font-mono text-center"
+                    className="mx-auto p-2 font-mono text-center"
                     variant="flat"
                   >
                     {code}
@@ -324,7 +329,7 @@ export const TwoFactorAuth = () => {
                 toast.success('备用验证码已复制到剪贴板')
               }}
             >
-              复制所有代码
+              复制全部
             </Button>
             <Button color="primary" onPress={onBackupClose}>
               完成

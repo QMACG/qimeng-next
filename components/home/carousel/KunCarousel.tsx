@@ -5,8 +5,6 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { KunDesktopCard } from './DesktopCard'
 import { KunMobileCard } from './MobileCard'
-import { RandomGalgameButton } from './RandomGalgameButton'
-import { KunHomeNavigationItems } from '../NavigationItems'
 import type { HomeCarouselMetadata } from './mdx'
 
 interface KunCarouselProps {
@@ -18,6 +16,7 @@ export const KunCarousel = ({ posts }: KunCarouselProps) => {
   const [isHovered, setIsHovered] = useState(false)
   const [direction, setDirection] = useState(0)
   const [isPageVisible, setIsPageVisible] = useState(true)
+
   useEffect(() => {
     const handleVisibility = () => {
       const visible =
@@ -89,9 +88,17 @@ export const KunCarousel = ({ posts }: KunCarouselProps) => {
     )
   }
 
+  if (!posts.length) {
+    return (
+      <div className="relative flex h-[200px] items-center justify-center rounded-2xl border border-default-200 bg-default-50 text-default-500 sm:h-[300px]">
+        暂无可展示的轮播文章
+      </div>
+    )
+  }
+
   return (
     <div
-      className="relative h-[300px] overflow-hidden group touch-pan-y flex items-end"
+      className="group relative flex h-[200px] touch-pan-y items-end overflow-hidden sm:h-[300px]"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -126,7 +133,7 @@ export const KunCarousel = ({ posts }: KunCarouselProps) => {
               paginate(-1)
             }
           }}
-          className="absolute w-full h-full cursor-grab active:cursor-grabbing"
+          className="absolute h-full w-full cursor-grab active:cursor-grabbing"
         >
           <KunDesktopCard posts={posts} currentSlide={currentSlide} />
 
@@ -134,41 +141,25 @@ export const KunCarousel = ({ posts }: KunCarouselProps) => {
         </motion.div>
       </AnimatePresence>
 
-      <div className="z-10 w-full py-3 space-y-3 sm:hidden">
-        <RandomGalgameButton
-          className="shadow-md"
-          color="primary"
-          variant="flat"
-          size="sm"
-          fullWidth
-        >
-          随机一部游戏
-        </RandomGalgameButton>
-
-        <div className="grid grid-cols-3 gap-3 sm:hidden sm:gap-6">
-          <KunHomeNavigationItems buttonSize="sm" />
-        </div>
-      </div>
-
       <button
-        className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/20 hover:bg-background/40 p-1.5 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 touch:opacity-100 z-10"
+        className="absolute left-2 top-1/2 z-10 rounded-full bg-background/20 p-1.5 backdrop-blur-sm transition-all hover:bg-background/40 touch:opacity-100 group-hover:opacity-100 opacity-0 -translate-y-1/2"
         onClick={() => paginate(-1)}
       >
-        <ChevronLeft className="w-4 h-4" />
+        <ChevronLeft className="h-4 w-4" />
       </button>
 
       <button
-        className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/20 hover:bg-background/40 p-1.5 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 touch:opacity-100 z-10"
+        className="absolute right-2 top-1/2 z-10 rounded-full bg-background/20 p-1.5 backdrop-blur-sm transition-all hover:bg-background/40 touch:opacity-100 group-hover:opacity-100 opacity-0 -translate-y-1/2"
         onClick={() => paginate(1)}
       >
-        <ChevronRight className="w-4 h-4" />
+        <ChevronRight className="h-4 w-4" />
       </button>
 
-      <div className="absolute z-10 flex gap-1 -translate-x-1/2 top-[188px] sm:top-[288px] left-1/2">
+      <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 gap-1 sm:bottom-2">
         {posts.map((_, index) => (
           <button
             key={index}
-            className={`w-1.5 h-1.5 rounded-full transition-all ${
+            className={`h-1.5 w-1.5 rounded-full transition-all ${
               index === currentSlide
                 ? 'bg-primary w-4'
                 : 'bg-foreground/20 hover:bg-foreground/40'

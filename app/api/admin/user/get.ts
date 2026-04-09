@@ -18,8 +18,7 @@ export const getUserInfo = async (
     if (searchType === 'email') {
       return {
         email: {
-          contains: normalizedSearch,
-          mode: 'insensitive' as const
+          contains: normalizedSearch
         }
       }
     }
@@ -36,8 +35,7 @@ export const getUserInfo = async (
 
     return {
       name: {
-        contains: normalizedSearch,
-        mode: 'insensitive' as const
+        contains: normalizedSearch
       }
     }
   })()

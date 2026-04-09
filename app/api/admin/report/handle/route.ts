@@ -1,4 +1,4 @@
-import { z } from 'zod'
+﻿import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParsePostBody } from '~/app/api/utils/parseQuery'
 import { prisma } from '~/prisma/index'
@@ -8,7 +8,7 @@ import { sliceUntilDelimiterFromEnd } from '~/app/api/utils/sliceUntilDelimiterF
 import { findRelatedReportIds, resolveReportMeta } from '../_meta'
 import { recomputePatchRatingStat } from '~/app/api/patch/rating/stat'
 
-export const handleReport = async (
+const handleReport = async (
   input: z.infer<typeof adminHandleReportSchema>
 ) => {
   const message = await prisma.user_message.findUnique({
@@ -139,3 +139,4 @@ export const POST = async (req: NextRequest) => {
   const response = await handleReport(input)
   return NextResponse.json(response)
 }
+

@@ -57,7 +57,7 @@ const parseReportMetaBase = (content: string, link: string): BaseReportMeta => {
   let patchUniqueId = ''
 
   try {
-    const url = new URL(link, 'https://touchgal.local')
+    const url = new URL(link, 'https://qimeng.local')
     patchUniqueId = url.pathname.replace(/^\//, '')
     const queryTargetType = url.searchParams.get('target')
     if (queryTargetType === 'comment' || queryTargetType === 'rating') {

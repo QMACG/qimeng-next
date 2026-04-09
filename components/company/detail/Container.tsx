@@ -1,13 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useDebounce } from 'use-debounce'
-import { useRouter } from '@bprogress/next'
 import { useSearchParams } from 'next/navigation'
-import { Button, Chip } from '@heroui/react'
-import { useDisclosure } from '@heroui/modal'
-import { Link } from '@heroui/link'
-import { Pencil } from 'lucide-react'
+import { Chip } from '@heroui/react'
 import { useMounted } from '~/hooks/useMounted'
 import { KunHeader } from '~/components/kun/Header'
 import { KunUser } from '~/components/kun/floating-card/KunUser'
@@ -15,22 +10,17 @@ import { KunLoading } from '~/components/kun/Loading'
 import { GalgameCard } from '~/components/galgame/Card'
 import { KunNull } from '~/components/kun/Null'
 import { KunPagination } from '~/components/kun/Pagination'
-import { CompanyFormModal } from '../form/CompanyFormModal'
+import { KunExternalLink } from '~/components/kun/external-link/ExternalLink'
 import { formatTimeDifference } from '~/utils/time'
 import { kunFetchGet } from '~/utils/kunFetch'
 import { SUPPORTED_LANGUAGE_MAP } from '~/constants/resource'
-import { useUserStore } from '~/store/userStore'
 import { FilterBar } from '~/components/galgame/FilterBar'
 import type { CompanyDetail } from '~/types/api/company'
 import type { SortField, SortOrder } from '~/components/galgame/_sort'
 import type { FC } from 'react'
 import {
-  DEFAULT_GALGAME_FILTER_VALUE,
   DEFAULT_GALGAME_SORT_FIELD,
   DEFAULT_GALGAME_SORT_ORDER,
-  DEFAULT_TAG_COMPANY_MIN_RATING_COUNT,
-  parseGalgameFilterArray,
-  parseNonNegativeIntParam,
   parsePositiveIntParam
 } from '~/utils/galgameFilter'
 import { errorReporter, kunErrorHandler } from '~/utils/kunErrorHandler'
@@ -46,23 +36,10 @@ export const CompanyDetailContainer: FC<Props> = ({
   initialPatches,
   total
 }) => {
-  const { isOpen, onOpen, onClose } = useDisclosure()
-
   const isMounted = useMounted()
-  const user = useUserStore((state) => state.user)
-  const router = useRouter()
   const searchParams = useSearchParams()
   const [page, setPage] = useState(
     parsePositiveIntParam(searchParams.get('page'), 1)
-  )
-  const [selectedType, setSelectedType] = useState(
-    searchParams.get('selectedType') || DEFAULT_GALGAME_FILTER_VALUE
-  )
-  const [selectedLanguage, setSelectedLanguage] = useState(
-    searchParams.get('selectedLanguage') || DEFAULT_GALGAME_FILTER_VALUE
-  )
-  const [selectedPlatform, setSelectedPlatform] = useState(
-    searchParams.get('selectedPlatform') || DEFAULT_GALGAME_FILTER_VALUE
   )
   const [sortField, setSortField] = useState<SortField>(
     (searchParams.get('sortField') as SortField) || DEFAULT_GALGAME_SORT_FIELD
@@ -70,21 +47,8 @@ export const CompanyDetailContainer: FC<Props> = ({
   const [sortOrder, setSortOrder] = useState<SortOrder>(
     (searchParams.get('sortOrder') as SortOrder) || DEFAULT_GALGAME_SORT_ORDER
   )
-  const [selectedYears, setSelectedYears] = useState<string[]>(
-    parseGalgameFilterArray(searchParams.get('yearString'))
-  )
-  const [selectedMonths, setSelectedMonths] = useState<string[]>(
-    parseGalgameFilterArray(searchParams.get('monthString'))
-  )
-  const [minRatingCount, setMinRatingCount] = useState(
-    parseNonNegativeIntParam(
-      searchParams.get('minRatingCount'),
-      DEFAULT_TAG_COMPANY_MIN_RATING_COUNT
-    )
-  )
-  const [debouncedMinRatingCount] = useDebounce(minRatingCount, 400)
 
-  const [company, setCompany] = useState(initialCompany)
+  const [company] = useState(initialCompany)
   const [patches, setPatches] = useState<GalgameCard[]>(initialPatches)
   const [totalCount, setTotalCount] = useState(total)
   const [loading, setLoading] = useState(false)
@@ -109,14 +73,8 @@ export const CompanyDetailContainer: FC<Props> = ({
         companyId: company.id,
         page,
         limit: 24,
-        selectedType,
-        selectedLanguage,
-        selectedPlatform,
         sortField,
-        sortOrder,
-        yearString: JSON.stringify(selectedYears),
-        monthString: JSON.stringify(selectedMonths),
-        minRatingCount: sortField === 'rating' ? debouncedMinRatingCount : 0
+        sortOrder
       })
 
       if (typeof response === 'string') {
@@ -142,30 +100,20 @@ export const CompanyDetailContainer: FC<Props> = ({
       return
     }
     fetchPatches()
-  }, [
-    page,
-    selectedType,
-    selectedLanguage,
-    selectedPlatform,
-    sortField,
-    sortOrder,
-    selectedYears,
-    selectedMonths,
-    sortField === 'rating' ? debouncedMinRatingCount : null
-  ])
+  }, [page, sortField, sortOrder])
 
   return (
-    <div className="w-full my-4 space-y-6">
+    <div className="my-4 w-full space-y-6">
       <KunHeader
         name={company.name}
         description={company.introduction}
         headerEndContent={
           <Chip size="lg" color="primary">
-            {company.count} 个 Galgame
+            {company.count} 部作品
           </Chip>
         }
         endContent={
-          <div className="flex justify-between mb-4">
+          <div className="mb-4 flex justify-between">
             <KunUser
               user={company.user}
               userProps={{
@@ -174,28 +122,6 @@ export const CompanyDetailContainer: FC<Props> = ({
                 avatarProps: {
                   src: company.user?.avatar
                 }
-              }}
-            />
-
-            {user.role > 2 && (
-              <Button
-                variant="flat"
-                color="primary"
-                onPress={onOpen}
-                startContent={<Pencil />}
-              >
-                编辑会社信息
-              </Button>
-            )}
-            <CompanyFormModal
-              type="edit"
-              company={company}
-              isOpen={isOpen}
-              onClose={onClose}
-              onSuccess={(newCompany) => {
-                setCompany(newCompany as CompanyDetail)
-                onClose()
-                router.refresh()
               }}
             />
           </div>
@@ -217,12 +143,12 @@ export const CompanyDetailContainer: FC<Props> = ({
 
       {company.official_website.length > 0 && (
         <div>
-          <h2 className="mb-2 text-lg font-semibold">官网地址</h2>
+          <h2 className="mb-2 text-lg font-semibold">官网链接</h2>
           <div className="flex flex-wrap gap-2">
             {company.official_website.map((site, index) => (
-              <Link showAnchorIcon isExternal href={site} key={index}>
+              <KunExternalLink link={site} key={index}>
                 {site}
-              </Link>
+              </KunExternalLink>
             ))}
           </div>
         </div>
@@ -230,7 +156,7 @@ export const CompanyDetailContainer: FC<Props> = ({
 
       {company.primary_language.length > 0 && (
         <div>
-          <h2 className="mb-4 text-lg font-semibold">主语言</h2>
+          <h2 className="mb-4 text-lg font-semibold">主要语言</h2>
           <div className="flex flex-wrap gap-2">
             {company.primary_language.map((language, index) => (
               <Chip key={index} variant="flat" color="success">
@@ -242,28 +168,15 @@ export const CompanyDetailContainer: FC<Props> = ({
       )}
 
       <FilterBar
-        selectedType={selectedType}
-        setSelectedType={withPageReset(setSelectedType)}
-        selectedLanguage={selectedLanguage}
-        setSelectedLanguage={withPageReset(setSelectedLanguage)}
-        selectedPlatform={selectedPlatform}
-        setSelectedPlatform={withPageReset(setSelectedPlatform)}
         sortField={sortField}
         setSortField={withPageReset(setSortField)}
         sortOrder={sortOrder}
         setSortOrder={withPageReset(setSortOrder)}
-        selectedYears={selectedYears}
-        setSelectedYears={withPageReset(setSelectedYears)}
-        selectedMonths={selectedMonths}
-        setSelectedMonths={withPageReset(setSelectedMonths)}
-        minRatingCount={minRatingCount}
-        setMinRatingCount={withPageReset(setMinRatingCount)}
-        defaultMinRatingCount={DEFAULT_TAG_COMPANY_MIN_RATING_COUNT}
       />
 
       {company.parent_brand.length > 0 && (
         <div>
-          <h2 className="mb-4 text-lg font-semibold">父会社</h2>
+          <h2 className="mb-4 text-lg font-semibold">上级品牌</h2>
           <div className="flex flex-wrap gap-2">
             {company.parent_brand.map((brand, index) => (
               <Chip key={index} variant="flat" color="primary">
@@ -275,10 +188,10 @@ export const CompanyDetailContainer: FC<Props> = ({
       )}
 
       {loading ? (
-        <KunLoading hint="正在获取 Galgame 中..." />
+        <KunLoading hint="正在加载作品..." />
       ) : (
         <div>
-          <div className="grid grid-cols-2 gap-2 mx-auto mb-8 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="mx-auto mb-8 grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
             {patches.map((patch) => (
               <GalgameCard key={patch.id} patch={patch} />
             ))}
@@ -295,9 +208,7 @@ export const CompanyDetailContainer: FC<Props> = ({
             </div>
           )}
 
-          {!totalCount && (
-            <KunNull message="暂无 Galgame, 或您未开启网站 NSFW" />
-          )}
+          {!totalCount && <KunNull message="暂无相关作品" />}
         </div>
       )}
     </div>

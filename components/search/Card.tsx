@@ -1,4 +1,4 @@
-import Link from 'next/link'
+﻿import Link from 'next/link'
 import { Card, CardBody } from '@heroui/card'
 import { Image } from '@heroui/image'
 import { KunCardStats } from '~/components/kun/CardStats'
@@ -21,11 +21,7 @@ export const SearchCard = ({ patch }: Props) => {
         <div className="flex flex-col gap-4 sm:flex-row">
           <div className="relative w-full sm:w-40">
             <Image
-              src={
-                patch.banner
-                  ? patch.banner.replace(/\.avif$/, '-mini.avif')
-                  : '/touchgal.avif'
-              }
+              src={patch.banner || '/favicon.ico'}
               alt={patch.name}
               className="object-cover rounded-lg size-full"
               radius="lg"
@@ -45,3 +41,4 @@ export const SearchCard = ({ patch }: Props) => {
     </Card>
   )
 }
+

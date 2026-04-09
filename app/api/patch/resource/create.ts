@@ -1,63 +1,23 @@
 import { z } from 'zod'
 import { prisma } from '~/prisma/index'
 import { patchResourceCreateSchema } from '~/validations/patch'
-import { uploadFileToS3 } from '~/lib/s3'
-import { getKv } from '~/lib/redis'
-import { createMessage } from '~/app/api/utils/message'
 import { recalcPatchType } from './_helper'
 import type { PatchResource } from '~/types/api/patch'
 
-const uploadPatchResource = async (patchId: number, hash: string) => {
-  const filePath = await getKv(hash)
-  if (!filePath) {
-    return '未找到已上传的文件，请重新上传后再试'
-  }
-  const fileName = filePath.split('/').pop()
-
-  const s3Key = `patch/${patchId}/resource/${hash}/${fileName}`
-  await uploadFileToS3(s3Key, filePath)
-
-  const downloadLink = `${process.env.NEXT_PUBLIC_KUN_VISUAL_NOVEL_S3_STORAGE_URL!}/${s3Key}`
-  return { downloadLink }
-}
-
 export const createPatchResource = async (
   input: z.infer<typeof patchResourceCreateSchema>,
-  uid: number,
-  userRole: number
+  uid: number
 ) => {
-  const {
-    patchId,
-    type,
-    language,
-    platform,
-    content,
-    storage,
-    ...resourceData
-  } = input
+  const { patchId, storage, section, content, name } = input
 
   const currentPatch = await prisma.patch.findUnique({
     where: { id: patchId },
     select: {
-      unique_id: true,
-      name: true
+      unique_id: true
     }
   })
-
-  const resourceCount = await prisma.patch_resource.count({
-    where: { user_id: uid }
-  })
-  const needApproval = resourceCount === 0 && userRole < 3
-
-  let res: string
-  if (storage === 's3') {
-    const result = await uploadPatchResource(patchId, resourceData.hash)
-    if (typeof result === 'string') {
-      return result
-    }
-    res = result.downloadLink
-  } else {
-    res = content
+  if (!currentPatch) {
+    return '未找到对应的游戏'
   }
 
   const resource = await prisma.$transaction(async (prisma) => {
@@ -65,13 +25,11 @@ export const createPatchResource = async (
       data: {
         patch_id: patchId,
         user_id: uid,
-        type,
-        language,
-        platform,
-        content: res,
+        name,
         storage,
-        status: needApproval ? 2 : 0,
-        ...resourceData
+        section,
+        content,
+        status: 0
       },
       include: {
         user: {
@@ -84,34 +42,27 @@ export const createPatchResource = async (
       }
     })
 
-    await prisma.user.update({
-      where: { id: uid },
-      data: { moemoepoint: { increment: 3 } }
+    await prisma.patch.update({
+      where: { id: patchId },
+      data: { resource_update_time: new Date() }
     })
+    await recalcPatchType(patchId, prisma)
 
-    if (currentPatch) {
-      await prisma.patch.update({
-        where: { id: patchId },
-        data: { resource_update_time: new Date() }
-      })
-      await recalcPatchType(patchId, prisma)
-    }
-
-    const resource: PatchResource = {
+    const resourceResponse: PatchResource = {
       id: newResource.id,
       name: newResource.name,
       section: newResource.section,
-      uniqueId: currentPatch?.unique_id ?? '',
+      uniqueId: currentPatch.unique_id,
       storage: newResource.storage,
-      size: newResource.size,
-      type: newResource.type,
-      language: newResource.language,
-      note: newResource.note,
-      hash: newResource.hash,
+      size: '',
+      type: [],
+      language: [],
+      note: '',
+      hash: '',
       content: newResource.content,
-      code: newResource.code,
-      password: newResource.password,
-      platform: newResource.platform,
+      code: '',
+      password: '',
+      platform: [],
       likeCount: 0,
       isLike: false,
       status: newResource.status,
@@ -123,21 +74,13 @@ export const createPatchResource = async (
         name: newResource.user.name,
         avatar: newResource.user.avatar,
         patchCount: newResource.user._count.patch_resource,
-        role: newResource.user.role
+        role: newResource.user.role,
+        showContributionStats: true
       }
     }
 
-    return resource
+    return resourceResponse
   })
-
-  if (needApproval) {
-    await createMessage({
-      type: 'system',
-      content: `您的首个资源「${currentPatch?.name ?? ''}」已提交审核，通过后将自动公开显示。`,
-      recipient_id: uid,
-      link: currentPatch?.unique_id ? `/${currentPatch.unique_id}` : '/'
-    })
-  }
 
   return resource
 }

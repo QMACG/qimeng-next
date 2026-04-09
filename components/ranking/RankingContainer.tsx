@@ -79,8 +79,8 @@ export const RankingContainer = ({
   return (
     <div className="container mx-auto my-4 space-y-6">
       <KunHeader
-        name="Galgame 排行榜"
-        description="Galgame 排行, 综合评分与下载数等数据, 为所有玩家提供参考"
+        name="游戏排行榜"
+        description="根据评分、收藏、评论与资源热度整理的排行榜，方便快速挑选想玩的作品"
       />
 
       <RankingControls

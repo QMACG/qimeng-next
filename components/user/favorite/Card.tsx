@@ -16,9 +16,9 @@ import {
 import { Image } from '@heroui/image'
 import { Trash2 } from 'lucide-react'
 import Link from 'next/link'
+import toast from 'react-hot-toast'
 import { kunErrorHandler } from '~/utils/kunErrorHandler'
 import { kunFetchPut } from '~/utils/kunFetch'
-import toast from 'react-hot-toast'
 import { cn } from '~/utils/cn'
 
 interface Props {
@@ -44,15 +44,16 @@ export const UserGalgameCard = ({
     onOpen: onOpenDelete,
     onClose: onCloseDelete
   } = useDisclosure()
+
   const handleRemoveFavorite = () => {
     startTransition(async () => {
       const res = await kunFetchPut<KunResponse<{ added: boolean }>>(
-        `/patch/favorite`,
+        '/patch/favorite',
         { patchId: galgame.id, folderId }
       )
       kunErrorHandler(res, () => {
         onCloseDelete()
-        toast.success('取消收藏成功')
+        toast.success('已从收藏夹移除')
         onRemoveFavorite(galgame.id)
       })
     })
@@ -99,12 +100,8 @@ export const UserGalgameCard = ({
                 imageLoaded ? 'scale-100 opacity-90' : 'scale-105 opacity-0'
               )}
               radius="none"
-              removeWrapper={true}
-              src={
-                galgame.banner
-                  ? galgame.banner.replace(/\.avif$/, '-mini.avif')
-                  : '/touchgal.avif'
-              }
+              removeWrapper
+              src={galgame.banner || '/favicon.ico'}
               style={{ aspectRatio: '16/9' }}
               onLoad={() => setImageLoaded(true)}
             />
@@ -112,7 +109,7 @@ export const UserGalgameCard = ({
         </CardHeader>
 
         <CardBody className="gap-3">
-          <span className="font-semibold transition-colors text-small sm:text-base line-clamp-2 group-hover:text-primary-500 group-focus-visible:text-primary-500">
+          <span className="line-clamp-2 text-small font-semibold transition-colors group-hover:text-primary-500 group-focus-visible:text-primary-500 sm:text-base">
             {galgame.name}
           </span>
         </CardBody>
@@ -121,7 +118,7 @@ export const UserGalgameCard = ({
       <Modal isOpen={isOpenDelete} onClose={onCloseDelete} placement="center">
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">移除游戏</ModalHeader>
-          <ModalBody>您确定要从收藏夹移除这个游戏吗</ModalBody>
+          <ModalBody>确定要将这款游戏从当前收藏夹中移除吗？</ModalBody>
           <ModalFooter>
             <Button variant="light" onPress={onCloseDelete}>
               取消

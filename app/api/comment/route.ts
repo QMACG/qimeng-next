@@ -1,4 +1,4 @@
-import { z } from 'zod'
+﻿import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParseGetQuery } from '../utils/parseQuery'
 import { prisma } from '~/prisma/index'
@@ -7,7 +7,7 @@ import { markdownToText } from '~/utils/markdownToText'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 import type { PatchComment } from '~/types/api/comment'
 
-export const getComment = async (input: z.infer<typeof commentSchema>) => {
+const getComment = async (input: z.infer<typeof commentSchema>) => {
   const { sortField, sortOrder, page, limit } = input
 
   const offset = (page - 1) * limit
@@ -73,3 +73,4 @@ export const GET = async (req: NextRequest) => {
   const response = await getComment(input)
   return NextResponse.json(response)
 }
+

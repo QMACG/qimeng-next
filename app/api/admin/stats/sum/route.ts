@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+﻿import { NextRequest, NextResponse } from 'next/server'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 import { prisma } from '~/prisma/index'
 import type { SumData } from '~/types/api/admin'
 
-export const getSumData = async (): Promise<SumData> => {
+const getSumData = async (): Promise<SumData> => {
   const [
     userCount,
     galgameCount,
@@ -14,10 +14,10 @@ export const getSumData = async (): Promise<SumData> => {
     prisma.user.count(),
     prisma.patch.count(),
     prisma.patch_resource.count({
-      where: { section: 'galgame' }
+      where: { section: 'netdisk' }
     }),
     prisma.patch_resource.count({
-      where: { section: 'patch' }
+      where: { section: 'direct' }
     }),
     prisma.patch_comment.count()
   ])
@@ -43,3 +43,4 @@ export const GET = async (req: NextRequest) => {
   const data = await getSumData()
   return NextResponse.json(data)
 }
+

@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { deleteFileFromS3 } from '~/lib/s3'
 import { prisma } from '~/prisma/index'
 
 const patchIdSchema = z.object({
@@ -20,24 +19,18 @@ export const deletePatchById = async (input: z.infer<typeof patchIdSchema>) => {
     where: { patch_id: patchId }
   })
 
-  return await prisma.$transaction(async (prisma) => {
+  return prisma.$transaction(async (tx) => {
     if (patchResources.length > 0) {
       await Promise.all(
         patchResources.map(async (resource) => {
-          if (resource.storage === 's3') {
-            const fileName = resource.content.split('/').pop()
-            const s3Key = `patch/${resource.patch_id}/${resource.hash}/${fileName}`
-            await deleteFileFromS3(s3Key)
-          }
-
-          await prisma.patch_resource.delete({
+          await tx.patch_resource.delete({
             where: { id: resource.id }
           })
         })
       )
     }
 
-    await prisma.patch.delete({
+    await tx.patch.delete({
       where: { id: patchId }
     })
 

@@ -1,12 +1,13 @@
 import { z } from 'zod'
 import { prisma } from '~/prisma/index'
 import { getTagByIdSchema } from '~/validations/tag'
+import { parseJsonStringArray } from '~/utils/prismaJson'
 import type { TagDetail } from '~/types/api/tag'
 
 export const getTagById = async (input: z.infer<typeof getTagByIdSchema>) => {
   const { tagId } = input
 
-  const tag: TagDetail | null = await prisma.patch_tag.findUnique({
+  const tag = await prisma.patch_tag.findUnique({
     where: { id: tagId },
     select: {
       id: true,
@@ -28,5 +29,10 @@ export const getTagById = async (input: z.infer<typeof getTagByIdSchema>) => {
     return '未找到标签'
   }
 
-  return tag
+  const response: TagDetail = {
+    ...tag,
+    alias: parseJsonStringArray(tag.alias)
+  }
+
+  return response
 }

@@ -27,14 +27,28 @@ export const updateUser = async (
   }
 
   const admin = await prisma.user.findUnique({
-    where: { id: adminUid }
+    where: { id: adminUid },
+    select: {
+      id: true,
+      name: true,
+      role: true
+    }
   })
   if (!admin) {
-    return '未找到该管理员'
+    return '未找到当前管理员'
   }
-  if (rest.role >= 3 && admin.role < 4) {
-    return '设置用户为管理员仅限超级管理员可用'
+
+  const isTargetPrivileged = user.role >= 3
+  const isPromotingToPrivileged = rest.role >= 3
+  const isSuperAdmin = admin.role >= 4
+
+  if (!isSuperAdmin && isTargetPrivileged) {
+    return '只有超级管理员可以修改管理员账号'
   }
+  if (!isSuperAdmin && isPromotingToPrivileged) {
+    return '只有超级管理员可以授予管理员或超级管理员权限'
+  }
+
   if (rest.name !== user.name) {
     const existingUserByName = await prisma.user.findUnique({
       where: { name: rest.name },
@@ -44,6 +58,7 @@ export const updateUser = async (
       return '该用户名已被其他用户使用'
     }
   }
+
   if (rest.email !== user.email) {
     const existingUserByEmail = await prisma.user.findUnique({
       where: { email: rest.email },
@@ -51,6 +66,15 @@ export const updateUser = async (
     })
     if (existingUserByEmail) {
       return '该邮箱已被其他用户使用'
+    }
+  }
+
+  if (user.role === 4 && rest.role !== 4) {
+    const superAdminCount = await prisma.user.count({
+      where: { role: 4 }
+    })
+    if (superAdminCount <= 1) {
+      return '至少保留一个超级管理员账号'
     }
   }
 
@@ -62,8 +86,8 @@ export const updateUser = async (
 
   await deleteKunToken(uid)
 
-  return prisma.$transaction(async (prisma) => {
-    await prisma.user.update({
+  return prisma.$transaction(async (tx) => {
+    await tx.user.update({
       where: { id: uid },
       data: {
         daily_image_count: dailyImageCount,
@@ -72,11 +96,11 @@ export const updateUser = async (
       }
     })
 
-    await prisma.admin_log.create({
+    await tx.admin_log.create({
       data: {
         type: 'update',
         user_id: adminUid,
-        content: `管理员 ${admin.name} 更改了一个用户的信息\n\n更改内容:\n${JSON.stringify(logInput)}\n\n原用户信息:\n${JSON.stringify(user)}`
+        content: `管理员 ${admin.name} 更新了用户资料\n\n更新内容:\n${JSON.stringify(logInput)}\n\n原始数据:\n${JSON.stringify(user)}`
       }
     })
 

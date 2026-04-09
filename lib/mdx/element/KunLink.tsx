@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import React, { FC } from 'react'
+import { KunExternalLink } from '~/components/kun/external-link/ExternalLink'
 
 interface CustomLinkProps
   extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
@@ -24,8 +25,14 @@ export const KunLink: FC<CustomLinkProps> = ({ href, children, ...props }) => {
   }
 
   return (
-    <a target="_blank" rel="noopener noreferrer" href={href} {...props}>
+    <KunExternalLink
+      link={href}
+      showAnchorIcon={false}
+      className={props.className}
+      title={props.title}
+      aria-label={props['aria-label']}
+    >
       {children}
-    </a>
+    </KunExternalLink>
   )
 }

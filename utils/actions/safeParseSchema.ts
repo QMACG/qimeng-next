@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import type { ZodSchema } from 'zod'
+import { formatZodError } from '~/utils/formatErrorMessage'
 
 export const safeParseSchema = <T extends ZodSchema>(
   schema: T,
@@ -7,7 +8,7 @@ export const safeParseSchema = <T extends ZodSchema>(
 ): z.infer<T> | string => {
   const result = schema.safeParse(object)
   if (!result.success) {
-    return result.error.message
+    return formatZodError(result.error)
   }
   return result.data
 }

@@ -1,60 +1,69 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # dependencies
 /node_modules
 /.pnp
 .pnp.js
 .yarn/install-state.gz
-
-# testing
-/coverage
+/.vscode
 
 # next.js
-/.next/
-/out/
-
-# production
+/.next
+/out
 /build
 
-# misc
-.DS_Store
-*.pem
+# local env
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.production
 
-# debug
+# logs
+*.log
 npm-debug.log*
+pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# local env files
-.env*.local
+# cache
+*.tsbuildinfo
+.tmp/
+coverage/
+
+# python
+__pycache__/
+*.py
+*.pyc
+*.pyo
+*.pyd
+
+# runtime / uploads
+/uploads
+/backup
+
+# generated reports
+scripts/*.analysis.json
+scripts/*.report.json
+
+# migration temp
+/migration/markdown
+/migration/*.txt
+/migration/*.json
+/migration/temp
+
+# prisma generated client
+/prisma/generated
 
 # vercel
 .vercel
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# system files
+.DS_Store
+Thumbs.db
+*.pem
 
-# env
-.env
-.env.production
+# IDE
+.idea/
 
-# uploads
-/uploads
-
-# backup
-/backup
-
-# sitemap
+# generated sitemap
 /public/**/*.xml
-
-# static markdown
-/migration/markdown
-/migration/*.txt
-/migration/*.json
-
-refs
-migration/temp
-
-# prisma generated
-prisma/generated

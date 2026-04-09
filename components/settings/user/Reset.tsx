@@ -1,5 +1,8 @@
 'use client'
 
+import { useState } from 'react'
+import { useRouter } from '@bprogress/next'
+import { Button } from '@heroui/button'
 import {
   Card,
   CardBody,
@@ -12,10 +15,7 @@ import {
   ModalHeader,
   useDisclosure
 } from '@heroui/react'
-import { Button } from '@heroui/button'
-import { useRouter } from '@bprogress/next'
 import toast from 'react-hot-toast'
-import { useState } from 'react'
 import { kunFetchPost } from '~/utils/kunFetch'
 
 export const Reset = () => {
@@ -32,31 +32,32 @@ export const Reset = () => {
     setLoading(false)
 
     router.push('/login')
-    toast.success('您已成功清除网站所有数据, 请重新登录')
+    toast.success('已清除当前设备上的站点缓存，请重新登录')
 
     await new Promise((resolve) => {
       setTimeout(resolve, 3000)
     })
+
     location.reload()
   }
 
   return (
     <Card className="w-full text-sm">
       <CardHeader>
-        <h2 className="text-xl font-medium">清除网站数据</h2>
+        <h2 className="text-xl font-medium">清除站点数据</h2>
       </CardHeader>
-      <CardBody className="py-0 space-y-4">
+
+      <CardBody className="space-y-4 py-0">
         <div>
           <p>
-            如果您的网站出现任何报错, 例如搜索页面报错,
-            可以尝试清除网站所有数据。清除网站数据需要重新登录,
-            清除操作不会对您的账户信息产生任何影响
+            如果站点出现异常，例如页面缓存错误、旧数据未刷新等，可以尝试清除当前设备上的站点数据。
           </p>
+          <p>该操作不会影响您在服务器上的账户信息，但需要重新登录。</p>
         </div>
       </CardBody>
 
       <CardFooter className="flex-wrap">
-        <p className="text-danger-500">注意, 清除操作无法撤销</p>
+        <p className="text-danger-500">注意：此操作不可撤销。</p>
 
         <Button
           color="danger"
@@ -72,24 +73,19 @@ export const Reset = () => {
       <Modal isOpen={isOpen} onClose={onClose} placement="center">
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">
-            您确定要清除网站所有数据吗
+            确认清除当前设备上的站点数据吗？
           </ModalHeader>
           <ModalBody>
             <p>
-              清除网站数据将会清除您当前设备所有的网站缓存数据,
-              并且需要重新登录, 清除操作不会对您的账户信息产生任何影响
+              清除后会删除当前浏览器保存的站点缓存与本地数据，并退出登录，需要重新登录后才能继续使用。
             </p>
           </ModalBody>
           <ModalFooter>
             <Button color="danger" variant="light" onPress={onClose}>
-              关闭
+              取消
             </Button>
-            <Button
-              isLoading={loading}
-              color="primary"
-              onPress={handleResetData}
-            >
-              确定
+            <Button isLoading={loading} color="primary" onPress={handleResetData}>
+              确认
             </Button>
           </ModalFooter>
         </ModalContent>

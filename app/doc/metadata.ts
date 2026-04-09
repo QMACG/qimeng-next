@@ -1,18 +1,28 @@
 import { kunMoyuMoe } from '~/config/moyu-moe'
+import { toCanonicalUrl } from '~/utils/seo'
 import type { Metadata } from 'next'
 
+const title = `文章 - ${kunMoyuMoe.titleShort}`
+const description = `${kunMoyuMoe.titleShort} 的文章列表，可查看帮助文档、公告与独立文章内容。`
+
 export const kunMetadata: Metadata = {
-  title: '帮助文档 | 网站博客',
-  description: `${kunMoyuMoe.titleShort} 是一个非盈利的, 由社区驱动的, 完全开源免费的 Galgame 资源下载网站。它由现代框架 Next.js 驱动, 为保证最好的性能, 恳请各位朋友提出宝贵的意见`,
+  metadataBase: new URL(kunMoyuMoe.domain.main),
+  title,
+  description,
   openGraph: {
-    title: '帮助文档 | 网站博客',
-    description: `${kunMoyuMoe.titleShort} 是一个非盈利的, 由社区驱动的, 完全开源免费的 Galgame 资源下载网站。它由现代框架 Next.js 驱动, 为保证最好的性能, 恳请各位朋友提出宝贵的意见`,
+    title,
+    description,
     type: 'website',
+    url: toCanonicalUrl('/doc'),
     images: kunMoyuMoe.images
   },
   twitter: {
     card: 'summary_large_image',
-    title: '帮助文档 | 网站博客',
-    description: `${kunMoyuMoe.titleShort} 是一个非盈利的, 由社区驱动的, 完全开源免费的 Galgame 资源下载网站。它由现代框架 Next.js 驱动, 为保证最好的性能, 恳请各位朋友提出宝贵的意见`
+    title,
+    description,
+    images: kunMoyuMoe.og.image
+  },
+  alternates: {
+    canonical: toCanonicalUrl('/doc')
   }
 }
