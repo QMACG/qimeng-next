@@ -10,7 +10,7 @@
 - 支持多域名访问
 - 支持 Markdown 正文渲染、首页广告、反馈文章、网站统计脚本和后台统计
 
-本项目修改自 [KUN1007/kun-touchgal-next](https://github.com/KUN1007/kun-touchgal-next)，感谢开源。
+本项目基于 [KUN1007/kun-touchgal-next](https://github.com/KUN1007/kun-touchgal-next) 进行重构与持续演进，并保留对原开源项目的致谢。
 
 ## 技术栈
 
