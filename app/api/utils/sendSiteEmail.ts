@@ -1,5 +1,6 @@
 import nodemailer, { type Transporter } from 'nodemailer'
 import { convert } from 'html-to-text'
+import { z } from 'zod'
 
 interface SendSiteEmailInput {
   to: string | string[]
@@ -15,6 +16,8 @@ const EMAIL_CONFIG_MISSING =
   '邮件配置不完整，请检查发信邮箱相关环境变量'
 const EMAIL_RECIPIENT_MISSING =
   '收件人邮箱为空，请检查填写或数据库中的用户邮箱'
+const EMAIL_RECIPIENT_INVALID =
+  '收件人邮箱格式无效（SMTP 不接受），请检查填写或清理数据库中的异常邮箱'
 const EMAIL_PORT_INVALID =
   '邮件端口配置无效，请检查邮件端口环境变量'
 const EMAIL_AUTH_FAILED =
@@ -102,23 +105,40 @@ const createPlainText = (html: string) =>
     ]
   }).trim()
 
-const hasRecipients = (to: string | string[]) => {
-  if (Array.isArray(to)) {
-    return to.some((addr) => Boolean(addr?.trim()))
+/** 与 RFC 式邮箱校验一致，避免 SMTP 返回 501 Syntax error in recipient address */
+const recipientEmailSchema = z.string().trim().email()
+
+export const isValidSiteRecipientEmail = (addr: string) =>
+  recipientEmailSchema.safeParse(addr).success
+
+const normalizeAndValidateRecipients = (
+  to: string | string[]
+): string | string[] => {
+  const list = (Array.isArray(to) ? to : [to])
+    .map((a) => a.trim())
+    .filter(Boolean)
+
+  if (list.length === 0) {
+    throw new Error('Missing email recipient')
   }
-  return Boolean(to?.trim())
+
+  for (const addr of list) {
+    if (!recipientEmailSchema.safeParse(addr).success) {
+      throw new Error('Invalid email recipient address')
+    }
+  }
+
+  return list.length === 1 ? list[0]! : list
 }
 
 export const sendSiteEmail = async (input: SendSiteEmailInput) => {
-  if (!hasRecipients(input.to)) {
-    throw new Error('Missing email recipient')
-  }
+  const to = normalizeAndValidateRecipients(input.to)
 
   const mailer = getTransporter()
 
   return mailer.sendMail({
     from: getFromAddress(),
-    to: input.to,
+    to,
     subject: input.subject,
     html: input.html,
     text: input.text?.trim() || createPlainText(input.html)
@@ -136,6 +156,13 @@ export const getEmailErrorMessage = (error: unknown) => {
 
   if (/Missing email recipient/i.test(message)) {
     return EMAIL_RECIPIENT_MISSING
+  }
+
+  if (
+    /Invalid email recipient address/i.test(message) ||
+    /501.*recipient|Syntax error in recipient/i.test(message)
+  ) {
+    return EMAIL_RECIPIENT_INVALID
   }
 
   if (/Missing email configuration|Missing email account/i.test(message)) {

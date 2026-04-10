@@ -4,6 +4,7 @@ import { kunParsePostBody } from '~/app/api/utils/parseQuery'
 import { prisma } from '~/prisma/index'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 import { adminSendEmailSchema } from '~/validations/admin'
+import { isValidSiteRecipientEmail } from '~/app/api/utils/sendSiteEmail'
 import { sendEmailHTML } from './_send'
 
 const sendBulkEmail = async (
@@ -24,7 +25,10 @@ const sendBulkEmail = async (
 
   const emailList = users
     .map((user) => user.email)
-    .filter((addr): addr is string => Boolean(addr?.trim()))
+    .filter(
+      (addr): addr is string =>
+        Boolean(addr?.trim()) && isValidSiteRecipientEmail(addr)
+    )
 
   const batchSize = 100
   for (let i = 0; i < emailList.length; i += batchSize) {
