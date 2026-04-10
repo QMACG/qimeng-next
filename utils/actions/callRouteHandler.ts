@@ -36,7 +36,7 @@ const buildRequest = async (
   const cookieStore = await cookies()
   const cookieHeader = cookieStore
     .getAll()
-    .map((cookie) => `${cookie.name}=${cookie.value}`)
+    .map((cookie) => `${cookie.name}=${encodeURIComponent(cookie.value)}`)
     .join('; ')
 
   return new NextRequest(url, {

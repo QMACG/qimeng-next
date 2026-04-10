@@ -6,6 +6,9 @@ interface LayoutProps {
   children: ReactNode
 }
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function Layout({ children }: LayoutProps) {
   const tree = await getDirectoryTree()
 

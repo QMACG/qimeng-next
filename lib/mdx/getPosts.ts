@@ -1,4 +1,5 @@
 import { prisma } from '~/prisma/index'
+import { unstable_noStore as noStore } from 'next/cache'
 import { CONTENT_VISIBILITY } from '~/constants/contentVisibility'
 import { canAccessRestrictedContent } from '~/utils/contentVisibility'
 import { markdownToText } from '~/utils/markdownToText'
@@ -36,6 +37,8 @@ const toPostMetadata = (post: {
 })
 
 export const getAllPosts = async () => {
+  noStore()
+
   const posts = await prisma.doc_post.findMany({
     where: { visibility: CONTENT_VISIBILITY.public },
     orderBy: [
@@ -52,6 +55,8 @@ export const getPostBySlug = async (
   slug: string,
   viewer?: { uid?: number; role?: number }
 ): Promise<KunBlog | null> => {
+  noStore()
+
   const realSlug = normalizeSlug(slug)
   const post = await prisma.doc_post.findUnique({
     where: { slug: realSlug }
@@ -92,6 +97,8 @@ export const getPostBySlug = async (
 }
 
 export const getAdjacentPosts = async (currentSlug: string) => {
+  noStore()
+
   const posts = await getAllPosts()
   const currentIndex = posts.findIndex(
     (post) => post.slug === normalizeSlug(currentSlug)

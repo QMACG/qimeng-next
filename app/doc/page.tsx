@@ -6,6 +6,8 @@ import { kunMetadata } from './metadata'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = kunMetadata
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export default async function Kun() {
   const posts = await getAllPosts()
