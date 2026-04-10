@@ -8,7 +8,13 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends openssl ca-c
 RUN npm install -g corepack@latest && corepack enable
 
 FROM base AS deps
-COPY package.json pnpm-lock.yaml ./
+# lockfileVersion 9 需要 pnpm 9
+RUN corepack prepare pnpm@9 --activate
+# postinstall 会执行 prisma generate，需 schema / prisma.config；generate 不连库但配置会读 KUN_DATABASE_URL
+ENV KUN_DATABASE_URL="mysql://docker:docker@127.0.0.1:3306/dummy"
+COPY package.json pnpm-lock.yaml .npmrc ./
+COPY prisma ./prisma
+COPY prisma.config.ts ./
 RUN pnpm install --frozen-lockfile
 
 FROM base AS builder
