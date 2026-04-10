@@ -52,5 +52,5 @@ USER nextjs
 
 EXPOSE 3000
 
-# cluster 多进程吃满多核；PM2_INSTANCES 由 compose / 运行时注入
-CMD ["pm2-runtime", "/app/ecosystem.docker.cjs"]
+# 必须 `start` + ecosystem 路径，否则会把配置文件当普通脚本跑，只见 fork、名称成 ecosystem.docker
+CMD ["pm2-runtime", "start", "/app/ecosystem.docker.cjs"]
