@@ -1,15 +1,35 @@
 # 一键拉取镜像并启动：
-#   1. 在项目目录准备外部 env 文件（默认文件名 .env，或通过 ENV_FILE 指定）
-#   2. 默认镜像为 mywltd/qimeng-next:latest；可设置 DOCKER_IMAGE 覆盖
-#   3. docker compose pull && docker compose up -d
+#   1. 在项目目录准备外部 env（默认 .env，或通过 ENV_FILE）
+#   2. 默认镜像 mywltd/qimeng-next:latest；可设置 DOCKER_IMAGE
+#   3. MySQL 在宿主机 3306：在 .env 里将 KUN_DATABASE_URL 主机写为 host.docker.internal
+#      示例：mysql://用户:密码@host.docker.internal:3306/库名
+#   4. Redis 仅 compose 内部使用：未映射宿主机端口，不占 6379，与宿主机 Redis 互不影响
+#   5. docker compose pull && docker compose up -d
 #
-# 可选：HOST_PORT 映射宿主机端口（默认 3001→容器 3000）、UPLOADS_DIR 上传目录（默认 ./uploads）
+# 可选：HOST_PORT（默认 3001→容器 3000）、UPLOADS_DIR（默认 ./uploads）
 
 services:
+  redis:
+    # 勿添加 ports；仅同网络内服务可通过主机名 redis:6379 访问
+    image: redis:7.4.2
+    container_name: qimeng-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   qimeng-next:
     image: ${DOCKER_IMAGE:-mywltd/qimeng-next:latest}
     container_name: qimeng-next
     restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
     ports:
       - "${HOST_PORT:-3001}:3000"
     env_file:
@@ -18,5 +38,13 @@ services:
       NODE_ENV: production
       PORT: 3000
       HOSTNAME: 0.0.0.0
+      REDIS_HOST: redis
+      REDIS_PORT: '6379'
+    extra_hosts:
+      # Linux 下解析到宿主机，便于 KUN_DATABASE_URL 使用 host.docker.internal:3306
+      - 'host.docker.internal:host-gateway'
     volumes:
       - ${UPLOADS_DIR:-./uploads}:/app/uploads
+
+volumes:
+  redis_data:
