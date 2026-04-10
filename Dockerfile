@@ -40,8 +40,13 @@ RUN addgroup --system --gid 1001 nodejs \
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --chown=nextjs:nodejs ecosystem.docker.cjs /app/ecosystem.docker.cjs
 
-RUN mkdir -p /app/uploads && chown nextjs:nodejs /app/uploads \
-  && npm install -g pm2@5
+RUN mkdir -p /app/uploads /app/.pm2 && chown nextjs:nodejs /app/uploads /app/.pm2 \
+  && npm install -g pm2@5 \
+  && usermod -d /app nextjs
+
+# adduser --system 默认 HOME=/nonexistent；PM2 CLI / pm2-runtime 共用 PM2_HOME
+ENV HOME=/app
+ENV PM2_HOME=/app/.pm2
 
 USER nextjs
 
