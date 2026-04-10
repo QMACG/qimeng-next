@@ -2,15 +2,15 @@
 
 import { z } from 'zod'
 import { safeParseSchema } from '~/utils/actions/safeParseSchema'
-import { adminPaginationSchema } from '~/validations/admin'
+import { adminGalgamePaginationSchema } from '~/validations/admin'
 import { GET as getAdminGalgameRoute } from '~/app/api/admin/galgame/route'
 import { verifyHeaderCookie } from '~/utils/actions/verifyHeaderCookie'
 import { callRouteGet } from '~/utils/actions/callRouteHandler'
 
 export const kunGetActions = async (
-  params: z.infer<typeof adminPaginationSchema>
+  params: z.infer<typeof adminGalgamePaginationSchema>
 ) => {
-  const input = safeParseSchema(adminPaginationSchema, params)
+  const input = safeParseSchema(adminGalgamePaginationSchema, params)
   if (typeof input === 'string') {
     return input
   }

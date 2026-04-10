@@ -9,6 +9,7 @@ import {
 import { markdownToHtml } from '~/app/api/utils/render/markdownToHtml'
 import { checkKunCaptchaExist } from '~/app/api/utils/verifyKunCaptcha'
 import { FEEDBACK_DOC_SLUG } from '~/constants/feedback'
+import { FEEDBACK_COMMENT_STATUS } from '~/constants/feedbackComment'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 import { prisma } from '~/prisma/index'
 import type { DocComment, DocCommentResponse } from '~/types/api/doc'
@@ -235,7 +236,7 @@ const createDocComment = async (
     if (parentId !== null && role >= 3) {
       await tx.doc_post_comment.update({
         where: { id: parentId },
-        data: { status: 1 }
+        data: { status: FEEDBACK_COMMENT_STATUS.inProgress }
       })
     }
 

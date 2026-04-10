@@ -4,6 +4,8 @@ import {
   Button,
   Chip,
   Input,
+  Select,
+  SelectItem,
   Table,
   TableBody,
   TableCell,
@@ -13,14 +15,16 @@ import {
 } from '@heroui/react'
 import Link from 'next/link'
 import { Search } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type Key } from 'react'
 import { useDebounce } from 'use-debounce'
-import { RenderCell } from './RenderCell'
-import { kunFetchGet } from '~/utils/kunFetch'
 import { KunLoading } from '~/components/kun/Loading'
-import { useMounted } from '~/hooks/useMounted'
 import { KunPagination } from '~/components/kun/Pagination'
+import { useMounted } from '~/hooks/useMounted'
 import type { AdminGalgame } from '~/types/api/admin'
+import { kunFetchGet } from '~/utils/kunFetch'
+import { RenderCell } from './RenderCell'
+
+type AdminGalgameStatus = 'all' | 'draft' | 'public' | 'hidden' | 'private'
 
 const columns = [
   { name: 'ID', uid: 'id' },
@@ -30,6 +34,14 @@ const columns = [
   { name: '作者', uid: 'user' },
   { name: '创建时间', uid: 'created' },
   { name: '操作', uid: 'actions' }
+]
+
+const statusOptions: Array<{ key: AdminGalgameStatus; label: string }> = [
+  { key: 'all', label: '全部状态' },
+  { key: 'draft', label: '草稿' },
+  { key: 'public', label: '公开' },
+  { key: 'hidden', label: '隐藏' },
+  { key: 'private', label: '私有' }
 ]
 
 interface Props {
@@ -42,6 +54,7 @@ export const Galgame = ({ initialGalgames, initialTotal }: Props) => {
   const [total, setTotal] = useState(initialTotal)
   const [page, setPage] = useState(1)
   const [searchQuery, setSearchQuery] = useState('')
+  const [status, setStatus] = useState<AdminGalgameStatus>('all')
   const [debouncedQuery] = useDebounce(searchQuery, 500)
   const isMounted = useMounted()
   const [loading, setLoading] = useState(false)
@@ -55,7 +68,8 @@ export const Galgame = ({ initialGalgames, initialTotal }: Props) => {
     }>('/admin/galgame', {
       page,
       limit: 30,
-      search: debouncedQuery
+      search: debouncedQuery,
+      status
     })
 
     setLoading(false)
@@ -68,11 +82,21 @@ export const Galgame = ({ initialGalgames, initialTotal }: Props) => {
       return
     }
 
-    fetchData()
-  }, [page, debouncedQuery, isMounted])
+    void fetchData()
+  }, [page, debouncedQuery, status, isMounted])
 
   const handleSearch = (value: string) => {
     setSearchQuery(value)
+    setPage(1)
+  }
+
+  const handleStatusChange = (keys: 'all' | Set<Key>) => {
+    const key = Array.from(keys)[0] as AdminGalgameStatus | undefined
+    if (!key) {
+      return
+    }
+
+    setStatus(key)
     setPage(1)
   }
 
@@ -98,14 +122,27 @@ export const Galgame = ({ initialGalgames, initialTotal }: Props) => {
         </div>
       </div>
 
-      <Input
-        fullWidth
-        isClearable
-        placeholder="输入游戏名称搜索"
-        startContent={<Search className="text-default-300" size={20} />}
-        value={searchQuery}
-        onValueChange={handleSearch}
-      />
+      <div className="flex flex-col gap-3 lg:flex-row">
+        <Input
+          fullWidth
+          isClearable
+          placeholder="输入游戏 ID 或标题搜索"
+          startContent={<Search className="text-default-300" size={20} />}
+          value={searchQuery}
+          onValueChange={handleSearch}
+        />
+
+        <Select
+          aria-label="游戏状态筛选"
+          className="w-full lg:max-w-56"
+          selectedKeys={new Set([status])}
+          onSelectionChange={handleStatusChange}
+        >
+          {statusOptions.map((option) => (
+            <SelectItem key={option.key}>{option.label}</SelectItem>
+          ))}
+        </Select>
+      </div>
 
       {loading ? (
         <KunLoading hint="正在获取游戏列表..." />
@@ -116,7 +153,7 @@ export const Galgame = ({ initialGalgames, initialTotal }: Props) => {
             <div className="flex w-full justify-center">
               <KunPagination
                 page={page}
-                total={Math.ceil(total / 30)}
+                total={Math.max(1, Math.ceil(total / 30))}
                 onPageChange={setPage}
                 isLoading={loading}
               />

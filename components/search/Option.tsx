@@ -18,19 +18,36 @@ export const SearchOption = () => {
     <Popover placement="bottom-end">
       <PopoverTrigger>
         <Button isIconOnly variant="flat" color="primary">
-          <Settings className="w-5 h-5" />
+          <Settings className="h-5 w-5" />
         </Button>
       </PopoverTrigger>
       <PopoverContent>
-        <div className="flex flex-col flex-wrap gap-3 p-3">
+        <div className="w-72 space-y-3 p-3">
+          <div className="space-y-1 text-sm text-default-500">
+            <p>选择要参与匹配的搜索范围。</p>
+            <p>这里的“正文”指游戏详情里的介绍正文，不是站内文章内容。</p>
+            <p>可以单独搜索，也可以多项组合搜索。</p>
+          </div>
+
+          <div className="flex flex-col flex-wrap gap-3">
+          <Checkbox
+            isSelected={searchData.searchInTitle}
+            onValueChange={(checked) =>
+              setSearchData({ ...searchData, searchInTitle: checked })
+            }
+          >
+            包含标题
+          </Checkbox>
+
           <Checkbox
             isSelected={searchData.searchInIntroduction}
             onValueChange={(checked) =>
               setSearchData({ ...searchData, searchInIntroduction: checked })
             }
           >
-            包含简介
+            包含正文
           </Checkbox>
+
           <Checkbox
             isSelected={searchData.searchInTag}
             onValueChange={(checked) =>
@@ -39,6 +56,16 @@ export const SearchOption = () => {
           >
             包含标签
           </Checkbox>
+
+          <Checkbox
+            isSelected={searchData.searchInCompany}
+            onValueChange={(checked) =>
+              setSearchData({ ...searchData, searchInCompany: checked })
+            }
+          >
+            包含会社
+          </Checkbox>
+          </div>
         </div>
       </PopoverContent>
     </Popover>

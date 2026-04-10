@@ -27,11 +27,30 @@ export const adminCommentPaginationSchema = adminPaginationSchema.extend({
 })
 
 export const adminFeedbackSearchTypeSchema = z.enum(['content', 'user'])
-export const adminFeedbackStatusSchema = z.enum(['all', 'pending', 'handled'])
+export const adminFeedbackStatusSchema = z.enum([
+  'all',
+  'pending',
+  'in_progress',
+  'resolved',
+  'suspended',
+  'closed'
+])
 
 export const adminFeedbackPaginationSchema = adminPaginationSchema.extend({
   searchType: adminFeedbackSearchTypeSchema.default('content'),
   status: adminFeedbackStatusSchema.default('all')
+})
+
+export const adminGalgameStatusSchema = z.enum([
+  'all',
+  'draft',
+  'public',
+  'hidden',
+  'private'
+])
+
+export const adminGalgamePaginationSchema = adminPaginationSchema.extend({
+  status: adminGalgameStatusSchema.default('all')
 })
 
 const adminCommentIdsSchema = z

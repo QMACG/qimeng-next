@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import crypto from 'node:crypto'
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParsePostBody } from '~/app/api/utils/parseQuery'
@@ -20,6 +21,7 @@ const register = async (
   ip: string
 ) => {
   const { name, email, code, password } = input
+  const normalizedEmail = email.toLowerCase().trim()
 
   const isCodeValid = await verifyVerificationCode(email, code)
   if (!isCodeValid) {
@@ -55,7 +57,6 @@ const register = async (
     return '该用户名已被注册，请更换后重试'
   }
 
-  const normalizedEmail = email.toLowerCase()
   const sameEmailUser = await prisma.user.findFirst({
     where: { email: { equals: normalizedEmail } }
   })
@@ -65,11 +66,17 @@ const register = async (
 
   const hashedPassword = await hashPassword(password)
   const role = isBootstrapRegistration ? 4 : 1
+  const emailHash = crypto
+    .createHash('md5')
+    .update(normalizedEmail)
+    .digest('hex')
+  const avatar = `https://cn.cravatar.com/avatar/${emailHash}?s=160&d=identicon`
 
   const user = await prisma.user.create({
     data: {
       name,
-      email,
+      email: normalizedEmail,
+      avatar,
       password: hashedPassword,
       ip,
       role,

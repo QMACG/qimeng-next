@@ -9,12 +9,12 @@ import { KunHeader } from '~/components/kun/Header'
 import { KunLoading } from '~/components/kun/Loading'
 import { NsfwVisibilityHint } from '~/components/kun/NsfwVisibilityHint'
 import { KunPagination } from '~/components/kun/Pagination'
+import type { SortField, SortOrder } from '~/components/galgame/_sort'
+import type { SearchResponse, SearchSuggestionType } from '~/types/api/search'
 import { useSettingStore } from '~/store/settingStore'
 import { useSearchStore } from '~/store/searchStore'
 import { errorReporter, kunErrorHandler } from '~/utils/kunErrorHandler'
 import { kunFetchPost } from '~/utils/kunFetch'
-import type { SortField, SortOrder } from '~/components/galgame/_sort'
-import type { SearchResponse, SearchSuggestionType } from '~/types/api/search'
 import { SearchHistory } from './SearchHistory'
 import { SearchInput } from './Input'
 import { SearchOption } from './Option'
@@ -90,8 +90,11 @@ export const SearchPage = () => {
         queryString: JSON.stringify(selectedSuggestions),
         limit: 12,
         searchOption: {
+          searchInTitle: searchData.searchInTitle,
           searchInIntroduction: searchData.searchInIntroduction,
-          searchInTag: searchData.searchInTag
+          searchInAlias: searchData.searchInAlias,
+          searchInTag: searchData.searchInTag,
+          searchInCompany: searchData.searchInCompany
         },
         page: currentPage,
         sortField,
@@ -159,8 +162,11 @@ export const SearchPage = () => {
     sortField,
     sortOrder,
     selectedSuggestions,
+    searchData.searchInTitle,
     searchData.searchInIntroduction,
-    searchData.searchInTag
+    searchData.searchInAlias,
+    searchData.searchInTag,
+    searchData.searchInCompany
   ])
 
   const showHiddenHint = hiddenCount > 0
@@ -172,10 +178,8 @@ export const SearchPage = () => {
         headerEndContent={<SearchOption />}
         endContent={
           <div className="text-default-500">
-            <p>
-              使用标题、别名、标签或会社名称作为关键词，会更容易找到想看的内容。
-            </p>
-            <p>也可以组合多个关键词与标签，进一步缩小搜索范围。</p>
+            <p>支持按游戏标题、详情正文、标签、会社名称进行单一或联合模糊搜索。</p>
+            <p>如果想搜游戏介绍里的内容，请在搜索设置里开启“包含正文”。</p>
           </div>
         }
       />
@@ -218,9 +222,7 @@ export const SearchPage = () => {
         <div className="space-y-6">
           {patches.length > 0 ? (
             <>
-              {showHiddenHint ? (
-                <NsfwVisibilityHint count={hiddenCount} />
-              ) : null}
+              {showHiddenHint ? <NsfwVisibilityHint count={hiddenCount} /> : null}
 
               <div className="mx-auto mb-8 grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
                 {patches.map((patch) => (
@@ -274,7 +276,7 @@ export const SearchPage = () => {
                   <p>未找到相关内容</p>
                   <p>
                     {isRestrictedContentEnabled
-                      ? '请尝试使用游戏的日文原名搜索。'
+                      ? '请尝试使用游戏的日文原名、标签或会社名称继续搜索。'
                       : '请尝试使用游戏的日文原名搜索，或在设置中调整内容显示范围。'}
                   </p>
                 </div>

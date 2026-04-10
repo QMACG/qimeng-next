@@ -1,16 +1,16 @@
 import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParsePostBody } from '~/app/api/utils/parseQuery'
+import { getFrontDisplayConfig } from '~/app/api/admin/setting/front-display/getFrontDisplayConfig'
+import { getNSFWHeader } from '~/app/api/utils/getNSFWHeader'
+import { canShowDownloadCount, canShowViewCount } from '~/utils/frontDisplay'
+import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 import { prisma } from '~/prisma/index'
 import { searchSchema } from '~/validations/search'
 import { GalgameCardSelectField } from '~/constants/api/select'
-import { getFrontDisplayConfig } from '~/app/api/admin/setting/front-display/getFrontDisplayConfig'
-import { getNSFWHeader } from '~/app/api/utils/getNSFWHeader'
 import type { SearchResponse, SearchSuggestionType } from '~/types/api/search'
-import { buildGalgameOrderBy, buildGalgameWhere } from '../utils/galgameQuery'
-import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
-import { canShowDownloadCount, canShowViewCount } from '~/utils/frontDisplay'
 import { parseJsonStringArray } from '~/utils/prismaJson'
+import { buildGalgameOrderBy, buildGalgameWhere } from '../utils/galgameQuery'
 
 const searchGalgame = async (
   input: z.infer<typeof searchSchema>,
@@ -27,10 +27,22 @@ const searchGalgame = async (
 
   const queryArray = query
     .filter((item) => item.type === 'keyword')
-    .map((item) => item.name)
+    .map((item) => item.name.trim())
+    .filter(Boolean)
   const tagArray = query
     .filter((item) => item.type === 'tag')
-    .map((item) => item.name)
+    .map((item) => item.name.trim())
+    .filter(Boolean)
+
+  const enabledFieldCount =
+    Number(searchOption.searchInTitle) +
+    Number(searchOption.searchInIntroduction) +
+    Number(searchOption.searchInTag) +
+    Number(searchOption.searchInCompany)
+
+  if (queryArray.length > 0 && enabledFieldCount === 0) {
+    return '请至少选择一个搜索范围'
+  }
 
   const where = buildGalgameWhere({
     nsfwEnable
@@ -40,35 +52,82 @@ const searchGalgame = async (
   })
   const orderBy = buildGalgameOrderBy(sortField, sortOrder)
 
+  const buildAliasConditions = (keyword: string) =>
+    searchOption.searchInAlias
+      ? [
+          { alias: { array_contains: [keyword] } },
+          { alias: { string_contains: keyword } }
+        ]
+      : []
+
+  const buildKeywordConditions = (keyword: string) => {
+    const conditions: object[] = []
+
+    if (searchOption.searchInTitle) {
+      conditions.push({ name: { contains: keyword } })
+    }
+
+    if (searchOption.searchInIntroduction) {
+      conditions.push({ introduction: { contains: keyword } })
+    }
+
+    if (searchOption.searchInTag) {
+      conditions.push({
+        tag: {
+          some: {
+            tag: {
+              OR: [{ name: { contains: keyword } }, ...buildAliasConditions(keyword)]
+            }
+          }
+        }
+      })
+    }
+
+    if (searchOption.searchInCompany) {
+      conditions.push({
+        company: {
+          some: {
+            company: {
+              OR: [{ name: { contains: keyword } }, ...buildAliasConditions(keyword)]
+            }
+          }
+        }
+      })
+    }
+
+    return { OR: conditions }
+  }
+
   const baseQueryCondition = [
-    ...queryArray.map((q) => ({
+    ...queryArray.map(buildKeywordConditions),
+    ...tagArray.map((keyword) => ({
       OR: [
-        { name: { contains: q } },
-        ...(searchOption.searchInIntroduction
-          ? [{ introduction: { contains: q } }]
-          : []),
-        ...(searchOption.searchInTag
+        {
+          tag: {
+            some: {
+              tag: {
+                OR: [{ name: keyword }, { name: { contains: keyword } }]
+              }
+            }
+          }
+        },
+        ...(searchOption.searchInAlias
           ? [
               {
                 tag: {
                   some: {
-                    tag: { name: { contains: q } }
+                    tag: {
+                      OR: [
+                        { alias: { array_contains: [keyword] } },
+                        { alias: { string_contains: keyword } }
+                      ]
+                    }
                   }
                 }
               }
             ]
           : [])
       ]
-    })),
-
-    ...tagArray.map((q) => ({
-      tag: {
-        some: {
-          tag: {
-            OR: [{ name: q }, { alias: { array_contains: [q] } }]
-          }
-        }
-      }
     }))
   ]
 

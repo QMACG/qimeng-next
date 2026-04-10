@@ -4,7 +4,6 @@ import type { ReactNode } from 'react'
 import type { LinkProps } from '@heroui/react'
 import { Link } from '@heroui/link'
 import { useUserStore } from '~/store/userStore'
-import { kunMoyuMoe } from '~/config/moyu-moe'
 
 interface Props extends LinkProps {
   link: string
@@ -22,10 +21,18 @@ export const KunExternalLink = ({
 }: Props) => {
   const encodeLink = encodeURIComponent(link)
   const userConfig = useUserStore((state) => state.user)
-  const siteDomains = [
-    kunMoyuMoe.domain.main,
-    ...kunMoyuMoe.domain.aliases
-  ].filter(Boolean)
+  const publicSiteDomains = [
+    process.env.NEXT_PUBLIC_KUN_VISUAL_NOVEL_SITE_URL,
+    ...(process.env.NEXT_PUBLIC_KUN_VISUAL_NOVEL_SITE_URLS?.split(',') ?? [])
+  ]
+    .map((domain) => domain?.trim())
+    .filter((domain): domain is string => Boolean(domain))
+    .map((domain) => domain.replace(/\/+$/, ''))
+  const currentOrigin =
+    typeof window === 'undefined' ? '' : window.location.origin.replace(/\/+$/, '')
+  const siteDomains = Array.from(new Set([currentOrigin, ...publicSiteDomains])).filter(
+    Boolean
+  )
 
   const isInternalLink =
     /^(\/(?!\/)|#|mailto:|tel:)/i.test(link) ||

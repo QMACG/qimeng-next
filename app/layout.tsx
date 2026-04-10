@@ -42,6 +42,12 @@ export default async function RootLayout({
     items: DEFAULT_HEADER_NAV_ITEMS
   }))
   const headerNavItems = toPublicHeaderNavItems(headerNav)
+  const footerConfig = {
+    titleShort: kunMoyuMoe.titleShort,
+    navLink: kunMoyuMoe.domain.nav,
+    githubRepo: kunMoyuMoe.domain.github_repo,
+    telegramGroup: kunMoyuMoe.domain.telegram_group
+  }
 
   const websiteJsonLd = {
     '@context': 'https://schema.org',
@@ -90,6 +96,7 @@ export default async function RootLayout({
             initialPathname={pathname}
             headerNavItems={headerNavItems}
             analyticsScripts={analyticsScripts}
+            footerConfig={footerConfig}
           >
             {children}
           </SiteAvailabilityLayout>

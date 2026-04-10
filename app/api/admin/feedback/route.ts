@@ -2,12 +2,16 @@ import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParseGetQuery } from '~/app/api/utils/parseQuery'
 import { markdownToHtml } from '~/app/api/utils/render/markdownToHtml'
-import { adminFeedbackPaginationSchema } from '~/validations/admin'
+import { FEEDBACK_DOC_PATH, FEEDBACK_DOC_SLUG } from '~/constants/feedback'
+import {
+  FEEDBACK_COMMENT_STATUS,
+  FEEDBACK_COMMENT_STATUS_VALUE_MAP
+} from '~/constants/feedbackComment'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 import { prisma } from '~/prisma/index'
-import { FEEDBACK_DOC_PATH, FEEDBACK_DOC_SLUG } from '~/constants/feedback'
 import type { AdminFeedback } from '~/types/api/admin'
 import { parseUserAgentSummary } from '~/utils/userAgentSummary'
+import { adminFeedbackPaginationSchema } from '~/validations/admin'
 
 const mapAdminFeedback = async (
   comment: {
@@ -91,8 +95,9 @@ const getFeedback = async (
   const where = {
     doc_post_id: feedbackDoc.id,
     parent_id: null,
-    ...(status === 'pending' ? { status: 0 } : {}),
-    ...(status === 'handled' ? { status: { not: 0 } } : {}),
+    ...(status !== 'all'
+      ? { status: FEEDBACK_COMMENT_STATUS_VALUE_MAP[status] }
+      : {}),
     ...(normalizedSearch
       ? searchType === 'user'
         ? {
@@ -108,6 +113,18 @@ const getFeedback = async (
             }
           }
       : {})
+  }
+
+  const statusOrderWeight: number[] = [
+    FEEDBACK_COMMENT_STATUS.pending,
+    FEEDBACK_COMMENT_STATUS.inProgress,
+    FEEDBACK_COMMENT_STATUS.suspended,
+    FEEDBACK_COMMENT_STATUS.closed,
+    FEEDBACK_COMMENT_STATUS.resolved
+  ]
+  const getStatusOrder = (status: number) => {
+    const index = statusOrderWeight.indexOf(status)
+    return index === -1 ? 999 : index
   }
 
   const [data, total] = await Promise.all([
@@ -136,14 +153,25 @@ const getFeedback = async (
           }
         }
       },
-      orderBy: [{ status: 'asc' }, { created: 'desc' }],
+      orderBy: [{ created: 'desc' }],
       skip: offset,
       take: limit
     }),
     prisma.doc_post_comment.count({ where })
   ])
 
-  const feedbacks = await Promise.all(data.map(mapAdminFeedback))
+  const sortedData = [...data].sort((a, b) => {
+    const aIndex = getStatusOrder(a.status)
+    const bIndex = getStatusOrder(b.status)
+
+    if (aIndex !== bIndex) {
+      return aIndex - bIndex
+    }
+
+    return b.created.getTime() - a.created.getTime()
+  })
+
+  const feedbacks = await Promise.all(sortedData.map(mapAdminFeedback))
   return { feedbacks, total }
 }
 
@@ -155,10 +183,10 @@ export const GET = async (req: NextRequest) => {
 
   const payload = await verifyHeaderCookie(req)
   if (!payload) {
-    return NextResponse.json('用户未登录')
+    return NextResponse.json('鐢ㄦ埛鏈櫥褰?')
   }
   if (payload.role < 3) {
-    return NextResponse.json('当前页面仅管理员可访问')
+    return NextResponse.json('褰撳墠椤甸潰浠呯鐞嗗憳鍙闂?')
   }
 
   const response = await getFeedback(input)

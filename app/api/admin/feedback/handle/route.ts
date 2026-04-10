@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { kunParsePostBody } from '~/app/api/utils/parseQuery'
 import { FEEDBACK_DOC_SLUG } from '~/constants/feedback'
+import {
+  FEEDBACK_COMMENT_STATUS,
+  FEEDBACK_COMMENT_STATUS_VALUE_MAP
+} from '~/constants/feedbackComment'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 import { prisma } from '~/prisma/index'
 import { adminHandleFeedbackCommentSchema } from '~/validations/docComment'
 
 const handleFeedback = async (
-  input: { commentId: number; content: string },
+  input: {
+    commentId: number
+    status: 'in_progress' | 'resolved' | 'suspended' | 'closed'
+    content: string
+  },
   uid: number,
   userAgent: string
 ) => {
@@ -26,19 +34,18 @@ const handleFeedback = async (
     rootComment.parent_id !== null ||
     rootComment.doc_post.slug !== FEEDBACK_DOC_SLUG
   ) {
-    return '未找到对应的反馈评论'
+    return '鏈壘鍒板搴旂殑鍙嶉璇勮'
   }
 
-  await prisma.$transaction(async (tx) => {
-    await tx.doc_post_comment.update({
-      where: { id: rootComment.id },
-      data: { status: 1 }
-    })
+  const nextStatus = FEEDBACK_COMMENT_STATUS_VALUE_MAP[input.status]
+  const normalizedContent = input.content.trim()
 
-    if (input.content.trim()) {
+  await prisma.$transaction(async (tx) => {
+    if (normalizedContent) {
       await tx.doc_post_comment.create({
         data: {
-          content: input.content.trim(),
+          content: normalizedContent,
+          status: FEEDBACK_COMMENT_STATUS.pending,
           user_id: uid,
           doc_post_id: rootComment.doc_post_id,
           parent_id: rootComment.id,
@@ -46,6 +53,11 @@ const handleFeedback = async (
         }
       })
     }
+
+    await tx.doc_post_comment.update({
+      where: { id: rootComment.id },
+      data: { status: nextStatus }
+    })
   })
 
   return {}
@@ -59,10 +71,10 @@ export const POST = async (req: NextRequest) => {
 
   const payload = await verifyHeaderCookie(req)
   if (!payload) {
-    return NextResponse.json('用户未登录')
+    return NextResponse.json('鐢ㄦ埛鏈櫥褰?')
   }
   if (payload.role < 3) {
-    return NextResponse.json('当前页面仅管理员可访问')
+    return NextResponse.json('褰撳墠椤甸潰浠呯鐞嗗憳鍙闂?')
   }
 
   const response = await handleFeedback(

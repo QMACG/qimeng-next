@@ -4,16 +4,22 @@ import { useEffect, useState, type Key } from 'react'
 import { Chip, Input, Select, SelectItem } from '@heroui/react'
 import { Search } from 'lucide-react'
 import { useDebounce } from 'use-debounce'
-import { kunFetchGet } from '~/utils/kunFetch'
 import { KunLoading } from '~/components/kun/Loading'
-import { useMounted } from '~/hooks/useMounted'
-import { FeedbackCard } from './FeedbackCard'
-import { KunPagination } from '~/components/kun/Pagination'
 import { KunNull } from '~/components/kun/Null'
+import { KunPagination } from '~/components/kun/Pagination'
+import { useMounted } from '~/hooks/useMounted'
 import type { AdminFeedback } from '~/types/api/admin'
+import { kunFetchGet } from '~/utils/kunFetch'
+import { FeedbackCard } from './FeedbackCard'
 
 type AdminFeedbackSearchType = 'content' | 'user'
-type AdminFeedbackStatus = 'all' | 'pending' | 'handled'
+type AdminFeedbackStatus =
+  | 'all'
+  | 'pending'
+  | 'in_progress'
+  | 'resolved'
+  | 'suspended'
+  | 'closed'
 
 const searchTypeOptions: Array<{
   key: AdminFeedbackSearchType
@@ -36,18 +42,12 @@ const statusOptions: Array<{
   key: AdminFeedbackStatus
   label: string
 }> = [
-  {
-    key: 'all',
-    label: '全部状态'
-  },
-  {
-    key: 'pending',
-    label: '未处理'
-  },
-  {
-    key: 'handled',
-    label: '已处理'
-  }
+  { key: 'all', label: '全部状态' },
+  { key: 'pending', label: '待处理' },
+  { key: 'in_progress', label: '处理中' },
+  { key: 'resolved', label: '已处理' },
+  { key: 'suspended', label: '挂起' },
+  { key: 'closed', label: '关闭' }
 ]
 
 interface Props {
@@ -124,8 +124,8 @@ export const Feedback = ({ initialFeedbacks, total }: Props) => {
   }
 
   const currentPlaceholder =
-    searchTypeOptions.find((option) => option.key === searchType)
-      ?.placeholder ?? '输入反馈内容搜索'
+    searchTypeOptions.find((option) => option.key === searchType)?.placeholder ??
+    '输入反馈内容搜索'
 
   return (
     <div className="space-y-6">

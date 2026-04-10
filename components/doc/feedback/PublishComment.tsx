@@ -5,6 +5,7 @@ import toast from 'react-hot-toast'
 import { Send } from 'lucide-react'
 import { Card, CardBody, CardHeader } from '@heroui/card'
 import { Button } from '@heroui/button'
+import { Select, SelectItem } from '@heroui/react'
 import { KunAvatar } from '~/components/kun/floating-card/KunAvatar'
 import { KunCaptchaModal } from '~/components/kun/auth/CaptchaModal'
 import { KunEditor } from '~/components/kun/milkdown/Editor'
@@ -15,6 +16,22 @@ import { kunFetchPost, kunFetchPut } from '~/utils/kunFetch'
 import { kunErrorHandler } from '~/utils/kunErrorHandler'
 import type { DocComment } from '~/types/api/doc'
 
+type AdminFeedbackHandleStatus =
+  | 'in_progress'
+  | 'resolved'
+  | 'suspended'
+  | 'closed'
+
+const adminFeedbackStatusOptions: Array<{
+  key: AdminFeedbackHandleStatus
+  label: string
+}> = [
+  { key: 'in_progress', label: '处理中' },
+  { key: 'resolved', label: '已处理' },
+  { key: 'suspended', label: '挂起' },
+  { key: 'closed', label: '关闭' }
+]
+
 interface Props {
   docPostId?: number
   commentId?: number
@@ -23,8 +40,10 @@ interface Props {
   initialValue?: string
   requireCaptcha?: boolean
   mode?: 'create' | 'edit'
+  adminFeedbackRootId?: number
   onCancel?: () => void
   onSuccess?: () => void
+  onHandled?: () => void
   onSaved: (comment: DocComment) => void
 }
 
@@ -36,17 +55,23 @@ export const PublishFeedbackComment = ({
   initialValue = '',
   requireCaptcha = false,
   mode = 'create',
+  adminFeedbackRootId,
   onCancel,
   onSuccess,
+  onHandled,
   onSaved
 }: Props) => {
   const [loading, setLoading] = useState(false)
   const [content, setContent] = useState(initialValue)
   const [isCaptchaOpen, setIsCaptchaOpen] = useState(false)
+  const [adminStatus, setAdminStatus] =
+    useState<AdminFeedbackHandleStatus>('in_progress')
   const { user } = useUserStore((state) => state)
   const refreshMilkdownContent = useKunMilkdownStore(
     (state) => state.refreshMilkdownContent
   )
+  const isAdminHandleMode =
+    mode === 'create' && user.role >= 3 && typeof adminFeedbackRootId === 'number'
 
   useEffect(() => {
     setContent(initialValue)
@@ -55,6 +80,27 @@ export const PublishFeedbackComment = ({
   const requestSave = async (captcha = '') => {
     setLoading(true)
     try {
+      if (isAdminHandleMode) {
+        const response = await kunFetchPost<KunResponse<{}>>(
+          '/admin/feedback/handle',
+          {
+            commentId: adminFeedbackRootId,
+            status: adminStatus,
+            content: content.trim()
+          }
+        )
+
+        kunErrorHandler(response, () => {
+          toast.success('反馈处理成功')
+          setContent('')
+          refreshMilkdownContent()
+          onHandled?.()
+          onSuccess?.()
+        })
+
+        return
+      }
+
       const response =
         mode === 'edit'
           ? await kunFetchPut<KunResponse<DocComment>>('/doc/comment', {
@@ -121,6 +167,25 @@ export const PublishFeedbackComment = ({
         </CardHeader>
 
         <CardBody className="space-y-4">
+          {isAdminHandleMode ? (
+            <Select
+              label="回复后状态"
+              selectedKeys={new Set([adminStatus])}
+              onSelectionChange={(keys) => {
+                const nextStatus = Array.from(keys)[0] as
+                  | AdminFeedbackHandleStatus
+                  | undefined
+                if (nextStatus) {
+                  setAdminStatus(nextStatus)
+                }
+              }}
+            >
+              {adminFeedbackStatusOptions.map((option) => (
+                <SelectItem key={option.key}>{option.label}</SelectItem>
+              ))}
+            </Select>
+          ) : null}
+
           <KunEditor valueMarkdown={content} saveMarkdown={setContent} />
 
           <div className="flex items-center justify-end">

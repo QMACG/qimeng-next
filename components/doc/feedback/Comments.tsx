@@ -18,6 +18,10 @@ import { Pagination } from '@heroui/pagination'
 import { Tooltip } from '@heroui/tooltip'
 import { MessageCircle, PenLine, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import {
+  FEEDBACK_COMMENT_STATUS,
+  getFeedbackCommentStatusMeta
+} from '~/constants/feedbackComment'
 import { KunNull } from '~/components/kun/Null'
 import { KunUser } from '~/components/kun/floating-card/KunUser'
 import { UserName } from '~/components/kun/user/UserName'
@@ -50,9 +54,9 @@ export const FeedbackComments = ({ docPostId, requireCaptcha }: Props) => {
   const [loading, setLoading] = useState(false)
   const [showEditor, setShowEditor] = useState(false)
   const [deletingCommentId, setDeletingCommentId] = useState<number | null>(null)
-  const [pendingDeleteCommentId, setPendingDeleteCommentId] = useState<number | null>(
-    null
-  )
+  const [pendingDeleteCommentId, setPendingDeleteCommentId] = useState<
+    number | null
+  >(null)
   const [replyTo, setReplyTo] = useState<{
     commentId: number
     username: string
@@ -238,6 +242,7 @@ export const FeedbackComments = ({ docPostId, requireCaptcha }: Props) => {
 
         {!loading &&
           comments.map((comment) => {
+            const statusMeta = getFeedbackCommentStatusMeta(comment.status)
             const canEditRoot = canEditComment(user.uid, comment.user.id)
             const canDeleteRoot = canDeleteComment(
               user.uid,
@@ -269,16 +274,14 @@ export const FeedbackComments = ({ docPostId, requireCaptcha }: Props) => {
                     />
 
                     <div className="flex flex-wrap items-center justify-end gap-2">
-                      <Chip
-                        size="sm"
-                        variant="flat"
-                        color={comment.status ? 'success' : 'warning'}
-                      >
-                        {comment.status ? '已处理' : '待处理'}
+                      <Chip size="sm" variant="flat" color={statusMeta.color}>
+                        {statusMeta.label}
                       </Chip>
 
                       <Tooltip
-                        content={replyTo?.commentId === comment.id ? '收起回复' : '回复'}
+                        content={
+                          replyTo?.commentId === comment.id ? '收起回复' : '回复'
+                        }
                       >
                         <Button
                           isIconOnly
@@ -361,16 +364,26 @@ export const FeedbackComments = ({ docPostId, requireCaptcha }: Props) => {
                         docPostId={docPostId}
                         parentId={comment.id}
                         receiverUsername={replyTo.username}
+                        adminFeedbackRootId={
+                          user.role >= 3 ? comment.id : undefined
+                        }
                         requireCaptcha={requireCaptcha}
                         onSuccess={() => setReplyTo(null)}
                         onCancel={() => setReplyTo(null)}
+                        onHandled={() => {
+                          setReplyTo(null)
+                          void fetchComments(page)
+                        }}
                         onSaved={(newComment) => {
                           setComments((prev) =>
                             prev.map((item) =>
                               item.id === comment.id
                                 ? {
                                     ...item,
-                                    status: user.role >= 3 ? 1 : item.status,
+                                    status:
+                                      user.role >= 3
+                                        ? FEEDBACK_COMMENT_STATUS.inProgress
+                                        : item.status,
                                     reply: [...item.reply, newComment]
                                   }
                                 : item
@@ -427,7 +440,9 @@ export const FeedbackComments = ({ docPostId, requireCaptcha }: Props) => {
 
                                 <div className="flex flex-wrap items-center justify-end gap-2">
                                   {canEditReply ? (
-                                    <Tooltip content={isEditingReply ? '取消编辑' : '编辑'}>
+                                    <Tooltip
+                                      content={isEditingReply ? '取消编辑' : '编辑'}
+                                    >
                                       <Button
                                         isIconOnly
                                         variant="light"
@@ -506,7 +521,9 @@ export const FeedbackComments = ({ docPostId, requireCaptcha }: Props) => {
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">删除评论</ModalHeader>
           <ModalBody>
-            <p>确认删除这条反馈评论吗？删除后其关联回复也会一并移除，且不可撤销。</p>
+            <p>
+              确认删除这条反馈评论吗？删除后其关联回复也会一并移除，且不可撤销。
+            </p>
           </ModalBody>
           <ModalFooter>
             <Button variant="light" onPress={handleCloseDeleteModal}>

@@ -4,16 +4,20 @@ import type { SearchSuggestionType } from '~/types/api/search'
 
 export interface CreateSearchData {
   searchHistory: SearchSuggestionType[][]
+  searchInTitle: boolean
   searchInIntroduction: boolean
   searchInAlias: boolean
   searchInTag: boolean
+  searchInCompany: boolean
 }
 
 const initialState: CreateSearchData = {
   searchHistory: [],
-  searchInIntroduction: false,
+  searchInTitle: true,
+  searchInIntroduction: true,
   searchInAlias: true,
-  searchInTag: false
+  searchInTag: false,
+  searchInCompany: false
 }
 
 interface SearchStoreState {
@@ -32,7 +36,7 @@ export const useSearchStore = create<SearchStoreState>()(
       resetData: () => set({ data: initialState })
     }),
     {
-      name: 'kun-patch-search-store-v2',
+      name: 'kun-patch-search-store-v3',
       storage: createJSONStorage(() => localStorage)
     }
   )

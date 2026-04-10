@@ -7,9 +7,11 @@ export const searchSchema = z.object({
     .max(1007, { message: '搜索内容不能超过 1007 个字符' }),
   limit: z.coerce.number().min(1).max(24),
   searchOption: z.object({
-    searchInIntroduction: z.boolean().default(false),
-    searchInAlias: z.boolean().default(false),
-    searchInTag: z.boolean().default(false)
+    searchInTitle: z.boolean().default(true),
+    searchInIntroduction: z.boolean().default(true),
+    searchInAlias: z.boolean().default(true),
+    searchInTag: z.boolean().default(false),
+    searchInCompany: z.boolean().default(false)
   }),
   page: z.coerce.number().min(1).max(9999999),
   sortField: z.union([

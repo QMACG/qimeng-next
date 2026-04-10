@@ -32,8 +32,11 @@ export const docCommentDeleteSchema = z.object({
 
 export const adminHandleFeedbackCommentSchema = z.object({
   commentId: z.coerce.number().min(1).max(9999999),
+  status: z.enum(['in_progress', 'resolved', 'suspended', 'closed']),
   content: z
     .string()
     .trim()
     .max(5000, { message: '回复内容不能超过 5000 个字符' })
+    .optional()
+    .default('')
 })

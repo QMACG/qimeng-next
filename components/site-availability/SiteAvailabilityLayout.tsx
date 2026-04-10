@@ -16,6 +16,12 @@ interface Props {
   initialPathname: string
   headerNavItems: KunNavItem[]
   analyticsScripts: AdminSiteAnalyticsScript[]
+  footerConfig: {
+    titleShort: string
+    navLink: string
+    githubRepo?: string
+    telegramGroup?: string
+  }
   children: React.ReactNode
 }
 
@@ -32,6 +38,7 @@ export const SiteAvailabilityLayout = ({
   initialPathname,
   headerNavItems,
   analyticsScripts,
+  footerConfig,
   children
 }: Props) => {
   const pathname = usePathname()
@@ -72,7 +79,7 @@ export const SiteAvailabilityLayout = ({
           <Toaster />
         </div>
         <KunBackToTop />
-        <KunFooter />
+        <KunFooter {...footerConfig} />
       </div>
       <SiteAnalyticsScripts scripts={analyticsScripts} />
     </>
