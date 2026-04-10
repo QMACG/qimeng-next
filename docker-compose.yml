@@ -1,0 +1,22 @@
+# 一键拉取镜像并启动：
+#   1. 在项目目录准备外部 env 文件（默认文件名 .env，或通过 ENV_FILE 指定）
+#   2. 默认镜像为 mywltd/qimeng-next:latest；可设置 DOCKER_IMAGE 覆盖
+#   3. docker compose pull && docker compose up -d
+#
+# 可选：HOST_PORT 映射宿主机端口（默认 3001→容器 3000）、UPLOADS_DIR 上传目录（默认 ./uploads）
+
+services:
+  qimeng-next:
+    image: ${DOCKER_IMAGE:-mywltd/qimeng-next:latest}
+    container_name: qimeng-next
+    restart: unless-stopped
+    ports:
+      - "${HOST_PORT:-3001}:3000"
+    env_file:
+      - ${ENV_FILE:-.env}
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+    volumes:
+      - ${UPLOADS_DIR:-./uploads}:/app/uploads
