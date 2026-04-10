@@ -7,6 +7,10 @@ import { promisify } from 'util'
 const execAsync = promisify(exec)
 const isWindows = os.platform() === 'win32'
 
+const skipSitemap =
+  process.env.SKIP_POSTBUILD_SITEMAP === '1' ||
+  process.env.SKIP_POSTBUILD_SITEMAP === 'true'
+
 const copyDirectory = async (src: string, dest: string): Promise<void> => {
   await mkdir(dest, { recursive: true })
   const entries = await readdir(src, { withFileTypes: true })
@@ -55,9 +59,15 @@ const copyStandaloneAssets = async () => {
 
 const copyFiles = async () => {
   try {
-    const { stdout, stderr } = await execAsync('corepack pnpm build:sitemap')
-    if (stdout) console.log(stdout)
-    if (stderr) console.error(stderr)
+    if (skipSitemap) {
+      console.log(
+        'SKIP_POSTBUILD_SITEMAP set: skipping sitemap generation (e.g. Docker/CI without DB).'
+      )
+    } else {
+      const { stdout, stderr } = await execAsync('corepack pnpm build:sitemap')
+      if (stdout) console.log(stdout)
+      if (stderr) console.error(stderr)
+    }
 
     await copyStandaloneAssets()
   } catch (error) {

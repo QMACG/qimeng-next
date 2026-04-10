@@ -1,0 +1,14 @@
+node_modules
+.next
+.git
+.github
+*.md
+.env
+.env.*
+!.env.example
+pnpm-debug.log*
+coverage
+.turbo
+uploads
+.vscode
+.idea
