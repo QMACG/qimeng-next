@@ -38,11 +38,14 @@ RUN addgroup --system --gid 1001 nodejs \
   && adduser --system --uid 1001 --ingroup nodejs nextjs
 
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --chown=nextjs:nodejs ecosystem.docker.cjs /app/ecosystem.docker.cjs
 
-RUN mkdir -p /app/uploads && chown nextjs:nodejs /app/uploads
+RUN mkdir -p /app/uploads && chown nextjs:nodejs /app/uploads \
+  && npm install -g pm2@5
 
 USER nextjs
 
 EXPOSE 3000
 
-CMD ["node", "server.js"]
+# cluster 多进程吃满多核；PM2_INSTANCES 由 compose / 运行时注入
+CMD ["pm2-runtime", "/app/ecosystem.docker.cjs"]

@@ -6,8 +6,9 @@
 #   4. Redis 仅 compose 内部使用：未映射宿主机端口，不占 6379，与宿主机 Redis 互不影响
 #   5. docker compose pull && docker compose up -d
 #
-# 可选：HOST_PORT（默认 3001）、HOST_BIND（默认 127.0.0.1，仅本机可访问，反代用 127.0.0.1:端口）
-#       若需监听所有网卡可设 HOST_BIND=0.0.0.0（不推荐直连公网）。UPLOADS_DIR 默认 ./uploads
+# 可选：HOST_PORT、HOST_BIND、UPLOADS_DIR（见上）
+#       PM2_INSTANCES：max=按 CPU 核数起多进程（默认）；或填数字限制进程数（省内存/MySQL 连接）
+#       UV_THREADPOOL_SIZE：Node libuv 线程池，默认 16（I/O 多时可略调大）
 
 services:
   redis:
@@ -42,6 +43,8 @@ services:
       HOSTNAME: 0.0.0.0
       REDIS_HOST: redis
       REDIS_PORT: '6379'
+      PM2_INSTANCES: ${PM2_INSTANCES:-max}
+      UV_THREADPOOL_SIZE: ${UV_THREADPOOL_SIZE:-16}
     extra_hosts:
       # Linux 下解析到宿主机，便于 KUN_DATABASE_URL 使用 host.docker.internal:3306
       - 'host.docker.internal:host-gateway'
