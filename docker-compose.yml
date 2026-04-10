@@ -6,7 +6,8 @@
 #   4. Redis 仅 compose 内部使用：未映射宿主机端口，不占 6379，与宿主机 Redis 互不影响
 #   5. docker compose pull && docker compose up -d
 #
-# 可选：HOST_PORT（默认 3001→容器 3000）、UPLOADS_DIR（默认 ./uploads）
+# 可选：HOST_PORT（默认 3001）、HOST_BIND（默认 127.0.0.1，仅本机可访问，反代用 127.0.0.1:端口）
+#       若需监听所有网卡可设 HOST_BIND=0.0.0.0（不推荐直连公网）。UPLOADS_DIR 默认 ./uploads
 
 services:
   redis:
@@ -24,14 +25,15 @@ services:
       retries: 5
 
   qimeng-next:
-    image: ${DOCKER_IMAGE:-mywltd/qimeng-next:latest}
+    image: ${DOCKER_IMAGE:-qmgame/qimeng-next:latest}
     container_name: qimeng-next
     restart: unless-stopped
     depends_on:
       redis:
         condition: service_healthy
     ports:
-      - "${HOST_PORT:-3001}:3000"
+      # 绑定环回地址，避免 Docker 在 0.0.0.0 监听从而绕过防火墙对公网网卡的限制
+      - "${HOST_BIND:-127.0.0.1}:${HOST_PORT:-3001}:3000"
     env_file:
       - ${ENV_FILE:-.env}
     environment:
