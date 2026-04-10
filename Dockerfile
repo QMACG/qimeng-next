@@ -38,7 +38,8 @@ RUN addgroup --system --gid 1001 nodejs \
   && adduser --system --uid 1001 --ingroup nodejs nextjs
 
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --chown=nextjs:nodejs ecosystem.docker.cjs /app/ecosystem.docker.cjs
+# 目标文件名须为 ecosystem.config.*，否则 PM2 不解析 apps，会当成单脚本 fork（名称 ecosystem.docker）
+COPY --chown=nextjs:nodejs ecosystem.docker.cjs /app/ecosystem.config.cjs
 
 RUN mkdir -p /app/uploads /app/.pm2 && chown nextjs:nodejs /app/uploads /app/.pm2 \
   && npm install -g pm2@5 \
@@ -52,5 +53,4 @@ USER nextjs
 
 EXPOSE 3000
 
-# 必须 `start` + ecosystem 路径，否则会把配置文件当普通脚本跑，只见 fork、名称成 ecosystem.docker
-CMD ["pm2-runtime", "start", "/app/ecosystem.docker.cjs"]
+CMD ["pm2-runtime", "start", "/app/ecosystem.config.cjs"]
