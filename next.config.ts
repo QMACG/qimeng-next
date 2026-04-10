@@ -11,6 +11,32 @@ import type { NextConfig } from 'next'
 // const __dirname = path.dirname(__filename)
 
 const isWindows = process.platform === 'win32'
+const toAllowedOriginHost = (value?: string) => {
+  if (!value) {
+    return null
+  }
+
+  try {
+    return new URL(value).host
+  } catch {
+    return null
+  }
+}
+
+const serverActionAllowedOrigins = Array.from(
+  new Set(
+    [
+      env.data?.KUN_VISUAL_NOVEL_SITE_URL,
+      ...(env.data?.KUN_VISUAL_NOVEL_SITE_URLS
+        ? env.data.KUN_VISUAL_NOVEL_SITE_URLS.split(',')
+        : []),
+      env.data?.NEXT_PUBLIC_KUN_PATCH_ADDRESS_PROD,
+      env.data?.NEXT_PUBLIC_KUN_PATCH_ADDRESS_DEV
+    ]
+      .map((item) => toAllowedOriginHost(item?.trim()))
+      .filter((item): item is string => Boolean(item))
+  )
+)
 
 const nextConfig: NextConfig = {
   devIndicators: false,
@@ -45,6 +71,9 @@ const nextConfig: NextConfig = {
 
   ...(isWindows ? {} : { output: 'standalone' }),
   experimental: {
+    serverActions: {
+      allowedOrigins: serverActionAllowedOrigins
+    }
     // turbotrace: {
     //   logLevel: 'error',
     //   logDetail: false,

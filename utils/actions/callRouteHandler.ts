@@ -11,6 +11,11 @@ type QueryValue =
   | undefined
   | Array<string | number | boolean>
 
+const forwardedCookieNames = new Set([
+  'kun-galgame-patch-moe-token',
+  'kun-patch-setting-store|state|data|kunNsfwEnable'
+])
+
 const buildRequest = async (
   pathname: string,
   query?: Record<string, QueryValue>
@@ -36,6 +41,7 @@ const buildRequest = async (
   const cookieStore = await cookies()
   const cookieHeader = cookieStore
     .getAll()
+    .filter((cookie) => forwardedCookieNames.has(cookie.name))
     .map((cookie) => `${cookie.name}=${encodeURIComponent(cookie.value)}`)
     .join('; ')
 
