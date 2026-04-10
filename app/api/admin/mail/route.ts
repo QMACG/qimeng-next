@@ -22,7 +22,9 @@ const sendBulkEmail = async (
     select: { email: true }
   })
 
-  const emailList = users.map((user) => user.email)
+  const emailList = users
+    .map((user) => user.email)
+    .filter((addr): addr is string => Boolean(addr?.trim()))
 
   const batchSize = 100
   for (let i = 0; i < emailList.length; i += batchSize) {

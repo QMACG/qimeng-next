@@ -13,6 +13,8 @@ let transporter: Transporter | null = null
 const EMAIL_DELIVERY_FAILED = '邮件发送失败，请稍后重试'
 const EMAIL_CONFIG_MISSING =
   '邮件配置不完整，请检查发信邮箱相关环境变量'
+const EMAIL_RECIPIENT_MISSING =
+  '收件人邮箱为空，请检查填写或数据库中的用户邮箱'
 const EMAIL_PORT_INVALID =
   '邮件端口配置无效，请检查邮件端口环境变量'
 const EMAIL_AUTH_FAILED =
@@ -100,7 +102,18 @@ const createPlainText = (html: string) =>
     ]
   }).trim()
 
+const hasRecipients = (to: string | string[]) => {
+  if (Array.isArray(to)) {
+    return to.some((addr) => Boolean(addr?.trim()))
+  }
+  return Boolean(to?.trim())
+}
+
 export const sendSiteEmail = async (input: SendSiteEmailInput) => {
+  if (!hasRecipients(input.to)) {
+    throw new Error('Missing email recipient')
+  }
+
   const mailer = getTransporter()
 
   return mailer.sendMail({
@@ -120,6 +133,10 @@ export const getEmailErrorMessage = (error: unknown) => {
   }
 
   const message = error.message
+
+  if (/Missing email recipient/i.test(message)) {
+    return EMAIL_RECIPIENT_MISSING
+  }
 
   if (/Missing email configuration|Missing email account/i.test(message)) {
     return EMAIL_CONFIG_MISSING
