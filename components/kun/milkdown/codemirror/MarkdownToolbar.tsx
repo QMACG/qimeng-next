@@ -1,6 +1,11 @@
 'use client'
 
-import { forwardRef, useState, type ReactNode } from 'react'
+import {
+  forwardRef,
+  useState,
+  type ComponentPropsWithoutRef,
+  type ReactNode
+} from 'react'
 import {
   Button,
   Input,
@@ -97,12 +102,12 @@ const tableTemplateOptions = [
 
 const TooltipTriggerButton = forwardRef<
   HTMLButtonElement,
-  {
+  ComponentPropsWithoutRef<typeof Button> & {
     tooltip: string
     ariaLabel: string
     children: ReactNode
   }
->(({ tooltip, ariaLabel, children }, ref) => (
+>(({ tooltip, ariaLabel, children, ...buttonProps }, ref) => (
   <Button
     ref={ref}
     isIconOnly
@@ -110,6 +115,7 @@ const TooltipTriggerButton = forwardRef<
     type="button"
     title={tooltip}
     aria-label={ariaLabel}
+    {...buttonProps}
   >
     {children}
   </Button>
