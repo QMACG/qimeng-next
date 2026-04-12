@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, type ReactNode } from 'react'
+import { forwardRef, useState, type ReactNode } from 'react'
 import {
   Button,
   Input,
@@ -11,7 +11,6 @@ import {
   SelectItem,
   Textarea
 } from '@heroui/react'
-import { Tooltip } from '@heroui/tooltip'
 import {
   AlertTriangle,
   Bold,
@@ -96,21 +95,27 @@ const tableTemplateOptions = [
   }
 ] as const
 
-const TooltipTriggerButton = ({
-  tooltip,
-  ariaLabel,
-  children
-}: {
-  tooltip: string
-  ariaLabel: string
-  children: ReactNode
-}) => (
-  <Tooltip content={tooltip}>
-    <Button isIconOnly variant="light" aria-label={ariaLabel}>
-      {children}
-    </Button>
-  </Tooltip>
-)
+const TooltipTriggerButton = forwardRef<
+  HTMLButtonElement,
+  {
+    tooltip: string
+    ariaLabel: string
+    children: ReactNode
+  }
+>(({ tooltip, ariaLabel, children }, ref) => (
+  <Button
+    ref={ref}
+    isIconOnly
+    variant="light"
+    type="button"
+    title={tooltip}
+    aria-label={ariaLabel}
+  >
+    {children}
+  </Button>
+))
+
+TooltipTriggerButton.displayName = 'TooltipTriggerButton'
 
 const LinkInsertButton = ({ api }: ToolProps) => {
   const [link, setLink] = useState('')
@@ -160,6 +165,7 @@ const LinkInsertButton = ({ api }: ToolProps) => {
             className="mt-2 w-full"
             color="primary"
             variant="flat"
+            type="button"
             onPress={handleInsert}
             isDisabled={!link.trim()}
           >
@@ -229,6 +235,7 @@ const ImageInsertButton = ({ api }: ToolProps) => {
             className="mt-2 w-full"
             color="primary"
             variant="flat"
+            type="button"
             onPress={handleInsert}
             isDisabled={!src.trim()}
           >
@@ -301,6 +308,7 @@ const ButtonDirectiveInsertButton = ({ api }: ToolProps) => {
             className="mt-2 w-full"
             color="primary"
             variant="flat"
+            type="button"
             onPress={handleInsert}
             isDisabled={!href.trim()}
           >
@@ -377,6 +385,7 @@ const CalloutInsertButton = ({ api }: ToolProps) => {
             className="mt-2 w-full"
             color="primary"
             variant="flat"
+            type="button"
             onPress={handleInsert}
           >
             确认插入
@@ -427,6 +436,7 @@ const GalleryInsertButton = ({ api }: ToolProps) => {
             className="mt-2 w-full"
             color="primary"
             variant="flat"
+            type="button"
             onPress={handleInsert}
           >
             确认插入
@@ -481,6 +491,7 @@ const TableTemplateInsertButton = ({ api }: ToolProps) => {
             className="mt-2 w-full"
             color="primary"
             variant="flat"
+            type="button"
             onPress={handleInsert}
           >
             确认插入
@@ -529,6 +540,7 @@ const VideoInsertButton = ({ api }: ToolProps) => {
             className="mt-2 w-full"
             color="primary"
             variant="flat"
+            type="button"
             onPress={handleInsert}
             isDisabled={!link.trim()}
           >

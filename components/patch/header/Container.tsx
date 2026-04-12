@@ -11,12 +11,16 @@ import type { Patch, PatchIntroduction } from '~/types/api/patch'
 interface PatchHeaderProps {
   patch: Patch
   intro: PatchIntroduction
+  relatedPatches: GalgameCard[]
+  showRelatedGames: boolean
   uid?: number
 }
 
 export const PatchHeaderContainer = ({
   patch,
   intro,
+  relatedPatches,
+  showRelatedGames,
   uid
 }: PatchHeaderProps) => {
   const { setData } = useRewritePatchStore()
@@ -59,6 +63,8 @@ export const PatchHeaderContainer = ({
             <PatchHeaderTabs
               id={patch.id}
               intro={intro}
+              relatedPatches={relatedPatches}
+              showRelatedGames={showRelatedGames}
               uid={uid}
               selected={selected}
               setSelected={setSelected}

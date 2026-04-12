@@ -12,7 +12,9 @@ interface Props {
 
 export const FrontDisplaySetting = ({ setting }: Props) => {
   const [enableSite, setEnableSite] = useState(setting.enableSite)
-  const [siteCloseMessage, setSiteCloseMessage] = useState(setting.siteCloseMessage)
+  const [siteCloseMessage, setSiteCloseMessage] = useState(
+    setting.siteCloseMessage
+  )
   const [hideViewCountForVisitor, setHideViewCountForVisitor] = useState(
     setting.hideViewCountForVisitor
   )
@@ -20,6 +22,9 @@ export const FrontDisplaySetting = ({ setting }: Props) => {
     useState(setting.hideDownloadCountForVisitor)
   const [hideCreatorStatsForVisitor, setHideCreatorStatsForVisitor] = useState(
     setting.hideCreatorStatsForVisitor
+  )
+  const [enablePatchRelatedGames, setEnablePatchRelatedGames] = useState(
+    setting.enablePatchRelatedGames
   )
   const [saving, setSaving] = useState(false)
 
@@ -32,13 +37,17 @@ export const FrontDisplaySetting = ({ setting }: Props) => {
     setSaving(true)
 
     try {
-      const res = await kunFetchPut<KunResponse<{}>>('/admin/setting/front-display', {
-        enableSite,
-        siteCloseMessage,
-        hideViewCountForVisitor,
-        hideDownloadCountForVisitor,
-        hideCreatorStatsForVisitor
-      })
+      const res = await kunFetchPut<KunResponse<{}>>(
+        '/admin/setting/front-display',
+        {
+          enableSite,
+          siteCloseMessage,
+          hideViewCountForVisitor,
+          hideDownloadCountForVisitor,
+          hideCreatorStatsForVisitor,
+          enablePatchRelatedGames
+        }
+      )
 
       if (typeof res === 'string') {
         toast.error(res)
@@ -60,7 +69,7 @@ export const FrontDisplaySetting = ({ setting }: Props) => {
             <div>
               <h3 className="text-lg font-semibold">开启站点</h3>
               <p className="text-sm text-default-500">
-                关闭后，前台访客页面将统一显示站点关闭提示，后台与登录入口不受影响。
+                关闭后，前台访客页面会统一显示站点关闭提示，后台与登录入口不受影响。
               </p>
             </div>
             <Switch
@@ -120,6 +129,20 @@ export const FrontDisplaySetting = ({ setting }: Props) => {
               color="primary"
               isSelected={hideCreatorStatsForVisitor}
               onValueChange={setHideCreatorStatsForVisitor}
+            />
+          </div>
+
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h3 className="text-lg font-semibold">游戏页相关推荐</h3>
+              <p className="text-sm text-default-500">
+                开启后，会在游戏详情页的“游戏信息”标签底部显示 6 个相关推荐卡片。
+              </p>
+            </div>
+            <Switch
+              color="primary"
+              isSelected={enablePatchRelatedGames}
+              onValueChange={setEnablePatchRelatedGames}
             />
           </div>
         </CardBody>

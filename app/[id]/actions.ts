@@ -4,7 +4,7 @@ import { cache } from 'react'
 import { z } from 'zod'
 import { verifyHeaderCookie } from '~/utils/actions/verifyHeaderCookie'
 import { safeParseSchema } from '~/utils/actions/safeParseSchema'
-import { getPatchById } from '~/app/api/patch/get'
+import { getPatchById, getRelatedPatchCards } from '~/app/api/patch/get'
 import { GET as getPatchIntroductionRoute } from '~/app/api/patch/introduction/route'
 import { updatePatchViews } from '~/app/api/patch/views/put'
 import { callRouteGet } from '~/utils/actions/callRouteHandler'
@@ -55,4 +55,17 @@ export const kunUpdatePatchViewsActions = async (
   }
 
   await updatePatchViews(input.uniqueId)
+}
+
+export const kunGetRelatedPatchCardsActions = async (
+  params: z.infer<typeof uniqueIdSchema>,
+  nsfwEnable: Record<string, string | undefined>,
+  role = 0
+) => {
+  const input = safeParseSchema(uniqueIdSchema, params)
+  if (typeof input === 'string') {
+    return input
+  }
+
+  return getRelatedPatchCards(input, nsfwEnable, role)
 }

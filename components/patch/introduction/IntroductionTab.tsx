@@ -9,6 +9,7 @@ import { Info } from './Info'
 import { PatchTag } from './Tag'
 import dynamic from 'next/dynamic'
 import { useMounted } from '~/hooks/useMounted'
+import { GalgameCard as GalgameCardView } from '~/components/galgame/Card'
 import { KunLink } from '~/components/kun/milkdown/plugins/components/link/KunLink'
 import { KunExternalLink } from '~/components/kun/external-link/ExternalLink'
 import { MarkdownButtonLink } from '~/components/kun/markdown/MarkdownButtonLink'
@@ -28,10 +29,17 @@ const KunPlyr = dynamic(
 interface Props {
   intro: PatchIntroduction
   patchId: number
+  relatedPatches: GalgameCard[]
+  showRelatedGames: boolean
   uid?: number
 }
 
-export const IntroductionTab = ({ intro, patchId }: Props) => {
+export const IntroductionTab = ({
+  intro,
+  patchId,
+  relatedPatches,
+  showRelatedGames
+}: Props) => {
   const contentRef = useRef<HTMLDivElement>(null)
   const isMounted = useMounted()
 
@@ -125,6 +133,23 @@ export const IntroductionTab = ({ intro, patchId }: Props) => {
         <PatchCompany initialCompanies={intro.company} />
 
         <Info intro={intro} />
+
+        {showRelatedGames && relatedPatches.length > 0 ? (
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <h2 className="text-xl font-semibold">相关推荐</h2>
+              <p className="text-sm text-default-500">
+                根据当前作品的标签和会社，随机挑了 6 部你可能也会感兴趣的游戏。
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+              {relatedPatches.map((patch) => (
+                <GalgameCardView key={patch.id} patch={patch} />
+              ))}
+            </div>
+          </div>
+        ) : null}
       </CardBody>
     </Card>
   )

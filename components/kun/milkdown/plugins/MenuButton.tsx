@@ -16,7 +16,13 @@ export const MenuButton: FC<MenuButtonProps> = ({
   ariaLabel
 }) => (
   <Tooltip content={tooltip}>
-    <Button isIconOnly variant="light" onPress={onPress} aria-label={ariaLabel}>
+    <Button
+      isIconOnly
+      variant="light"
+      type="button"
+      onPress={onPress}
+      aria-label={ariaLabel}
+    >
       <Icon className="size-6" />
     </Button>
   </Tooltip>

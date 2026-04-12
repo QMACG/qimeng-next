@@ -110,6 +110,7 @@ export interface AdminFrontDisplayConfig {
   hideViewCountForVisitor: boolean
   hideDownloadCountForVisitor: boolean
   hideCreatorStatsForVisitor: boolean
+  enablePatchRelatedGames: boolean
 }
 
 export type AdminSiteAnalyticsPosition = 'head' | 'body_end'

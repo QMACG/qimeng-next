@@ -10,6 +10,8 @@ interface PatchHeaderProps {
   id: number
   uid?: number
   intro: PatchIntroduction
+  relatedPatches: GalgameCard[]
+  showRelatedGames: boolean
   selected: string
   setSelected: Dispatch<SetStateAction<string>>
 }
@@ -18,6 +20,8 @@ export const PatchHeaderTabs = ({
   id,
   uid,
   intro,
+  relatedPatches,
+  showRelatedGames,
   selected,
   setSelected
 }: PatchHeaderProps) => {
@@ -32,7 +36,13 @@ export const PatchHeaderTabs = ({
       selectedKey={selected}
     >
       <Tab key="introduction" title="游戏信息" className="min-w-20 p-0">
-        <IntroductionTab intro={intro} patchId={Number(id)} uid={uid} />
+        <IntroductionTab
+          intro={intro}
+          patchId={Number(id)}
+          relatedPatches={relatedPatches}
+          showRelatedGames={showRelatedGames}
+          uid={uid}
+        />
       </Tab>
 
       <Tab key="resources" title="资源链接" className="min-w-20 p-0">

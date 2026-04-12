@@ -6,7 +6,8 @@ export const DEFAULT_FRONT_DISPLAY_CONFIG: AdminFrontDisplayConfig = {
     '站点正在维护或调整中，请稍后再访问。\n\n如需了解最新进度，请关注站内公告或稍后刷新页面。',
   hideViewCountForVisitor: true,
   hideDownloadCountForVisitor: true,
-  hideCreatorStatsForVisitor: true
+  hideCreatorStatsForVisitor: true,
+  enablePatchRelatedGames: true
 }
 
 export const canShowViewCount = (

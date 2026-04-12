@@ -11,11 +11,13 @@ import {
 } from '~/utils/seo'
 import {
   kunGetPatchActions,
+  kunGetRelatedPatchCardsActions,
   kunGetPatchIntroductionActions,
   kunUpdatePatchViewsActions
 } from './actions'
 import { getNSFWHeader } from '~/utils/actions/getNSFWHeader'
 import { verifyHeaderCookie } from '~/utils/actions/verifyHeaderCookie'
+import { getFrontDisplayConfig } from '~/app/api/admin/setting/front-display/getFrontDisplayConfig'
 import type { Metadata } from 'next'
 import type { Company } from '~/types/api/company'
 
@@ -65,9 +67,24 @@ export default async function Kun({ params }: Props) {
     return <NsfwBlockedNotice isLoggedIn={Boolean(payload?.uid)} />
   }
 
-  const intro = await kunGetPatchIntroductionActions({ uniqueId: id })
+  const [intro, frontDisplay] = await Promise.all([
+    kunGetPatchIntroductionActions({ uniqueId: id }),
+    getFrontDisplayConfig()
+  ])
   if (typeof intro === 'string') {
     return <ErrorComponent error={intro} />
+  }
+
+  const relatedPatches = frontDisplay.enablePatchRelatedGames
+    ? await kunGetRelatedPatchCardsActions(
+        { uniqueId: id },
+        nsfwHeader,
+        payload?.role ?? 0
+      )
+    : []
+
+  if (typeof relatedPatches === 'string') {
+    return <ErrorComponent error={relatedPatches} />
   }
 
   const canonical = toCanonicalUrl(`/${patch.uniqueId}`)
@@ -118,7 +135,13 @@ export default async function Kun({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbJsonLd) }}
       />
-      <PatchHeaderContainer patch={patch} intro={intro} uid={payload?.uid} />
+      <PatchHeaderContainer
+        patch={patch}
+        intro={intro}
+        relatedPatches={relatedPatches}
+        showRelatedGames={frontDisplay.enablePatchRelatedGames}
+        uid={payload?.uid}
+      />
     </div>
   )
 }

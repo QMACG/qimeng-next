@@ -164,6 +164,7 @@ model site_front_display_config {
   hide_view_count_for_visitor  Boolean @default(true)
   hide_download_count_for_visitor Boolean @default(true)
   hide_creator_stats_for_visitor Boolean @default(true)
+  enable_patch_related_games     Boolean @default(true)
 
   created DateTime @default(now())
   updated DateTime @updatedAt
