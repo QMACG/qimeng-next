@@ -3,14 +3,13 @@ import { Chip } from '@heroui/chip'
 import { Image } from '@heroui/image'
 import Link from 'next/link'
 import { getDocDirectoryLabel } from '~/constants/doc'
-import { canAccessRestrictedContent } from '~/utils/contentVisibility'
+import { isPrivateVisibility } from '~/utils/contentVisibility'
 import { getAdvertisementModel } from '~/utils/prisma/advertisement'
 import { verifyHeaderCookie } from '~/utils/actions/verifyHeaderCookie'
 import { formatTimeDifference } from '~/utils/time'
 
 interface ViewerContext {
   uid?: number
-  role?: number
 }
 
 interface FeaturedPostAdvertisement {
@@ -51,8 +50,7 @@ export const getFeaturedPostAdvertisements = async (
           published_at: true,
           category: true,
           directory_label: true,
-          visibility: true,
-          author_id: true
+          visibility: true
         }
       }
     }
@@ -90,14 +88,9 @@ export const getFeaturedPostAdvertisements = async (
         return []
       }
 
-      if (
-        !canAccessRestrictedContent({
-          visibility: advertisement.doc_post.visibility,
-          authorId: advertisement.doc_post.author_id,
-          uid: viewer.uid ?? 0,
-          role: viewer.role ?? 0
-        })
-      ) {
+      // 首页广告卡片与「读正文」权限解耦：不再使用 canAccessRestrictedContent，
+      // 避免仅编辑/管理员可见；仍不展示指向私有文章的推广位（后台也不应选私有文）。
+      if (isPrivateVisibility(advertisement.doc_post.visibility)) {
         return []
       }
 
@@ -179,8 +172,7 @@ const FeaturedPostAdvertisementCard = ({
 export const FeaturedPostAdvertisements = async () => {
   const payload = await verifyHeaderCookie()
   const advertisements = await getFeaturedPostAdvertisements({
-    uid: payload?.uid,
-    role: payload?.role
+    uid: payload?.uid
   })
 
   if (!advertisements.length) {
