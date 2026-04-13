@@ -32,7 +32,11 @@ export const generateMetadata = async ({
 }: Props): Promise<Metadata> => {
   const { slug } = await params
   const url = slug.join('/')
-  const blog = await getPostBySlug(url)
+  const payload = await verifyHeaderCookie()
+  const blog = await getPostBySlug(url, {
+    uid: payload?.uid,
+    role: payload?.role
+  })
   if (!blog) {
     return {}
   }

@@ -1,7 +1,11 @@
 import { prisma } from '~/prisma/index'
 import { unstable_noStore as noStore } from 'next/cache'
 import { CONTENT_VISIBILITY } from '~/constants/contentVisibility'
-import { canAccessRestrictedContent } from '~/utils/contentVisibility'
+import {
+  canAccessRestrictedContent,
+  isPrivateVisibility
+} from '~/utils/contentVisibility'
+import { getAdvertisementModel } from '~/utils/prisma/advertisement'
 import { markdownToText } from '~/utils/markdownToText'
 import type { KunBlog, KunFrontmatter, KunPostMetadata } from './types'
 
@@ -51,6 +55,44 @@ export const getAllPosts = async () => {
   return posts.map(toPostMetadata)
 }
 
+/** 广告目录文章内页：与首页广告展示规则一致，不套用「隐藏文」的读正文权限 */
+const canAccessAdvertisementDocPost = async (
+  post: {
+    id: number
+    category: string
+    visibility: number
+    author_id: number | null
+  },
+  viewer?: { uid?: number; role?: number }
+): Promise<boolean> => {
+  if (post.category !== 'advertisement') {
+    return false
+  }
+  if (isPrivateVisibility(post.visibility)) {
+    return false
+  }
+  const loggedIn = Boolean(viewer?.uid)
+  if (loggedIn) {
+    return true
+  }
+  const advertisementModel = getAdvertisementModel()
+  if (!advertisementModel) {
+    return true
+  }
+  const rows = await advertisementModel.findMany({
+    where: {
+      kind: 'featured_post',
+      doc_post_id: post.id,
+      target_mode: 'article'
+    },
+    select: { visible_for_guest: true }
+  })
+  if (rows.length === 0) {
+    return true
+  }
+  return rows.some((row) => row.visible_for_guest)
+}
+
 export const getPostBySlug = async (
   slug: string,
   viewer?: { uid?: number; role?: number }
@@ -62,15 +104,20 @@ export const getPostBySlug = async (
     where: { slug: realSlug }
   })
 
-  if (
-    !post ||
-    !canAccessRestrictedContent({
+  if (!post) {
+    return null
+  }
+
+  const canAccess =
+    (await canAccessAdvertisementDocPost(post, viewer)) ||
+    canAccessRestrictedContent({
       visibility: post.visibility,
       authorId: post.author_id,
       uid: viewer?.uid,
       role: viewer?.role
     })
-  ) {
+
+  if (!canAccess) {
     return null
   }
 
