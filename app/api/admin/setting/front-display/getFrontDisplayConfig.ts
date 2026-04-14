@@ -12,13 +12,15 @@ const mapFrontDisplayConfig = (config: {
   hide_download_count_for_visitor: boolean
   hide_creator_stats_for_visitor: boolean
   enable_patch_related_games: boolean
+  enable_friend_link_apply: boolean
 }): AdminFrontDisplayConfig => ({
   enableSite: config.enable_site,
   siteCloseMessage: config.site_close_message,
   hideViewCountForVisitor: config.hide_view_count_for_visitor,
   hideDownloadCountForVisitor: config.hide_download_count_for_visitor,
   hideCreatorStatsForVisitor: config.hide_creator_stats_for_visitor,
-  enablePatchRelatedGames: config.enable_patch_related_games
+  enablePatchRelatedGames: config.enable_patch_related_games,
+  enableFriendLinkApply: config.enable_friend_link_apply
 })
 
 const createDefaultFrontDisplayConfig = async () => {
@@ -35,7 +37,9 @@ const createDefaultFrontDisplayConfig = async () => {
         hide_creator_stats_for_visitor:
           DEFAULT_FRONT_DISPLAY_CONFIG.hideCreatorStatsForVisitor,
         enable_patch_related_games:
-          DEFAULT_FRONT_DISPLAY_CONFIG.enablePatchRelatedGames
+          DEFAULT_FRONT_DISPLAY_CONFIG.enablePatchRelatedGames,
+        enable_friend_link_apply:
+          DEFAULT_FRONT_DISPLAY_CONFIG.enableFriendLinkApply
       }
     })
   } catch (error: unknown) {

@@ -111,6 +111,7 @@ export interface AdminFrontDisplayConfig {
   hideDownloadCountForVisitor: boolean
   hideCreatorStatsForVisitor: boolean
   enablePatchRelatedGames: boolean
+  enableFriendLinkApply: boolean
 }
 
 export type AdminSiteAnalyticsPosition = 'head' | 'body_end'

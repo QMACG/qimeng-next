@@ -8,6 +8,7 @@ import { getPublicSiteAnalyticsScripts } from '~/app/api/admin/setting/site-anal
 import { getUserNameStyleConfig } from '~/app/api/admin/setting/user-name-style/_shared'
 import { getHeaderNavConfig } from '~/app/api/admin/setting/header-nav/_shared'
 import { getFrontDisplayConfig } from '~/app/api/admin/setting/front-display/getFrontDisplayConfig'
+import { DEFAULT_FRONT_DISPLAY_CONFIG } from '~/utils/frontDisplay'
 import { DEFAULT_HEADER_NAV_ITEMS } from '~/constants/top-bar'
 import { toPublicHeaderNavItems } from '~/utils/headerNav'
 import { serializeJsonLd, toCanonicalUrl } from '~/utils/seo'
@@ -25,13 +26,9 @@ export default async function RootLayout({
   const requestHeaders = await headers()
   const pathname = requestHeaders.get('x-pathname') ?? '/'
   const analyticsScripts = await getPublicSiteAnalyticsScripts().catch(() => [])
-  const frontDisplayConfig = await getFrontDisplayConfig().catch(() => ({
-    enableSite: true,
-    siteCloseMessage: '',
-    hideViewCountForVisitor: true,
-    hideDownloadCountForVisitor: true,
-    hideCreatorStatsForVisitor: true
-  }))
+  const frontDisplayConfig = await getFrontDisplayConfig().catch(
+    () => DEFAULT_FRONT_DISPLAY_CONFIG
+  )
   const userNameStyle = await getUserNameStyleConfig().catch(() => ({
     role1Color: '#a1a1aa',
     role2Color: '#2563eb',

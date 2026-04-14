@@ -211,7 +211,8 @@ export const adminUpdateFrontDisplaySchema = z.object({
   hideViewCountForVisitor: z.coerce.boolean(),
   hideDownloadCountForVisitor: z.coerce.boolean(),
   hideCreatorStatsForVisitor: z.coerce.boolean(),
-  enablePatchRelatedGames: z.coerce.boolean()
+  enablePatchRelatedGames: z.coerce.boolean(),
+  enableFriendLinkApply: z.coerce.boolean()
 }).superRefine((data, ctx) => {
   if (!data.enableSite && !data.siteCloseMessage.trim()) {
     ctx.addIssue({

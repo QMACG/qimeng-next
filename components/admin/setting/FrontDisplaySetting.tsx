@@ -26,6 +26,9 @@ export const FrontDisplaySetting = ({ setting }: Props) => {
   const [enablePatchRelatedGames, setEnablePatchRelatedGames] = useState(
     setting.enablePatchRelatedGames
   )
+  const [enableFriendLinkApply, setEnableFriendLinkApply] = useState(
+    setting.enableFriendLinkApply
+  )
   const [saving, setSaving] = useState(false)
 
   const handleSave = async () => {
@@ -45,7 +48,8 @@ export const FrontDisplaySetting = ({ setting }: Props) => {
           hideViewCountForVisitor,
           hideDownloadCountForVisitor,
           hideCreatorStatsForVisitor,
-          enablePatchRelatedGames
+          enablePatchRelatedGames,
+          enableFriendLinkApply
         }
       )
 
@@ -143,6 +147,20 @@ export const FrontDisplaySetting = ({ setting }: Props) => {
               color="primary"
               isSelected={enablePatchRelatedGames}
               onValueChange={setEnablePatchRelatedGames}
+            />
+          </div>
+
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h3 className="text-lg font-semibold">友链申请入口</h3>
+              <p className="text-sm text-default-500">
+                关闭后，前台友情链接页将隐藏「申请友情链接」入口，且无法提交新申请；已展示的友链与后台友链管理不受影响。
+              </p>
+            </div>
+            <Switch
+              color="primary"
+              isSelected={enableFriendLinkApply}
+              onValueChange={setEnableFriendLinkApply}
             />
           </div>
         </CardBody>

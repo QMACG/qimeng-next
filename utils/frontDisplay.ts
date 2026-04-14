@@ -7,7 +7,8 @@ export const DEFAULT_FRONT_DISPLAY_CONFIG: AdminFrontDisplayConfig = {
   hideViewCountForVisitor: true,
   hideDownloadCountForVisitor: true,
   hideCreatorStatsForVisitor: true,
-  enablePatchRelatedGames: true
+  enablePatchRelatedGames: true,
+  enableFriendLinkApply: true
 }
 
 export const canShowViewCount = (

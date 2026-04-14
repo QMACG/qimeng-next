@@ -7,6 +7,7 @@ import { createFriendLinkApplySchema } from '~/validations/friend-link'
 import { normalizeFriendLinkUrl } from '~/utils/friendLink'
 import { FRIEND_LINK_STATUS } from '~/constants/friend-link'
 import { mapFriendLink } from '~/app/api/admin/friend-link/_shared'
+import { getFrontDisplayConfig } from '~/app/api/admin/setting/front-display/getFrontDisplayConfig'
 
 const getUniqueMessage = (error: unknown) => {
   if (!(error instanceof Prisma.PrismaClientKnownRequestError)) {
@@ -24,6 +25,11 @@ export const POST = async (req: NextRequest) => {
   const input = await kunParsePostBody(req, createFriendLinkApplySchema)
   if (typeof input === 'string') {
     return NextResponse.json(input)
+  }
+
+  const frontDisplay = await getFrontDisplayConfig()
+  if (!frontDisplay.enableFriendLinkApply) {
+    return NextResponse.json('本站当前未开放友链申请')
   }
 
   const payload = await verifyHeaderCookie(req)

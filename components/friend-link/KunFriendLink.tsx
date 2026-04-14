@@ -7,9 +7,13 @@ import type { FriendLinkItem } from '~/types/api/friend-link'
 
 interface Props {
   links: FriendLinkItem[]
+  enableFriendLinkApply?: boolean
 }
 
-export const KunFriendLink = ({ links }: Props) => {
+export const KunFriendLink = ({
+  links,
+  enableFriendLinkApply = true
+}: Props) => {
   return (
     <div className="container mx-auto my-8">
       <motion.div
@@ -21,11 +25,13 @@ export const KunFriendLink = ({ links }: Props) => {
         <p className="mb-6 text-center text-default-500">
           这里收录了本站的友情链接，点击卡片即可前往对应站点。
         </p>
-        <div className="mb-12 flex justify-center">
-          <Button as={Link} href="/friend-link/apply" color="primary" variant="flat">
-            申请友情链接
-          </Button>
-        </div>
+        {enableFriendLinkApply ? (
+          <div className="mb-12 flex justify-center">
+            <Button as={Link} href="/friend-link/apply" color="primary" variant="flat">
+              申请友情链接
+            </Button>
+          </div>
+        ) : null}
       </motion.div>
 
       <div className="grid grid-cols-2 gap-2 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
