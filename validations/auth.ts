@@ -32,12 +32,9 @@ export const registerSchema = z.object({
   }),
   email: z
     .string()
+    .trim()
     .email({ message: '请输入合法的邮箱格式' })
-    .or(
-      z.string().regex(kunUsernameRegex, {
-        message: '非法的用户名，用户名为 1~17 位任意字符'
-      })
-    ),
+    .transform((value) => value.toLowerCase()),
   code: z.string().regex(kunValidMailConfirmCodeRegex, {
     message: '非法的邮箱验证码，验证码为 7 位数字和大小写字母组合'
   }),
@@ -53,12 +50,9 @@ export const sendRegisterEmailVerificationCodeSchema = z.object({
   }),
   email: z
     .string()
+    .trim()
     .email({ message: '请输入合法的邮箱格式' })
-    .or(
-      z.string().regex(kunUsernameRegex, {
-        message: '非法的用户名，用户名为 1~17 位任意字符'
-      })
-    ),
+    .transform((value) => value.toLowerCase()),
   captcha: z
     .string()
     .trim()
