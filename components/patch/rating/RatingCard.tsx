@@ -26,6 +26,7 @@ import {
 } from '~/constants/galgame'
 import type { KunPatchRating } from '~/types/api/galgame'
 import { UserName } from '~/components/kun/user/UserName'
+import { toSafePublicAssetSrc } from '~/utils/publicAsset'
 
 interface Props {
   rating: KunPatchRating
@@ -64,6 +65,7 @@ export const RatingCard = ({
   onRatingUpdated,
   onDeleted
 }: Props) => {
+  const avatarSrc = toSafePublicAssetSrc(rating.user.avatar)
   const { isOpen, onOpen, onClose } = useDisclosure()
   const { user } = useUserStore((state) => state)
   const [isShowSummary, setIsShowSummary] = useState(
@@ -133,7 +135,7 @@ export const RatingCard = ({
             name: <UserName user={rating.user} />,
             description: formatTimeDifference(rating.created),
             avatarProps: {
-              src: rating.user.avatar,
+              src: avatarSrc,
               size: 'sm'
             }
           }}

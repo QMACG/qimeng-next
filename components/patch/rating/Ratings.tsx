@@ -30,47 +30,73 @@ export const Ratings = ({ id }: Props) => {
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(false)
   const [hasMore, setHasMore] = useState(true)
+  const [loadError, setLoadError] = useState(false)
   const { isOpen, onOpen, onClose } = useDisclosure()
   const user = useUserStore((state) => state.user)
   const observerRef = useRef<IntersectionObserver | null>(null)
   const loadMoreRef = useRef<HTMLDivElement>(null)
+  const isFetchingRef = useRef(false)
 
   const fetchRatings = useCallback(
     async (pageNum: number, reset = false) => {
-      if (loading) return
+      if (isFetchingRef.current) return
 
+      isFetchingRef.current = true
       setLoading(true)
-      const res = await kunFetchGet<KunPatchRatingResponse>('/patch/rating', {
-        patchId: Number(id),
-        page: pageNum,
-        limit: RATINGS_PER_PAGE
-      })
+      setLoadError(false)
 
-      if (res && typeof res !== 'string') {
-        if (reset) {
-          setRatings(res.ratings)
-        } else {
-          setRatings((prev) => [...prev, ...res.ratings])
+      try {
+        const res = await kunFetchGet<KunPatchRatingResponse>('/patch/rating', {
+          patchId: Number(id),
+          page: pageNum,
+          limit: RATINGS_PER_PAGE
+        })
+
+        if (res && typeof res !== 'string') {
+          if (reset) {
+            setRatings(res.ratings)
+          } else {
+            setRatings((prev) => [...prev, ...res.ratings])
+          }
+          setTotal(res.total)
+          setHasMore(res.ratings.length === RATINGS_PER_PAGE)
+          return
         }
-        setTotal(res.total)
-        setHasMore(res.ratings.length === RATINGS_PER_PAGE)
+
+        setLoadError(true)
+        if (reset) {
+          setRatings([])
+          setTotal(0)
+        }
+        setHasMore(false)
+      } catch {
+        setLoadError(true)
+        if (reset) {
+          setRatings([])
+          setTotal(0)
+        }
+        setHasMore(false)
+      } finally {
+        isFetchingRef.current = false
+        setLoading(false)
       }
-      setLoading(false)
     },
-    [id, loading]
+    [id]
   )
 
   useEffect(() => {
     setPage(1)
+    setHasMore(true)
+    setLoadError(false)
     void fetchRatings(1, true)
   }, [fetchRatings, id])
 
   useEffect(() => {
-    if (!loadMoreRef.current || !hasMore || loading) return
+    if (!loadMoreRef.current || !hasMore || loading || loadError) return
 
     observerRef.current = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loading) {
+        if (entries[0]?.isIntersecting && hasMore && !loading) {
           setPage((prev) => prev + 1)
         }
       },
@@ -82,7 +108,7 @@ export const Ratings = ({ id }: Props) => {
     return () => {
       observerRef.current?.disconnect()
     }
-  }, [hasMore, loading])
+  }, [hasMore, loadError, loading])
 
   useEffect(() => {
     if (page > 1) {
@@ -173,14 +199,18 @@ export const Ratings = ({ id }: Props) => {
         </Masonry>
       ) : null}
 
-      <div ref={loadMoreRef} className="w-full h-4" />
+      <div ref={loadMoreRef} className="h-4 w-full" />
 
-      {!ratings.length && !loading ? (
+      {loadError && !ratings.length && !loading ? (
+        <KunNull message="评分加载失败，请稍后重试" />
+      ) : null}
+
+      {!loadError && !ratings.length && !loading ? (
         <KunNull message="这个游戏还没有评分" />
       ) : null}
 
       {!hasMore && ratings.length > 0 ? (
-        <p className="text-center text-default-500 text-sm">
+        <p className="text-center text-sm text-default-500">
           已加载全部 {total} 条评分
         </p>
       ) : null}
