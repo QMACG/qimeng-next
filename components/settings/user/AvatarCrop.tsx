@@ -7,6 +7,7 @@ import { Link2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useUserStore } from '~/store/userStore'
 import { kunFetchPost } from '~/utils/kunFetch'
+import { toSafeAvatarSrc } from '~/utils/publicAsset'
 import { avatarSchema } from '~/validations/user'
 
 export const AvatarCrop = () => {
@@ -14,6 +15,7 @@ export const AvatarCrop = () => {
   const [avatar, setAvatar] = useState(user.avatar)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const previewSrc = toSafeAvatarSrc(avatar) ?? toSafeAvatarSrc(user.avatar)
 
   const handleSave = async () => {
     const result = avatarSchema.safeParse({ avatar })
@@ -24,10 +26,11 @@ export const AvatarCrop = () => {
 
     setError('')
     setLoading(true)
+    const nextAvatar = result.data.avatar
 
     const res = await kunFetchPost<KunResponse<{ avatar: string }>>(
       '/user/setting/avatar',
-      { avatar }
+      { avatar: nextAvatar }
     )
 
     setLoading(false)
@@ -46,7 +49,7 @@ export const AvatarCrop = () => {
       <div className="flex items-center gap-4">
         <Avatar
           name={user.name}
-          src={avatar || user.avatar}
+          src={previewSrc}
           className="h-16 w-16"
           color="primary"
         />

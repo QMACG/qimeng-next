@@ -19,6 +19,7 @@ import toast from 'react-hot-toast'
 import { KunAvatar } from '~/components/kun/floating-card/KunAvatar'
 import { formatDate } from '~/utils/time'
 import { kunFetchPost } from '~/utils/kunFetch'
+import { toSafeAvatarSrc } from '~/utils/publicAsset'
 import type { AdminReport, AdminReportTargetType } from '~/types/api/admin'
 import { ReportHandler } from './ReportHandler'
 
@@ -45,6 +46,7 @@ export const ReportCard = ({ report, targetType, onHandled }: Props) => {
       ? `用户 #${report.reportedUserId}`
       : '未知被举报用户'
   const displayedAvatar = report.reportedUser?.avatar ?? ''
+  const displayedAvatarSrc = toSafeAvatarSrc(displayedAvatar)
 
   const handleUpdateReport = async () => {
     setUpdating(true)
@@ -94,7 +96,7 @@ export const ReportCard = ({ report, targetType, onHandled }: Props) => {
                 <Avatar
                   name={displayedName.charAt(0).toUpperCase()}
                   className="shrink-0"
-                  src={displayedAvatar}
+                  src={displayedAvatarSrc}
                 />
               )}
 

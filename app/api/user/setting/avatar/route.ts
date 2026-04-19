@@ -3,6 +3,7 @@ import { kunParsePostBody } from '~/app/api/utils/parseQuery'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 import { prisma } from '~/prisma/index'
 import { avatarSchema } from '~/validations/user'
+import { toSafeRemoteHttpUrl } from '~/utils/publicAsset'
 
 const updateUserAvatar = async (uid: number, avatar: string) => {
   const user = await prisma.user.findUnique({
@@ -25,12 +26,16 @@ export const POST = async (req: NextRequest) => {
   if (typeof input === 'string') {
     return NextResponse.json(input)
   }
+  const safeAvatar = toSafeRemoteHttpUrl(input.avatar)
+  if (!safeAvatar) {
+    return NextResponse.json('Invalid avatar URL')
+  }
   const payload = await verifyHeaderCookie(req)
   if (!payload) {
     return NextResponse.json('User not logged in')
   }
 
-  const res = await updateUserAvatar(payload.uid, input.avatar)
+  const res = await updateUserAvatar(payload.uid, safeAvatar)
   return NextResponse.json(res)
 }
 

@@ -11,6 +11,7 @@ import { UserFollow } from './Follow'
 import { KunPagination } from '~/components/kun/Pagination'
 import type { UserFollow as UserFollowType } from '~/types/api/user'
 import { UserName } from '~/components/kun/user/UserName'
+import { toSafeAvatarSrc } from '~/utils/publicAsset'
 
 interface UserListProps {
   userId: number
@@ -72,7 +73,10 @@ export const UserList = ({ userId, type }: UserListProps) => {
           {users.map((user) => (
             <Card key={user.id}>
               <CardBody className="flex flex-row items-center gap-4">
-                <Avatar src={user.avatar} className="size-12" />
+                <Avatar
+                  src={toSafeAvatarSrc(user.avatar)}
+                  className="size-12"
+                />
                 <div className="space-y-2 grow">
                   <h4
                     className="text-lg font-semibold transition-colors cursor-pointer hover:text-primary-500"

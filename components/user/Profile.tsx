@@ -12,9 +12,11 @@ import { SelfButton } from './SelfButton'
 import { StartChatButton } from './StartChatButton'
 import type { UserInfo } from '~/types/api/user'
 import { UserName } from '~/components/kun/user/UserName'
+import { toSafeAvatarSrc } from '~/utils/publicAsset'
 
 export const UserProfile = ({ user }: { user: UserInfo }) => {
   const profilePath = `/user/${user.id}`
+  const avatarSrc = toSafeAvatarSrc(user.avatar)
 
   return (
     <div className="lg:col-span-1">
@@ -22,7 +24,7 @@ export const UserProfile = ({ user }: { user: UserInfo }) => {
         <CardHeader className="justify-center pt-8">
           <div className="flex flex-col items-center gap-3">
             <Avatar
-              src={user.avatar}
+              src={avatarSrc}
               className="h-32 w-32"
               isBordered
               color="primary"

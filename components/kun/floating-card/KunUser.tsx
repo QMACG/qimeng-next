@@ -6,6 +6,7 @@ import { User } from '@heroui/user'
 import type { UserProps } from '@heroui/user'
 import { KunUserCard } from './KunUserCard'
 import { UserName } from '../user/UserName'
+import { toSafeAvatarSrc } from '~/utils/publicAsset'
 
 interface KunUserProps {
   user: KunUser
@@ -16,9 +17,10 @@ export const KunUser = ({ user, userProps }: KunUserProps) => {
   const router = useRouter()
 
   const { avatarProps, ...restUser } = userProps
-  const { alt, name, ...restAvatar } = avatarProps!
+  const { alt, name, src, ...restAvatar } = avatarProps!
   const username = name?.charAt(0).toUpperCase() ?? '杂鱼'
   const altString = alt || username
+  const safeSrc = toSafeAvatarSrc(src)
   const displayName =
     typeof restUser.name === 'string'
       ? restUser.name === user.name
@@ -47,6 +49,7 @@ export const KunUser = ({ user, userProps }: KunUserProps) => {
         avatarProps={{
           name: username,
           alt: altString,
+          src: safeSrc,
           className:
             'cursor-pointer shrink-0 transition-transform duration-200 hover:scale-110',
           ...restAvatar

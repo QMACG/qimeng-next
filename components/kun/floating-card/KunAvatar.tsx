@@ -5,6 +5,7 @@ import { Avatar } from '@heroui/avatar'
 import { KunUserCard } from './KunUserCard'
 import { useRouter } from '@bprogress/next'
 import type { AvatarProps } from '@heroui/avatar'
+import { toSafeAvatarSrc } from '~/utils/publicAsset'
 
 interface KunAvatarProps extends AvatarProps {
   name: string
@@ -19,9 +20,10 @@ interface Props {
 export const KunAvatar = ({ uid, avatarProps }: Props) => {
   const router = useRouter()
 
-  const { alt, name, ...rest } = avatarProps
+  const { alt, name, src, ...rest } = avatarProps
   const username = name?.charAt(0).toUpperCase() ?? '杂鱼'
   const altString = alt ? alt : username
+  const safeSrc = toSafeAvatarSrc(src)
 
   return (
     <Tooltip
@@ -33,6 +35,7 @@ export const KunAvatar = ({ uid, avatarProps }: Props) => {
       <Avatar
         name={username}
         alt={altString}
+        src={safeSrc}
         className="transition-transform duration-200 cursor-pointer shrink-0 hover:scale-110"
         onClick={(event) => {
           event.preventDefault()

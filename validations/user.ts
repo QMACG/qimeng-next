@@ -3,9 +3,16 @@ import {
   kunPasswordRegex,
   kunValidMailConfirmCodeRegex
 } from '~/utils/validate'
+import { toSafeRemoteHttpUrl } from '~/utils/publicAsset'
 
 export const avatarSchema = z.object({
-  avatar: z.string().trim().url().max(1007)
+  avatar: z
+    .string()
+    .trim()
+    .max(1007)
+    .refine((value) => Boolean(toSafeRemoteHttpUrl(value)), {
+      message: 'Please enter a valid http(s) avatar URL'
+    })
 })
 
 export const bioSchema = z.object({

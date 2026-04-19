@@ -8,6 +8,7 @@ import { KunLoading } from '../Loading'
 import { UserFollow } from '~/components/user/follow/Follow'
 import type { FloatingCardUser } from '~/types/api/user'
 import { UserName } from '../user/UserName'
+import { toSafeAvatarSrc } from '~/utils/publicAsset'
 
 interface UserCardProps {
   uid: number
@@ -15,6 +16,7 @@ interface UserCardProps {
 
 export const KunUserCard = ({ uid }: UserCardProps) => {
   const [user, setUser] = useState<FloatingCardUser | null>(null)
+  const avatarSrc = toSafeAvatarSrc(user?.avatar)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,7 +38,7 @@ export const KunUserCard = ({ uid }: UserCardProps) => {
               name={<UserName user={user} className="font-semibold" />}
               description={user.bio || '这个用户还没有留下简介'}
               avatarProps={{
-                src: user.avatar,
+                src: avatarSrc,
                 isBordered: true,
                 color: 'secondary',
                 className: 'h-12 w-12 shrink-0'

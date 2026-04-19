@@ -35,6 +35,7 @@ import { useSettingStore } from '~/store/settingStore'
 import { useUserStore } from '~/store/userStore'
 import { kunFetchGet, kunFetchPost } from '~/utils/kunFetch'
 import { kunErrorHandler } from '~/utils/kunErrorHandler'
+import { toSafeAvatarSrc } from '~/utils/publicAsset'
 import { showKunSooner } from '~/components/kun/Sooner'
 import { NSFWSwitcher } from './NSFWSwitcher'
 import type { UserState } from '~/store/userStore'
@@ -48,6 +49,7 @@ export const UserDropdown = () => {
   const [loading, setLoading] = useState(false)
   const [checking, setChecking] = useState(false)
   const { isOpen, onOpen, onOpenChange } = useDisclosure()
+  const avatarSrc = toSafeAvatarSrc(user.avatar)
 
   useEffect(() => {
     if (!isMounted || !user.uid) {
@@ -121,7 +123,7 @@ export const UserDropdown = () => {
             color="secondary"
             name={user.name.charAt(0).toUpperCase()}
             size="sm"
-            src={user.avatar}
+            src={avatarSrc}
             showFallback
           />
         </DropdownTrigger>

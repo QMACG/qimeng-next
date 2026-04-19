@@ -11,6 +11,7 @@ import toast from 'react-hot-toast'
 import { useDebounce } from 'use-debounce'
 import { linkSchema } from '@milkdown/preset-commonmark'
 import { cn } from '~/utils/cn'
+import { toSafeAvatarSrc } from '~/utils/publicAsset'
 import type { Ctx } from '@milkdown/kit/ctx'
 
 export const slash = slashFactory('Commands')
@@ -176,7 +177,7 @@ export const MentionsListDropdown = () => {
                   <Avatar
                     alt={user.name}
                     className="w-8 h-8 shrink-0"
-                    src={user.avatar}
+                    src={toSafeAvatarSrc(user.avatar)}
                   />
                   <span className="text-sm">{user.name}</span>
                 </div>
