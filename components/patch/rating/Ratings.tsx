@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState, useRef, useCallback } from 'react'
+import Link from 'next/link'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Modal } from '@heroui/modal'
 import { Button } from '@heroui/button'
 import { Plus } from 'lucide-react'
@@ -60,9 +61,9 @@ export const Ratings = ({ id }: Props) => {
   )
 
   useEffect(() => {
-    if (!user.uid) return
-    fetchRatings(1, true)
-  }, [id, user.uid])
+    setPage(1)
+    void fetchRatings(1, true)
+  }, [fetchRatings, id])
 
   useEffect(() => {
     if (!loadMoreRef.current || !hasMore || loading) return
@@ -85,9 +86,9 @@ export const Ratings = ({ id }: Props) => {
 
   useEffect(() => {
     if (page > 1) {
-      fetchRatings(page)
+      void fetchRatings(page)
     }
-  }, [page])
+  }, [fetchRatings, page])
 
   const handleCreated = (rating?: KunPatchRating) => {
     if (rating) {
@@ -105,10 +106,6 @@ export const Ratings = ({ id }: Props) => {
     setTotal((prev) => prev - 1)
   }
 
-  if (!user.uid) {
-    return <KunNull message="请登陆后查看游戏评价" />
-  }
-
   const breakpointColumns = {
     default: 3,
     1024: 2,
@@ -117,16 +114,33 @@ export const Ratings = ({ id }: Props) => {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button
-          color="primary"
-          variant="flat"
-          startContent={<Plus className="size-4" />}
-          onPress={onOpen}
-        >
-          发布评价
-        </Button>
-      </div>
+      {user.uid ? (
+        <div className="flex justify-end">
+          <Button
+            color="primary"
+            variant="flat"
+            startContent={<Plus className="size-4" />}
+            onPress={onOpen}
+          >
+            发布评分
+          </Button>
+        </div>
+      ) : (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-large border border-divider bg-content1/60 px-4 py-3">
+          <p className="text-sm text-default-600">
+            游客可以直接浏览评分与简评，登录后即可参与评分。
+          </p>
+          <Button
+            as={Link}
+            href="/login"
+            color="primary"
+            variant="flat"
+            startContent={<Plus className="size-4" />}
+          >
+            登录后发布评分
+          </Button>
+        </div>
+      )}
 
       <Masonry
         breakpointCols={breakpointColumns}
@@ -145,7 +159,7 @@ export const Ratings = ({ id }: Props) => {
         ))}
       </Masonry>
 
-      {loading && (
+      {loading ? (
         <Masonry
           breakpointCols={breakpointColumns}
           className="flex w-auto -ml-4"
@@ -157,17 +171,19 @@ export const Ratings = ({ id }: Props) => {
             </div>
           ))}
         </Masonry>
-      )}
+      ) : null}
 
       <div ref={loadMoreRef} className="w-full h-4" />
 
-      {!ratings.length && !loading && <KunNull message="这个游戏还没有评价" />}
+      {!ratings.length && !loading ? (
+        <KunNull message="这个游戏还没有评分" />
+      ) : null}
 
-      {!hasMore && ratings.length > 0 && (
+      {!hasMore && ratings.length > 0 ? (
         <p className="text-center text-default-500 text-sm">
-          已加载全部 {total} 条评价
+          已加载全部 {total} 条评分
         </p>
-      )}
+      ) : null}
 
       <Modal
         isOpen={isOpen}

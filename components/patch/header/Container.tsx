@@ -5,7 +5,6 @@ import { useRewritePatchStore } from '~/store/rewriteStore'
 import { PatchHeaderTabs } from './Tabs'
 import { PatchHeaderInfo } from './Info'
 import { KunAutoImageViewer } from '~/components/kun/image-viewer/AutoImageViewer'
-import { NsfwBlockedNotice } from './NsfwBlockedNotice'
 import type { Patch, PatchIntroduction } from '~/types/api/patch'
 
 interface PatchHeaderProps {
@@ -45,33 +44,27 @@ export const PatchHeaderContainer = ({
 
   return (
     <div className="relative mx-auto w-full max-w-7xl">
-      {patch.contentLimit === 'nsfw' && !uid ? (
-        <NsfwBlockedNotice isLoggedIn={false} />
-      ) : (
-        <>
-          <KunAutoImageViewer />
+      <KunAutoImageViewer />
 
-          <PatchHeaderInfo
-            patch={patch}
-            handleClickDownloadNav={() => {
-              setSelected('resources')
-              tabsRef.current?.scrollIntoView({ behavior: 'smooth' })
-            }}
-          />
+      <PatchHeaderInfo
+        patch={patch}
+        handleClickDownloadNav={() => {
+          setSelected('resources')
+          tabsRef.current?.scrollIntoView({ behavior: 'smooth' })
+        }}
+      />
 
-          <div ref={tabsRef}>
-            <PatchHeaderTabs
-              id={patch.id}
-              intro={intro}
-              relatedPatches={relatedPatches}
-              showRelatedGames={showRelatedGames}
-              uid={uid}
-              selected={selected}
-              setSelected={setSelected}
-            />
-          </div>
-        </>
-      )}
+      <div ref={tabsRef}>
+        <PatchHeaderTabs
+          id={patch.id}
+          intro={intro}
+          relatedPatches={relatedPatches}
+          showRelatedGames={showRelatedGames}
+          uid={uid}
+          selected={selected}
+          setSelected={setSelected}
+        />
+      </div>
     </div>
   )
 }

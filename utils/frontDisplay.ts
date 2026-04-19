@@ -7,6 +7,7 @@ export const DEFAULT_FRONT_DISPLAY_CONFIG: AdminFrontDisplayConfig = {
   hideViewCountForVisitor: true,
   hideDownloadCountForVisitor: true,
   hideCreatorStatsForVisitor: true,
+  enableContentScopeControl: true,
   enablePatchRelatedGames: true,
   enableFriendLinkApply: true
 }
@@ -25,3 +26,20 @@ export const canShowCreatorStats = (
   role: number,
   config: AdminFrontDisplayConfig
 ) => role >= 2 || !config.hideCreatorStatsForVisitor
+
+export const shouldBypassGuestContentScope = (
+  uid: number,
+  config: AdminFrontDisplayConfig
+) => uid <= 0 && !config.enableContentScopeControl
+
+export const resolvePublicNsfwFilter = (
+  nsfwFilter: Record<string, string | undefined>,
+  uid: number,
+  config: AdminFrontDisplayConfig
+) => (shouldBypassGuestContentScope(uid, config) ? {} : nsfwFilter)
+
+export const shouldBlurRestrictedCoverForGuest = (
+  uid: number,
+  contentLimit: string,
+  config: AdminFrontDisplayConfig
+) => shouldBypassGuestContentScope(uid, config) && contentLimit === 'nsfw'

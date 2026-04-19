@@ -1,6 +1,7 @@
 import { PatchHeaderContainer } from '~/components/patch/header/Container'
 import { ErrorComponent } from '~/components/error/ErrorComponent'
 import { NsfwBlockedNotice } from '~/components/patch/header/NsfwBlockedNotice'
+import { NsfwGuestConfirmNotice } from '~/components/patch/header/NsfwGuestConfirmNotice'
 import { generateKunMetadataTemplate } from './metadata'
 import { kunMoyuMoe } from '~/config/moyu-moe'
 import {
@@ -25,6 +26,7 @@ export const revalidate = 3
 
 interface Props {
   params: Promise<{ id: string }>
+  searchParams?: Promise<Record<string, string | string[] | undefined>>
 }
 
 export const generateMetadata = async ({
@@ -42,17 +44,21 @@ export const generateMetadata = async ({
   return generateKunMetadataTemplate(patch, intro)
 }
 
-export default async function Kun({ params }: Props) {
+export default async function Kun({ params, searchParams }: Props) {
   const { id } = await params
+  const resolvedSearchParams = searchParams ? await searchParams : {}
+
   if (!id) {
-    return <ErrorComponent error={'提取页面参数错误'} />
+    return <ErrorComponent error="提取页面参数错误" />
   }
 
-  const [patch, payload, nsfwHeader] = await Promise.all([
+  const [patch, payload, nsfwHeader, frontDisplay] = await Promise.all([
     kunGetPatchActions({ uniqueId: id }),
     verifyHeaderCookie(),
-    getNSFWHeader()
+    getNSFWHeader(),
+    getFrontDisplayConfig()
   ])
+
   if (typeof patch === 'string') {
     return <ErrorComponent error={patch} />
   }
@@ -60,17 +66,30 @@ export default async function Kun({ params }: Props) {
   const nsfwPreference = nsfwHeader.content_limit
   const isNsfwEnabled =
     nsfwPreference === 'nsfw' || nsfwPreference === 'all' || !nsfwPreference
+  const guestConfirmed =
+    resolvedSearchParams.confirm === '1' ||
+    (Array.isArray(resolvedSearchParams.confirm) &&
+      resolvedSearchParams.confirm.includes('1'))
+  const isGuestRestrictedPatch =
+    patch.contentLimit === 'nsfw' &&
+    !payload?.uid &&
+    !frontDisplay.enableContentScopeControl
   const canViewCurrentPatch =
-    patch.contentLimit !== 'nsfw' || (Boolean(payload?.uid) && isNsfwEnabled)
+    patch.contentLimit !== 'nsfw' ||
+    (Boolean(payload?.uid) && isNsfwEnabled) ||
+    (isGuestRestrictedPatch && guestConfirmed)
 
   if (!canViewCurrentPatch) {
+    if (isGuestRestrictedPatch) {
+      return (
+        <NsfwGuestConfirmNotice continueHref={`/${patch.uniqueId}?confirm=1`} />
+      )
+    }
+
     return <NsfwBlockedNotice isLoggedIn={Boolean(payload?.uid)} />
   }
 
-  const [intro, frontDisplay] = await Promise.all([
-    kunGetPatchIntroductionActions({ uniqueId: id }),
-    getFrontDisplayConfig()
-  ])
+  const intro = await kunGetPatchIntroductionActions({ uniqueId: id })
   if (typeof intro === 'string') {
     return <ErrorComponent error={intro} />
   }
@@ -79,6 +98,7 @@ export default async function Kun({ params }: Props) {
     ? await kunGetRelatedPatchCardsActions(
         { uniqueId: id },
         nsfwHeader,
+        payload?.uid ?? 0,
         payload?.role ?? 0
       )
     : []

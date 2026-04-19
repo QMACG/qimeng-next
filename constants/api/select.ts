@@ -12,6 +12,7 @@ export const GalgameCardSelectField = {
   unique_id: true,
   name: true,
   banner: true,
+  content_limit: true,
   view: true,
   download: true,
   type: true,

@@ -9,7 +9,11 @@ import {
   canAccessRestrictedContent,
   isDirectVisibleVisibility
 } from '~/utils/contentVisibility'
-import { canShowDownloadCount, canShowViewCount } from '~/utils/frontDisplay'
+import {
+  canShowDownloadCount,
+  canShowViewCount,
+  resolvePublicNsfwFilter
+} from '~/utils/frontDisplay'
 import { roundOneDecimal } from '~/utils/rating/average'
 import { buildGalgameWhere } from '../utils/galgameQuery'
 import {
@@ -19,6 +23,7 @@ import {
 } from './cache'
 import { parseJsonStringArray } from '~/utils/prismaJson'
 import type { Patch } from '~/types/api/patch'
+import { mapPatchRecordToGalgameCard } from '~/utils/patchCard'
 
 type CachedPatch = Omit<Patch, 'isFavorite'>
 type RelatedPatchQueryResult = {
@@ -26,6 +31,7 @@ type RelatedPatchQueryResult = {
   unique_id: string
   name: string
   banner: string
+  content_limit: string
   view: number
   download: number
   type: Prisma.JsonValue | null
@@ -43,7 +49,7 @@ type RelatedPatchQueryResult = {
   } | null
 }
 
-const RELATED_PATCH_LIMIT = 6
+const RELATED_PATCH_LIMIT = 8
 
 const uniqueIdSchema = z.object({
   uniqueId: z.string().min(8).max(8)
@@ -59,30 +65,6 @@ const shuffleItems = <T,>(items: T[]) => {
 
   return next
 }
-
-const mapPatchToCard = (
-  patch: RelatedPatchQueryResult,
-  showViewCount: boolean,
-  showDownloadCount: boolean
-): GalgameCard => ({
-  id: patch.id,
-  uniqueId: patch.unique_id,
-  name: patch.name,
-  banner: patch.banner,
-  view: showViewCount ? patch.view : 0,
-  download: showDownloadCount ? patch.download : 0,
-  showViewCount,
-  showDownloadCount,
-  type: parseJsonStringArray(patch.type),
-  language: parseJsonStringArray(patch.language),
-  platform: parseJsonStringArray(patch.platform),
-  tags: patch.tag.map((item) => item.tag.name).slice(0, 3),
-  created: patch.created,
-  _count: patch._count,
-  averageRating: patch.rating_stat?.avg_overall
-    ? Math.round(patch.rating_stat.avg_overall * 10) / 10
-    : 0
-})
 
 const getPatchFavoriteStatus = async (
   uniqueId: string,
@@ -262,11 +244,17 @@ export const getPatchById = async (
 export const getRelatedPatchCards = async (
   input: z.infer<typeof uniqueIdSchema>,
   nsfwEnable: Record<string, string | undefined>,
+  uid = 0,
   role = 0
 ) => {
   const frontDisplayConfig = await getFrontDisplayConfig()
   const showViewCount = canShowViewCount(role, frontDisplayConfig)
   const showDownloadCount = canShowDownloadCount(role, frontDisplayConfig)
+  const effectiveNsfwFilter = resolvePublicNsfwFilter(
+    nsfwEnable,
+    uid,
+    frontDisplayConfig
+  )
 
   const currentPatch = await prisma.patch.findUnique({
     where: { unique_id: input.uniqueId },
@@ -320,7 +308,7 @@ export const getRelatedPatchCards = async (
     ...buildGalgameWhere({
       nsfwEnable: {}
     }),
-    ...nsfwEnable,
+    ...effectiveNsfwFilter,
     id: {
       not: currentPatch.id
     }
@@ -360,5 +348,13 @@ export const getRelatedPatchCards = async (
 
   return shuffleItems([...primaryCandidates, ...fallbackCandidates])
     .slice(0, RELATED_PATCH_LIMIT)
-    .map((patch) => mapPatchToCard(patch, showViewCount, showDownloadCount))
+    .map((patch) =>
+      mapPatchRecordToGalgameCard(
+        patch,
+        uid,
+        frontDisplayConfig,
+        showViewCount,
+        showDownloadCount
+      )
+    )
 }

@@ -60,6 +60,7 @@ export const kunUpdatePatchViewsActions = async (
 export const kunGetRelatedPatchCardsActions = async (
   params: z.infer<typeof uniqueIdSchema>,
   nsfwEnable: Record<string, string | undefined>,
+  uid = 0,
   role = 0
 ) => {
   const input = safeParseSchema(uniqueIdSchema, params)
@@ -67,5 +68,5 @@ export const kunGetRelatedPatchCardsActions = async (
     return input
   }
 
-  return getRelatedPatchCards(input, nsfwEnable, role)
+  return getRelatedPatchCards(input, nsfwEnable, uid, role)
 }

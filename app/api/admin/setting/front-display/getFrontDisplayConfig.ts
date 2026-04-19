@@ -11,6 +11,7 @@ const mapFrontDisplayConfig = (config: {
   hide_view_count_for_visitor: boolean
   hide_download_count_for_visitor: boolean
   hide_creator_stats_for_visitor: boolean
+  enable_content_scope_control: boolean
   enable_patch_related_games: boolean
   enable_friend_link_apply: boolean
 }): AdminFrontDisplayConfig => ({
@@ -19,6 +20,7 @@ const mapFrontDisplayConfig = (config: {
   hideViewCountForVisitor: config.hide_view_count_for_visitor,
   hideDownloadCountForVisitor: config.hide_download_count_for_visitor,
   hideCreatorStatsForVisitor: config.hide_creator_stats_for_visitor,
+  enableContentScopeControl: config.enable_content_scope_control,
   enablePatchRelatedGames: config.enable_patch_related_games,
   enableFriendLinkApply: config.enable_friend_link_apply
 })
@@ -36,6 +38,8 @@ const createDefaultFrontDisplayConfig = async () => {
           DEFAULT_FRONT_DISPLAY_CONFIG.hideDownloadCountForVisitor,
         hide_creator_stats_for_visitor:
           DEFAULT_FRONT_DISPLAY_CONFIG.hideCreatorStatsForVisitor,
+        enable_content_scope_control:
+          DEFAULT_FRONT_DISPLAY_CONFIG.enableContentScopeControl,
         enable_patch_related_games:
           DEFAULT_FRONT_DISPLAY_CONFIG.enablePatchRelatedGames,
         enable_friend_link_apply:

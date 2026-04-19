@@ -10,7 +10,12 @@ import { getNSFWHeader } from '~/app/api/utils/getNSFWHeader'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 import type { RankingSortField, RankingCard } from '~/types/api/ranking'
 import type { Prisma } from '~/prisma/generated/prisma/client'
-import { canShowDownloadCount, canShowViewCount } from '~/utils/frontDisplay'
+import {
+  canShowDownloadCount,
+  canShowViewCount,
+  resolvePublicNsfwFilter,
+  shouldBlurRestrictedCoverForGuest
+} from '~/utils/frontDisplay'
 import { parseJsonStringArray } from '~/utils/prismaJson'
 
 const MAX_RANKING_ITEMS = 300
@@ -30,18 +35,24 @@ const RankingSelectField = {
 const getRanking = async (
   input: z.infer<typeof rankingSchema>,
   nsfwEnable: Record<string, string | undefined>,
+  uid = 0,
   role = 0
 ) => {
   const frontDisplayConfig = await getFrontDisplayConfig()
   const showViewCount = canShowViewCount(role, frontDisplayConfig)
   const showDownloadCount = canShowDownloadCount(role, frontDisplayConfig)
+  const effectiveNsfwFilter = resolvePublicNsfwFilter(
+    nsfwEnable,
+    uid,
+    frontDisplayConfig
+  )
   const { sortField, sortOrder, minRatingCount, page, limit } = input
   const safeLimit = Math.min(limit, 50)
   const offset = (page - 1) * safeLimit
 
   const where: Prisma.patchWhereInput = {
     visibility: CONTENT_VISIBILITY.public,
-    ...nsfwEnable,
+    ...effectiveNsfwFilter,
     rating_stat: {
       count: {
         gte: minRatingCount
@@ -73,10 +84,16 @@ const getRanking = async (
       uniqueId: gal.unique_id,
       name: gal.name,
       banner: gal.banner,
+      contentLimit: gal.content_limit,
       view: showViewCount ? gal.view : 0,
       download: showDownloadCount ? gal.download : 0,
       showViewCount,
       showDownloadCount,
+      shouldBlurForGuest: shouldBlurRestrictedCoverForGuest(
+        uid,
+        gal.content_limit,
+        frontDisplayConfig
+      ),
       type: parseJsonStringArray(gal.type),
       language: parseJsonStringArray(gal.language),
       platform: parseJsonStringArray(gal.platform),
@@ -132,7 +149,12 @@ export const GET = async (req: NextRequest) => {
 
   const nsfwEnable = await getNSFWHeader(req)
   const payload = await verifyHeaderCookie(req)
-  const response = await getRanking(input, nsfwEnable, payload?.role ?? 0)
+  const response = await getRanking(
+    input,
+    nsfwEnable,
+    payload?.uid ?? 0,
+    payload?.role ?? 0
+  )
   return NextResponse.json(response)
 }
 

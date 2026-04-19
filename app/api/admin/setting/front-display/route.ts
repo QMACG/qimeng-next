@@ -40,6 +40,7 @@ export const PUT = async (req: NextRequest) => {
       hide_view_count_for_visitor: input.hideViewCountForVisitor,
       hide_download_count_for_visitor: input.hideDownloadCountForVisitor,
       hide_creator_stats_for_visitor: input.hideCreatorStatsForVisitor,
+      enable_content_scope_control: input.enableContentScopeControl,
       enable_patch_related_games: input.enablePatchRelatedGames,
       enable_friend_link_apply: input.enableFriendLinkApply
     },
@@ -50,6 +51,7 @@ export const PUT = async (req: NextRequest) => {
       hide_view_count_for_visitor: input.hideViewCountForVisitor,
       hide_download_count_for_visitor: input.hideDownloadCountForVisitor,
       hide_creator_stats_for_visitor: input.hideCreatorStatsForVisitor,
+      enable_content_scope_control: input.enableContentScopeControl,
       enable_patch_related_games: input.enablePatchRelatedGames,
       enable_friend_link_apply: input.enableFriendLinkApply
     }

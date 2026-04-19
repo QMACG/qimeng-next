@@ -4,12 +4,14 @@ import { Tab, Tabs } from '@heroui/react'
 import { DisableRegisterSetting } from './DisableRegisterSetting'
 import { FrontDisplaySetting } from './FrontDisplaySetting'
 import { HeaderNavSetting } from './HeaderNavSetting'
+import { HomeAnnouncementSetting } from './HomeAnnouncementSetting'
 import { RedirectSetting } from './RedirectSetting'
 import { SiteAnalyticsSetting } from './SiteAnalyticsSetting'
 import { UserNameStyleSetting } from './UserNameStyleSetting'
 import type {
   AdminFrontDisplayConfig,
   AdminHeaderNavConfig,
+  AdminHomeAnnouncementConfig,
   AdminRedirectConfig,
   AdminSiteAnalyticsScript,
   AdminUserNameStyleConfig
@@ -19,6 +21,7 @@ interface Props {
   setting: AdminRedirectConfig
   disableRegister: boolean
   frontDisplay: AdminFrontDisplayConfig
+  homeAnnouncement: AdminHomeAnnouncementConfig
   headerNav: AdminHeaderNavConfig
   siteAnalyticsScripts: AdminSiteAnalyticsScript[]
   userNameStyle: AdminUserNameStyleConfig
@@ -28,6 +31,7 @@ export const AdminSetting = ({
   setting,
   disableRegister,
   frontDisplay,
+  homeAnnouncement,
   headerNav,
   siteAnalyticsScripts,
   userNameStyle
@@ -41,6 +45,10 @@ export const AdminSetting = ({
       <Tabs aria-label="站点设置" variant="underlined">
         <Tab key="front-display" title="前台显示">
           <FrontDisplaySetting setting={frontDisplay} />
+        </Tab>
+
+        <Tab key="home-announcement" title="公告管理">
+          <HomeAnnouncementSetting setting={homeAnnouncement} />
         </Tab>
 
         <Tab key="header-nav" title="页头设置">

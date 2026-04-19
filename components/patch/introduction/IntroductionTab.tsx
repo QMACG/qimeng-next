@@ -139,11 +139,11 @@ export const IntroductionTab = ({
             <div className="space-y-1">
               <h2 className="text-xl font-semibold">相关推荐</h2>
               <p className="text-sm text-default-500">
-                根据当前作品的标签和会社，随机挑了 6 部你可能也会感兴趣的游戏。
+                根据当前作品的标签和会社，随机推荐 8 部你可能也会感兴趣的游戏。
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
               {relatedPatches.map((patch) => (
                 <GalgameCardView key={patch.id} patch={patch} />
               ))}

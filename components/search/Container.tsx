@@ -1,7 +1,8 @@
 'use client'
 
 import Image from 'next/image'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useDebounce } from 'use-debounce'
 import { FilterBar } from '~/components/galgame/FilterBar'
 import { GalgameCard } from '~/components/galgame/Card'
@@ -11,7 +12,6 @@ import { NsfwVisibilityHint } from '~/components/kun/NsfwVisibilityHint'
 import { KunPagination } from '~/components/kun/Pagination'
 import type { SortField, SortOrder } from '~/components/galgame/_sort'
 import type { SearchResponse, SearchSuggestionType } from '~/types/api/search'
-import { useSettingStore } from '~/store/settingStore'
 import { useSearchStore } from '~/store/searchStore'
 import { errorReporter, kunErrorHandler } from '~/utils/kunErrorHandler'
 import { kunFetchPost } from '~/utils/kunFetch'
@@ -19,34 +19,219 @@ import { SearchHistory } from './SearchHistory'
 import { SearchInput } from './Input'
 import { SearchOption } from './Option'
 import { SearchSuggestion } from './Suggestion'
+import type { SetStateAction } from 'react'
 
 const MAX_HISTORY_ITEMS = 10
+const DEFAULT_SORT_FIELD: SortField = 'resource_update_time'
+const DEFAULT_SORT_ORDER: SortOrder = 'desc'
+
+const SEARCH_SORT_FIELDS: SortField[] = [
+  'resource_update_time',
+  'created',
+  'view',
+  'download',
+  'favorite',
+  'rating'
+]
+
+const QUERY_PARAM_KEYS = {
+  query: 'q',
+  keyword: 'k',
+  tag: 't',
+  page: 'p',
+  sortField: 'sf',
+  sortOrder: 'so'
+} as const
+
+type SearchParamsLike = {
+  get: (name: string) => string | null
+  getAll: (name: string) => string[]
+}
+
+const parsePositiveInt = (value: string | null, fallback: number) => {
+  const parsed = Number.parseInt(value ?? '', 10)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback
+}
+
+const parseSelectedSuggestions = (
+  value: string | null
+): SearchSuggestionType[] => {
+  if (!value) {
+    return []
+  }
+
+  try {
+    const parsed = JSON.parse(value) as SearchSuggestionType[]
+    if (!Array.isArray(parsed)) {
+      return []
+    }
+
+    return parsed.filter(
+      (item): item is SearchSuggestionType =>
+        Boolean(
+          item &&
+            typeof item === 'object' &&
+            (item.type === 'keyword' || item.type === 'tag') &&
+            typeof item.name === 'string' &&
+            item.name.trim()
+        )
+    )
+  } catch {
+    return []
+  }
+}
+
+const appendSuggestion = (
+  suggestions: SearchSuggestionType[],
+  seen: Set<string>,
+  type: SearchSuggestionType['type'],
+  rawName: string
+) => {
+  const name = rawName.trim()
+  if (!name) {
+    return
+  }
+
+  const key = `${type}:${name}`
+  if (seen.has(key)) {
+    return
+  }
+
+  seen.add(key)
+  suggestions.push({ type, name })
+}
+
+const parseSuggestionsFromParams = (
+  params: SearchParamsLike
+) => {
+  const suggestions: SearchSuggestionType[] = []
+  const seen = new Set<string>()
+
+  params.getAll(QUERY_PARAM_KEYS.keyword).forEach((name: string) => {
+    appendSuggestion(suggestions, seen, 'keyword', name)
+  })
+  params.getAll(QUERY_PARAM_KEYS.tag).forEach((name: string) => {
+    appendSuggestion(suggestions, seen, 'tag', name)
+  })
+
+  if (suggestions.length > 0) {
+    return suggestions
+  }
+
+  return parseSelectedSuggestions(params.get('selected'))
+}
+
+const readSearchParam = (
+  params: SearchParamsLike,
+  primaryKey: string,
+  legacyKey: string
+) => params.get(primaryKey) ?? params.get(legacyKey)
+
+const buildSearchParams = ({
+  query,
+  selectedSuggestions,
+  page,
+  sortField,
+  sortOrder
+}: {
+  query: string
+  selectedSuggestions: SearchSuggestionType[]
+  page: number
+  sortField: SortField
+  sortOrder: SortOrder
+}) => {
+  const params = new URLSearchParams()
+
+  if (query.trim()) {
+    params.set(QUERY_PARAM_KEYS.query, query.trim())
+  }
+
+  selectedSuggestions.forEach((item) => {
+    params.append(
+      item.type === 'tag' ? QUERY_PARAM_KEYS.tag : QUERY_PARAM_KEYS.keyword,
+      item.name.trim()
+    )
+  })
+
+  if (page > 1 && selectedSuggestions.length > 0) {
+    params.set(QUERY_PARAM_KEYS.page, String(page))
+  }
+
+  if (sortField !== DEFAULT_SORT_FIELD) {
+    params.set(QUERY_PARAM_KEYS.sortField, sortField)
+  }
+
+  if (sortOrder !== DEFAULT_SORT_ORDER) {
+    params.set(QUERY_PARAM_KEYS.sortOrder, sortOrder)
+  }
+
+  return params
+}
 
 export const SearchPage = () => {
   const inputRef = useRef<HTMLInputElement | null>(null)
   const latestSearchRequestIdRef = useRef(0)
-  const [query, setQuery] = useState('')
+  const pathname = usePathname()
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
+  const initialState = useMemo(
+    () => ({
+      query:
+        readSearchParam(searchParams, QUERY_PARAM_KEYS.query, 'query') ?? '',
+      selectedSuggestions: parseSuggestionsFromParams(searchParams),
+      page: parsePositiveInt(
+        readSearchParam(searchParams, QUERY_PARAM_KEYS.page, 'page'),
+        1
+      ),
+      sortField: SEARCH_SORT_FIELDS.includes(
+        readSearchParam(
+          searchParams,
+          QUERY_PARAM_KEYS.sortField,
+          'sortField'
+        ) as SortField
+      )
+        ? (readSearchParam(
+            searchParams,
+            QUERY_PARAM_KEYS.sortField,
+            'sortField'
+          ) as SortField)
+        : DEFAULT_SORT_FIELD,
+      sortOrder:
+        readSearchParam(searchParams, QUERY_PARAM_KEYS.sortOrder, 'sortOrder') ===
+          'asc' ||
+        readSearchParam(searchParams, QUERY_PARAM_KEYS.sortOrder, 'sortOrder') ===
+          'desc'
+          ? (readSearchParam(
+              searchParams,
+              QUERY_PARAM_KEYS.sortOrder,
+              'sortOrder'
+            ) as SortOrder)
+          : DEFAULT_SORT_ORDER
+    }),
+    [searchParams]
+  )
+
+  const [query, setQuery] = useState(initialState.query)
   const [debouncedQuery] = useDebounce(query, 500)
-  const [hasSearched, setHasSearched] = useState(false)
+  const [hasSearched, setHasSearched] = useState(
+    initialState.selectedSuggestions.length > 0
+  )
   const [patches, setPatches] = useState<GalgameCard[]>([])
   const [hiddenCount, setHiddenCount] = useState(0)
   const [loading, setLoading] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [selectedSuggestions, setSelectedSuggestions] = useState<
     SearchSuggestionType[]
-  >([])
-  const [page, setPage] = useState(1)
+  >(initialState.selectedSuggestions)
+  const [page, setPage] = useState(initialState.page)
   const [total, setTotal] = useState(0)
-  const [sortField, setSortField] = useState<SortField>('resource_update_time')
-  const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
+  const [sortField, setSortField] = useState<SortField>(initialState.sortField)
+  const [sortOrder, setSortOrder] = useState<SortOrder>(initialState.sortOrder)
   const [showHistory, setShowHistory] = useState(false)
 
   const searchData = useSearchStore((state) => state.data)
   const setSearchData = useSearchStore((state) => state.setData)
-
-  const settings = useSettingStore((state) => state.data)
-  const isRestrictedContentEnabled =
-    settings.kunNsfwEnable === 'nsfw' || settings.kunNsfwEnable === 'all'
 
   const addToHistory = (suggestions: SearchSuggestionType[]) => {
     if (suggestions.length === 0) {
@@ -71,6 +256,23 @@ export const SearchPage = () => {
     ].slice(0, MAX_HISTORY_ITEMS)
 
     setSearchData({ ...searchData, searchHistory: newHistory })
+  }
+
+  const handleSelectedSuggestionsChange = (
+    value: SetStateAction<SearchSuggestionType[]>
+  ) => {
+    setPage(1)
+    setSelectedSuggestions(value)
+  }
+
+  const handleSortFieldChange = (value: SortField) => {
+    setPage(1)
+    setSortField(value)
+  }
+
+  const handleSortOrderChange = (value: SortOrder) => {
+    setPage(1)
+    setSortOrder(value)
   }
 
   const handleSearch = async (currentPage = page) => {
@@ -145,6 +347,44 @@ export const SearchPage = () => {
   }, [])
 
   useEffect(() => {
+    setQuery((current: string) =>
+      current === initialState.query ? current : initialState.query
+    )
+    setSelectedSuggestions((current) => {
+      const currentSerialized = JSON.stringify(current)
+      const nextSerialized = JSON.stringify(initialState.selectedSuggestions)
+      return currentSerialized === nextSerialized
+        ? current
+        : initialState.selectedSuggestions
+    })
+    setPage((current) => (current === initialState.page ? current : initialState.page))
+    setSortField((current) =>
+      current === initialState.sortField ? current : initialState.sortField
+    )
+    setSortOrder((current) =>
+      current === initialState.sortOrder ? current : initialState.sortOrder
+    )
+    setHasSearched(initialState.selectedSuggestions.length > 0)
+  }, [initialState])
+
+  useEffect(() => {
+    const nextQuery = buildSearchParams({
+      query,
+      selectedSuggestions,
+      page,
+      sortField,
+      sortOrder
+    }).toString()
+    const currentQuery = searchParams.toString()
+
+    if (nextQuery !== currentQuery) {
+      router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, {
+        scroll: false
+      })
+    }
+  }, [page, pathname, query, router, searchParams, selectedSuggestions, sortField, sortOrder])
+
+  useEffect(() => {
     if (selectedSuggestions.length) {
       void handleSearch()
       return
@@ -154,7 +394,6 @@ export const SearchPage = () => {
     setPatches([])
     setHiddenCount(0)
     setHasSearched(false)
-    setPage(1)
     setTotal(0)
     setLoading(false)
   }, [
@@ -190,7 +429,7 @@ export const SearchPage = () => {
         setQuery={setQuery}
         setShowSuggestions={setShowSuggestions}
         selectedSuggestions={selectedSuggestions}
-        setSelectedSuggestions={setSelectedSuggestions}
+        setSelectedSuggestions={handleSelectedSuggestionsChange}
         setShowHistory={setShowHistory}
       />
 
@@ -199,21 +438,21 @@ export const SearchPage = () => {
           inputRef={inputRef}
           query={debouncedQuery}
           setQuery={setQuery}
-          setSelectedSuggestions={setSelectedSuggestions}
+          setSelectedSuggestions={handleSelectedSuggestionsChange}
         />
       ) : null}
 
       <SearchHistory
         showHistory={showHistory}
-        setSelectedSuggestions={setSelectedSuggestions}
+        setSelectedSuggestions={handleSelectedSuggestionsChange}
         setShowHistory={setShowHistory}
       />
 
       <FilterBar
         sortField={sortField}
-        setSortField={setSortField}
+        setSortField={handleSortFieldChange}
         sortOrder={sortOrder}
-        setSortOrder={setSortOrder}
+        setSortOrder={handleSortOrderChange}
       />
 
       {loading ? (
@@ -274,11 +513,7 @@ export const SearchPage = () => {
                 />
                 <div className="space-y-1 text-center">
                   <p>未找到相关内容</p>
-                  <p>
-                    {isRestrictedContentEnabled
-                      ? '请尝试使用游戏的日文原名、标签或会社名称继续搜索。'
-                      : '请尝试使用游戏的日文原名搜索，或在设置中调整内容显示范围。'}
-                  </p>
+                  <p>请尝试使用游戏的日文原名、标签或会社名称继续搜索。</p>
                 </div>
               </div>
             )

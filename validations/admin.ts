@@ -211,6 +211,7 @@ export const adminUpdateFrontDisplaySchema = z.object({
   hideViewCountForVisitor: z.coerce.boolean(),
   hideDownloadCountForVisitor: z.coerce.boolean(),
   hideCreatorStatsForVisitor: z.coerce.boolean(),
+  enableContentScopeControl: z.coerce.boolean(),
   enablePatchRelatedGames: z.coerce.boolean(),
   enableFriendLinkApply: z.coerce.boolean()
 }).superRefine((data, ctx) => {
@@ -221,6 +222,18 @@ export const adminUpdateFrontDisplaySchema = z.object({
       path: ['siteCloseMessage']
     })
   }
+})
+
+export const adminUpdateHomeAnnouncementConfigSchema = z.object({
+  isEnabled: z.coerce.boolean(),
+  title: z
+    .string()
+    .trim()
+    .max(255, { message: '公告标题不能超过 255 个字符' }),
+  content: z
+    .string()
+    .trim()
+    .max(20000, { message: '公告内容不能超过 20000 个字符' })
 })
 
 export const adminUpdateResourceNoteSchema = z.object({

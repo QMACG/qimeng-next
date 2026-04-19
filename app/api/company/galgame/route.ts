@@ -8,17 +8,27 @@ import { GalgameCardSelectField } from '~/constants/api/select'
 import { getNSFWHeader } from '~/app/api/utils/getNSFWHeader'
 import { buildGalgameOrderBy, buildGalgameWhere } from '~/app/api/utils/galgameQuery'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
-import { canShowDownloadCount, canShowViewCount } from '~/utils/frontDisplay'
-import { parseJsonStringArray } from '~/utils/prismaJson'
+import {
+  canShowDownloadCount,
+  canShowViewCount,
+  resolvePublicNsfwFilter
+} from '~/utils/frontDisplay'
+import { mapPatchRecordToGalgameCard } from '~/utils/patchCard'
 
 const getPatchByCompany = async (
   input: z.infer<typeof getPatchByCompanySchema>,
   nsfwEnable: Record<string, string | undefined>,
+  uid = 0,
   role = 0
 ) => {
   const frontDisplayConfig = await getFrontDisplayConfig()
   const showViewCount = canShowViewCount(role, frontDisplayConfig)
   const showDownloadCount = canShowDownloadCount(role, frontDisplayConfig)
+  const effectiveNsfwFilter = resolvePublicNsfwFilter(
+    nsfwEnable,
+    uid,
+    frontDisplayConfig
+  )
   const { companyId, page, limit, sortField, sortOrder } = input
   const offset = (page - 1) * limit
   const orderBy = buildGalgameOrderBy(sortField, sortOrder)
@@ -29,7 +39,7 @@ const getPatchByCompany = async (
       }
     },
     ...buildGalgameWhere({
-      nsfwEnable
+      nsfwEnable: effectiveNsfwFilter
     })
   }
 
@@ -46,21 +56,15 @@ const getPatchByCompany = async (
     })
   ])
 
-  const galgames: GalgameCard[] = data.map((gal) => ({
-    ...gal,
-    view: showViewCount ? gal.view : 0,
-    download: showDownloadCount ? gal.download : 0,
-    showViewCount,
-    showDownloadCount,
-    type: parseJsonStringArray(gal.type),
-    language: parseJsonStringArray(gal.language),
-    platform: parseJsonStringArray(gal.platform),
-    tags: gal.tag.map((tag) => tag.tag.name).slice(0, 3),
-    uniqueId: gal.unique_id,
-    averageRating: gal.rating_stat?.avg_overall
-      ? Math.round(gal.rating_stat.avg_overall * 10) / 10
-      : 0
-  }))
+  const galgames: GalgameCard[] = data.map((gal) =>
+    mapPatchRecordToGalgameCard(
+      gal,
+      uid,
+      frontDisplayConfig,
+      showViewCount,
+      showDownloadCount
+    )
+  )
 
   return { galgames, total }
 }
@@ -74,6 +78,11 @@ export const GET = async (req: NextRequest) => {
   const nsfwEnable = await getNSFWHeader(req)
   const payload = await verifyHeaderCookie(req)
 
-  const response = await getPatchByCompany(input, nsfwEnable, payload?.role ?? 0)
+  const response = await getPatchByCompany(
+    input,
+    nsfwEnable,
+    payload?.uid ?? 0,
+    payload?.role ?? 0
+  )
   return NextResponse.json(response)
 }

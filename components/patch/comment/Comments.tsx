@@ -1,12 +1,15 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { Card, CardBody } from '@heroui/card'
 import { Button } from '@heroui/button'
 import { Pagination } from '@heroui/pagination'
 import { Divider } from '@heroui/divider'
 import { KunUser } from '~/components/kun/floating-card/KunUser'
+import { KunNull } from '~/components/kun/Null'
 import { MessageCircle, PenLine } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { kunFetchGet } from '~/utils/kunFetch'
 import { formatTimeDifference } from '~/utils/time'
 import { PublishComment } from './PublishComment'
@@ -14,7 +17,6 @@ import { CommentLikeButton } from './CommentLike'
 import { CommentDropdown } from './CommentDropdown'
 import { CommentContent } from './CommentContent'
 import { useUserStore } from '~/store/userStore'
-import { KunNull } from '~/components/kun/Null'
 import type { PatchComment, PatchCommentResponse } from '~/types/api/patch'
 
 interface Props {
@@ -50,11 +52,12 @@ export const Comments = ({ id }: Props) => {
   }
 
   useEffect(() => {
-    if (!user.uid) {
-      return
-    }
-    fetchComments(page)
-  }, [page, user.uid])
+    void fetchComments(page)
+  }, [id, page])
+
+  const requireLogin = (message: string) => {
+    toast.error(message)
+  }
 
   const handleNewComment = async (newComment: PatchComment) => {
     if (newComment.parentId === null) {
@@ -81,38 +84,51 @@ export const Comments = ({ id }: Props) => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  if (!user.uid) {
-    return <KunNull message="请登陆后查看评论" />
-  }
-
   const totalPages = Math.ceil(total / COMMENTS_PER_PAGE)
 
   return (
     <div className="space-y-4">
-      {showEditor ? (
-        <PublishComment
-          patchId={id}
-          receiverUsername={null}
-          setNewComment={(newComment) => {
-            handleNewComment(newComment)
-            setShowEditor(false)
-          }}
-          onCancel={() => setShowEditor(false)}
-        />
+      {user.uid ? (
+        showEditor ? (
+          <PublishComment
+            patchId={id}
+            receiverUsername={null}
+            setNewComment={(newComment) => {
+              void handleNewComment(newComment)
+              setShowEditor(false)
+            }}
+            onCancel={() => setShowEditor(false)}
+          />
+        ) : (
+          <div className="flex justify-end">
+            <Button
+              color="primary"
+              variant="flat"
+              startContent={<PenLine className="size-4" />}
+              onPress={() => setShowEditor(true)}
+            >
+              发布评论
+            </Button>
+          </div>
+        )
       ) : (
-        <div className="flex justify-end">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-large border border-divider bg-content1/60 px-4 py-3">
+          <p className="text-sm text-default-600">
+            游客可以直接浏览评论内容，登录后即可发表评论与回复。
+          </p>
           <Button
+            as={Link}
+            href="/login"
             color="primary"
             variant="flat"
             startContent={<PenLine className="size-4" />}
-            onPress={() => setShowEditor(true)}
           >
-            发布评论
+            登录后发表评论
           </Button>
         </div>
       )}
 
-      {loading && <KunNull message="加载中..." />}
+      {loading ? <KunNull message="正在加载评论..." /> : null}
 
       {!loading &&
         comments.map((comment) => (
@@ -146,7 +162,12 @@ export const Comments = ({ id }: Props) => {
                     variant="ghost"
                     size="sm"
                     className="gap-2"
-                    onPress={() =>
+                    onPress={() => {
+                      if (!user.uid) {
+                        requireLogin('请先登录后再回复评论')
+                        return
+                      }
+
                       setReplyTo(
                         replyTo?.commentId === comment.id
                           ? null
@@ -155,7 +176,7 @@ export const Comments = ({ id }: Props) => {
                               username: comment.user.name
                             }
                       )
-                    }
+                    }}
                   >
                     <MessageCircle className="size-4" />
                     回复
@@ -163,7 +184,7 @@ export const Comments = ({ id }: Props) => {
                 </div>
               </div>
 
-              {comment.reply.length > 0 && (
+              {comment.reply.length > 0 ? (
                 <>
                   <Divider />
                   <div className="space-y-4 pl-4">
@@ -180,7 +201,7 @@ export const Comments = ({ id }: Props) => {
                               userProps={{
                                 name: reply.user.name,
                                 description: reply.replyToUser
-                                  ? `回复了 @${reply.replyToUser.name} · ${formatTimeDifference(reply.created)}`
+                                  ? `回复 @${reply.replyToUser.name} · ${formatTimeDifference(reply.created)}`
                                   : formatTimeDifference(reply.created),
                                 avatarProps: {
                                   showFallback: true,
@@ -205,7 +226,12 @@ export const Comments = ({ id }: Props) => {
                             variant="ghost"
                             size="sm"
                             className="gap-2"
-                            onPress={() =>
+                            onPress={() => {
+                              if (!user.uid) {
+                                requireLogin('请先登录后再回复评论')
+                                return
+                              }
+
                               setReplyTo(
                                 replyTo?.commentId === reply.id
                                   ? null
@@ -214,14 +240,14 @@ export const Comments = ({ id }: Props) => {
                                       username: reply.user.name
                                     }
                               )
-                            }
+                            }}
                           >
                             <MessageCircle className="size-4" />
                             回复
                           </Button>
                         </div>
 
-                        {replyTo?.commentId === reply.id && (
+                        {replyTo?.commentId === reply.id && user.uid ? (
                           <div className="mt-2">
                             <PublishComment
                               patchId={id}
@@ -229,7 +255,7 @@ export const Comments = ({ id }: Props) => {
                               receiverUsername={replyTo.username}
                               onSuccess={() => setReplyTo(null)}
                               setNewComment={(newComment) => {
-                                handleNewComment({
+                                void handleNewComment({
                                   ...newComment,
                                   parentId: comment.id,
                                   replyToUser: reply.user
@@ -237,14 +263,14 @@ export const Comments = ({ id }: Props) => {
                               }}
                             />
                           </div>
-                        )}
+                        ) : null}
                       </div>
                     ))}
                   </div>
                 </>
-              )}
+              ) : null}
 
-              {replyTo?.commentId === comment.id && (
+              {replyTo?.commentId === comment.id && user.uid ? (
                 <div className="mt-2 pl-4">
                   <PublishComment
                     patchId={id}
@@ -254,17 +280,17 @@ export const Comments = ({ id }: Props) => {
                     setNewComment={handleNewComment}
                   />
                 </div>
-              )}
+              ) : null}
             </CardBody>
           </Card>
         ))}
 
-      {!loading && comments.length === 0 && (
+      {!loading && comments.length === 0 ? (
         <KunNull message="暂无评论，来发表第一条评论吧" />
-      )}
+      ) : null}
 
-      {totalPages > 1 && (
-        <div className="flex justify-center mt-4">
+      {totalPages > 1 ? (
+        <div className="mt-4 flex justify-center">
           <Pagination
             total={totalPages}
             page={page}
@@ -272,7 +298,7 @@ export const Comments = ({ id }: Props) => {
             showControls
           />
         </div>
-      )}
+      ) : null}
     </div>
   )
 }

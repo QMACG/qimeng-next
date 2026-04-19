@@ -28,11 +28,7 @@ export const GET = async (req: NextRequest) => {
   }
 
   const payload = await verifyHeaderCookie(req)
-  if (!payload) {
-    return NextResponse.json('用户登录已失效')
-  }
-
-  const response = await getPatchComment(input, payload.uid)
+  const response = await getPatchComment(input, payload?.uid ?? 0)
   return NextResponse.json(response)
 }
 

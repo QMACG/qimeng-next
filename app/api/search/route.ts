@@ -3,23 +3,33 @@ import { NextRequest, NextResponse } from 'next/server'
 import { kunParsePostBody } from '~/app/api/utils/parseQuery'
 import { getFrontDisplayConfig } from '~/app/api/admin/setting/front-display/getFrontDisplayConfig'
 import { getNSFWHeader } from '~/app/api/utils/getNSFWHeader'
-import { canShowDownloadCount, canShowViewCount } from '~/utils/frontDisplay'
+import {
+  canShowDownloadCount,
+  canShowViewCount,
+  resolvePublicNsfwFilter
+} from '~/utils/frontDisplay'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 import { prisma } from '~/prisma/index'
 import { searchSchema } from '~/validations/search'
 import { GalgameCardSelectField } from '~/constants/api/select'
 import type { SearchResponse, SearchSuggestionType } from '~/types/api/search'
-import { parseJsonStringArray } from '~/utils/prismaJson'
 import { buildGalgameOrderBy, buildGalgameWhere } from '../utils/galgameQuery'
+import { mapPatchRecordToGalgameCard } from '~/utils/patchCard'
 
 const searchGalgame = async (
   input: z.infer<typeof searchSchema>,
   nsfwEnable: Record<string, string | undefined>,
+  uid = 0,
   role = 0
 ) => {
   const frontDisplayConfig = await getFrontDisplayConfig()
   const showViewCount = canShowViewCount(role, frontDisplayConfig)
   const showDownloadCount = canShowDownloadCount(role, frontDisplayConfig)
+  const effectiveNsfwFilter = resolvePublicNsfwFilter(
+    nsfwEnable,
+    uid,
+    frontDisplayConfig
+  )
   const { queryString, limit, searchOption, page, sortField, sortOrder } = input
   const offset = (page - 1) * limit
 
@@ -45,7 +55,7 @@ const searchGalgame = async (
   }
 
   const where = buildGalgameWhere({
-    nsfwEnable
+    nsfwEnable: effectiveNsfwFilter
   })
   const unrestrictedWhere = buildGalgameWhere({
     nsfwEnable: {}
@@ -147,26 +157,23 @@ const searchGalgame = async (
     })
   ])
 
-  const galgames: GalgameCard[] = data.map((gal) => ({
-    ...gal,
-    view: showViewCount ? gal.view : 0,
-    download: showDownloadCount ? gal.download : 0,
-    showViewCount,
-    showDownloadCount,
-    type: parseJsonStringArray(gal.type),
-    language: parseJsonStringArray(gal.language),
-    platform: parseJsonStringArray(gal.platform),
-    tags: gal.tag.map((t) => t.tag.name).slice(0, 3),
-    uniqueId: gal.unique_id,
-    averageRating: gal.rating_stat?.avg_overall
-      ? Math.round(gal.rating_stat.avg_overall * 10) / 10
-      : 0
-  }))
+  const galgames: GalgameCard[] = data.map((gal) =>
+    mapPatchRecordToGalgameCard(
+      gal,
+      uid,
+      frontDisplayConfig,
+      showViewCount,
+      showDownloadCount
+    )
+  )
 
   return {
     galgames,
     total,
-    hiddenCount: Math.max(0, unrestrictedTotal - total)
+    hiddenCount:
+      effectiveNsfwFilter.content_limit === 'sfw'
+        ? Math.max(0, unrestrictedTotal - total)
+        : 0
   } satisfies SearchResponse
 }
 
@@ -178,6 +185,11 @@ export const POST = async (req: NextRequest) => {
   const nsfwEnable = await getNSFWHeader(req)
   const payload = await verifyHeaderCookie(req)
 
-  const response = await searchGalgame(input, nsfwEnable, payload?.role ?? 0)
+  const response = await searchGalgame(
+    input,
+    nsfwEnable,
+    payload?.uid ?? 0,
+    payload?.role ?? 0
+  )
   return NextResponse.json(response)
 }

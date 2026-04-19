@@ -23,6 +23,9 @@ export const FrontDisplaySetting = ({ setting }: Props) => {
   const [hideCreatorStatsForVisitor, setHideCreatorStatsForVisitor] = useState(
     setting.hideCreatorStatsForVisitor
   )
+  const [enableContentScopeControl, setEnableContentScopeControl] = useState(
+    setting.enableContentScopeControl
+  )
   const [enablePatchRelatedGames, setEnablePatchRelatedGames] = useState(
     setting.enablePatchRelatedGames
   )
@@ -48,6 +51,7 @@ export const FrontDisplaySetting = ({ setting }: Props) => {
           hideViewCountForVisitor,
           hideDownloadCountForVisitor,
           hideCreatorStatsForVisitor,
+          enableContentScopeControl,
           enablePatchRelatedGames,
           enableFriendLinkApply
         }
@@ -138,9 +142,23 @@ export const FrontDisplaySetting = ({ setting }: Props) => {
 
           <div className="flex items-center justify-between gap-4">
             <div>
+              <h3 className="text-lg font-semibold">内容显示范围控制</h3>
+              <p className="text-sm text-default-500">
+                开启时保持当前分级过滤逻辑。关闭后，游客也能看到限制级条目，但封面会自动模糊，进入详情前需要二次确认。
+              </p>
+            </div>
+            <Switch
+              color="primary"
+              isSelected={enableContentScopeControl}
+              onValueChange={setEnableContentScopeControl}
+            />
+          </div>
+
+          <div className="flex items-center justify-between gap-4">
+            <div>
               <h3 className="text-lg font-semibold">游戏页相关推荐</h3>
               <p className="text-sm text-default-500">
-                开启后，会在游戏详情页的“游戏信息”标签底部显示 6 个相关推荐卡片。
+                开启后，会在游戏详情页的“游戏信息”标签底部显示 8 个相关推荐卡片。
               </p>
             </div>
             <Switch
@@ -154,7 +172,7 @@ export const FrontDisplaySetting = ({ setting }: Props) => {
             <div>
               <h3 className="text-lg font-semibold">友链申请入口</h3>
               <p className="text-sm text-default-500">
-                关闭后，前台友情链接页将隐藏「申请友情链接」入口，且无法提交新申请；已展示的友链与后台友链管理不受影响。
+                关闭后，前台友情链接页将隐藏“申请友情链接”入口，且无法提交新申请；已展示的友链与后台友链管理不受影响。
               </p>
             </div>
             <Switch

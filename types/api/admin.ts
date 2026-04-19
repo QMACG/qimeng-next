@@ -110,8 +110,16 @@ export interface AdminFrontDisplayConfig {
   hideViewCountForVisitor: boolean
   hideDownloadCountForVisitor: boolean
   hideCreatorStatsForVisitor: boolean
+  enableContentScopeControl: boolean
   enablePatchRelatedGames: boolean
   enableFriendLinkApply: boolean
+}
+
+export interface AdminHomeAnnouncementConfig {
+  isEnabled: boolean
+  title: string
+  content: string
+  updatedAt: string | Date
 }
 
 export type AdminSiteAnalyticsPosition = 'head' | 'body_end'

@@ -7,7 +7,7 @@ import { getFrontDisplayConfig } from '~/app/api/admin/setting/front-display/get
 import { getFavoriteFolderPatchSchema } from '~/validations/user'
 import { canShowDownloadCount, canShowViewCount } from '~/utils/frontDisplay'
 import { GalgameCardSelectField } from '~/constants/api/select'
-import { parseJsonStringArray } from '~/utils/prismaJson'
+import { mapPatchRecordToGalgameCard } from '~/utils/patchCard'
 
 export const GET = async (req: NextRequest) => {
   const input = kunParseGetQuery(req, getFavoriteFolderPatchSchema)
@@ -57,25 +57,15 @@ const getPatchByFolder = async (
     orderBy: { created: 'desc' }
   })
 
-  const patches: GalgameCard[] = relations.map((relation) => ({
-    id: relation.patch.id,
-    uniqueId: relation.patch.unique_id,
-    name: relation.patch.name,
-    banner: relation.patch.banner,
-    view: showViewCount ? relation.patch.view : 0,
-    download: showDownloadCount ? relation.patch.download : 0,
-    showViewCount,
-    showDownloadCount,
-    type: parseJsonStringArray(relation.patch.type),
-    language: parseJsonStringArray(relation.patch.language),
-    platform: parseJsonStringArray(relation.patch.platform),
-    tags: relation.patch.tag.map((tag) => tag.tag.name),
-    created: relation.patch.created,
-    _count: relation.patch._count,
-    averageRating: relation.patch.rating_stat?.avg_overall
-      ? Math.round(relation.patch.rating_stat.avg_overall * 10) / 10
-      : 0
-  }))
+  const patches: GalgameCard[] = relations.map((relation) =>
+    mapPatchRecordToGalgameCard(
+      relation.patch,
+      uid ?? 0,
+      frontDisplayConfig,
+      showViewCount,
+      showDownloadCount
+    )
+  )
 
   return { patches, total }
 }

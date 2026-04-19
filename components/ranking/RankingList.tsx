@@ -5,12 +5,24 @@ import { Card } from '@heroui/react'
 import { formatNumber } from '~/utils/formatNumber'
 import { KunCardStats } from '~/components/kun/CardStats'
 import { cn } from '~/utils/cn'
+import type { CSSProperties } from 'react'
 import type { RankingCard } from '~/types/api/ranking'
 
 interface Props {
   galgames: RankingCard[]
   page: number
   pageSize: number
+}
+
+const blurredCoverImageStyle: CSSProperties = {
+  filter: 'blur(8px) saturate(1.02) brightness(0.99)',
+  transform: 'scale(1.08)'
+}
+
+const frostedOverlayStyle: CSSProperties = {
+  backdropFilter: 'blur(4px)',
+  WebkitBackdropFilter: 'blur(4px)',
+  background: 'rgba(255, 255, 255, 0.03)'
 }
 
 export const RankingList = ({ galgames, page, pageSize }: Props) => {
@@ -25,6 +37,7 @@ export const RankingList = ({ galgames, page, pageSize }: Props) => {
             patch.averageRating && patch.averageRating > 0
               ? patch.averageRating.toFixed(1)
               : '--'
+          const coverSrc = patch.banner || '/favicon.ico'
 
           return (
             <Card
@@ -34,16 +47,46 @@ export const RankingList = ({ galgames, page, pageSize }: Props) => {
               href={`/${patch.uniqueId}`}
             >
               <div className="relative w-full overflow-hidden">
-                <div className="relative aspect-video">
-                  <img
-                    src={patch.banner || '/favicon.ico'}
-                    alt={patch.name}
-                    className="h-full w-full object-cover opacity-90 transition duration-300 group-hover:scale-105"
-                    loading="lazy"
-                    decoding="async"
-                    referrerPolicy="no-referrer"
-                  />
-                  <div className="absolute inset-0 bg-black/40" />
+                <div className="relative aspect-video bg-default-100">
+                  {patch.shouldBlurForGuest ? (
+                    <>
+                      <img
+                        src={coverSrc}
+                        alt={patch.name}
+                        className="absolute inset-0 h-full w-full object-cover opacity-55"
+                        loading="lazy"
+                        decoding="async"
+                        referrerPolicy="no-referrer"
+                      />
+                      <img
+                        src={coverSrc}
+                        alt=""
+                        aria-hidden="true"
+                        className="absolute inset-0 h-full w-full object-cover"
+                        style={blurredCoverImageStyle}
+                        loading="lazy"
+                        decoding="async"
+                        referrerPolicy="no-referrer"
+                      />
+                      <div
+                        className="absolute inset-0 z-[1] dark:bg-black/10"
+                        style={frostedOverlayStyle}
+                      />
+                      <div className="absolute inset-0 z-[2] bg-gradient-to-br from-white/4 via-transparent to-black/3" />
+                    </>
+                  ) : (
+                    <>
+                      <img
+                        src={coverSrc}
+                        alt={patch.name}
+                        className="absolute inset-0 h-full w-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                        referrerPolicy="no-referrer"
+                      />
+                      <div className="absolute inset-0 bg-black/40" />
+                    </>
+                  )}
                 </div>
 
                 <div
