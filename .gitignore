@@ -64,6 +64,3 @@ Thumbs.db
 
 # IDE
 .idea/
-
-# generated sitemap
-/public/**/*.xml
