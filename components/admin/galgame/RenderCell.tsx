@@ -3,7 +3,17 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
-import { Button, Chip, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Tooltip, useDisclosure } from '@heroui/react'
+import {
+  Button,
+  Chip,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  Tooltip,
+  useDisclosure
+} from '@heroui/react'
 import { Image } from '@heroui/image'
 import { Edit2, ExternalLink, Trash2 } from 'lucide-react'
 import { KunUser } from '~/components/kun/floating-card/KunUser'
@@ -89,7 +99,8 @@ const GalgameActions = ({
         <ModalContent>
           <ModalHeader>删除游戏</ModalHeader>
           <ModalBody>
-            确定要删除《{galgame.name}》吗？删除后会同步移除该游戏下的资源、评论及相关记录，且无法恢复。
+            确定要删除《{galgame.name}
+            》吗？删除后会同步移除该游戏下的资源、评论及相关记录，且无法恢复。
           </ModalBody>
           <ModalFooter>
             <Button variant="light" onPress={onClose}>
@@ -166,10 +177,10 @@ export const RenderCell = (
           }}
         />
       )
-    case 'created':
+    case 'publishedAt':
       return (
         <span className="text-sm text-default-600">
-          {formatTimeDifference(galgame.created)}
+          {formatTimeDifference(galgame.publishedAt)}
         </span>
       )
     case 'actions':

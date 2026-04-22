@@ -37,7 +37,7 @@ type RelatedPatchQueryResult = {
   type: Prisma.JsonValue | null
   language: Prisma.JsonValue | null
   platform: Prisma.JsonValue | null
-  created: Date
+  published: Date
   tag: { tag: { name: string } }[]
   _count: {
     favorite_folder: number
@@ -55,7 +55,7 @@ const uniqueIdSchema = z.object({
   uniqueId: z.string().min(8).max(8)
 })
 
-const shuffleItems = <T,>(items: T[]) => {
+const shuffleItems = <T>(items: T[]) => {
   const next = [...items]
 
   for (let i = next.length - 1; i > 0; i -= 1) {
@@ -222,7 +222,7 @@ export const getPatchById = async (
       name: patch.user.name,
       avatar: patch.user.avatar
     },
-    created: String(patch.created),
+    created: String(patch.published),
     updated: String(patch.updated),
     _count: patch._count
   }
@@ -323,7 +323,7 @@ export const getRelatedPatchCards = async (
             OR: relationFilters
           }
         : baseWhere,
-    orderBy: [{ resource_update_time: 'desc' }],
+    orderBy: [{ published: 'desc' }],
     select: GalgameCardSelectField
   })) as RelatedPatchQueryResult[]
 
@@ -341,7 +341,7 @@ export const getRelatedPatchCards = async (
               notIn: [currentPatch.id, ...existingIds]
             }
           },
-          orderBy: [{ resource_update_time: 'desc' }],
+          orderBy: [{ published: 'desc' }],
           select: GalgameCardSelectField
         })) as RelatedPatchQueryResult[])
       : []

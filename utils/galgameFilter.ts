@@ -1,6 +1,6 @@
 import type { SortField, SortOrder } from '~/components/galgame/_sort'
 
-export const DEFAULT_GALGAME_SORT_FIELD: SortField = 'resource_update_time'
+export const DEFAULT_GALGAME_SORT_FIELD: SortField = 'created'
 export const DEFAULT_GALGAME_SORT_ORDER: SortOrder = 'desc'
 
 export const getSearchParamValue = (

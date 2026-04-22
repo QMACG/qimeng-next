@@ -4,6 +4,7 @@ import type { Company } from '~/types/api/company'
 export interface RewritePatchData {
   id: number
   uniqueId: string
+  publishedAt: string
   status: number
   banner: string
   name: string
@@ -25,6 +26,7 @@ interface StoreState {
 const initialState: RewritePatchData = {
   id: 0,
   uniqueId: '',
+  publishedAt: new Date().toISOString(),
   status: 1,
   banner: '',
   name: '',

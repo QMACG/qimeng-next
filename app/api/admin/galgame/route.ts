@@ -14,7 +14,9 @@ const statusWhereMap = {
   private: CONTENT_VISIBILITY.private
 } as const
 
-const getGalgame = async (input: z.infer<typeof adminGalgamePaginationSchema>) => {
+const getGalgame = async (
+  input: z.infer<typeof adminGalgamePaginationSchema>
+) => {
   const { page, limit, search, status } = input
   const offset = (page - 1) * limit
   const normalizedSearch = search?.trim()
@@ -44,8 +46,14 @@ const getGalgame = async (input: z.infer<typeof adminGalgamePaginationSchema>) =
       where,
       take: limit,
       skip: offset,
-      orderBy: { created: 'desc' },
-      include: {
+      orderBy: { published: 'desc' },
+      select: {
+        id: true,
+        unique_id: true,
+        name: true,
+        banner: true,
+        visibility: true,
+        published: true,
         user: {
           select: {
             id: true,
@@ -65,7 +73,7 @@ const getGalgame = async (input: z.infer<typeof adminGalgamePaginationSchema>) =
     banner: galgame.banner,
     status: galgame.visibility,
     user: galgame.user,
-    created: galgame.created
+    publishedAt: galgame.published
   }))
 
   return { galgames, total }
@@ -82,7 +90,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json('鐢ㄦ埛鏈櫥褰?')
   }
   if (payload.role < 2) {
-    return NextResponse.json('浠呯紪杈戙€佺鐞嗗憳鍜岃秴绾х鐞嗗憳鍙互璁块棶鍚庡彴')
+    return NextResponse.json(
+      '浠呯紪杈戙€佺鐞嗗憳鍜岃秴绾х鐞嗗憳鍙互璁块棶鍚庡彴'
+    )
   }
 
   const res = await getGalgame(input)

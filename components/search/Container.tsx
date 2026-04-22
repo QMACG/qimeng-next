@@ -22,12 +22,12 @@ import { SearchSuggestion } from './Suggestion'
 import type { SetStateAction } from 'react'
 
 const MAX_HISTORY_ITEMS = 10
-const DEFAULT_SORT_FIELD: SortField = 'resource_update_time'
+const DEFAULT_SORT_FIELD: SortField = 'created'
 const DEFAULT_SORT_ORDER: SortOrder = 'desc'
 
 const SEARCH_SORT_FIELDS: SortField[] = [
-  'resource_update_time',
   'created',
+  'resource_update_time',
   'view',
   'download',
   'favorite',
@@ -66,15 +66,14 @@ const parseSelectedSuggestions = (
       return []
     }
 
-    return parsed.filter(
-      (item): item is SearchSuggestionType =>
-        Boolean(
-          item &&
-            typeof item === 'object' &&
-            (item.type === 'keyword' || item.type === 'tag') &&
-            typeof item.name === 'string' &&
-            item.name.trim()
-        )
+    return parsed.filter((item): item is SearchSuggestionType =>
+      Boolean(
+        item &&
+          typeof item === 'object' &&
+          (item.type === 'keyword' || item.type === 'tag') &&
+          typeof item.name === 'string' &&
+          item.name.trim()
+      )
     )
   } catch {
     return []
@@ -101,9 +100,7 @@ const appendSuggestion = (
   suggestions.push({ type, name })
 }
 
-const parseSuggestionsFromParams = (
-  params: SearchParamsLike
-) => {
+const parseSuggestionsFromParams = (params: SearchParamsLike) => {
   const suggestions: SearchSuggestionType[] = []
   const seen = new Set<string>()
 
@@ -198,10 +195,16 @@ export const SearchPage = () => {
           ) as SortField)
         : DEFAULT_SORT_FIELD,
       sortOrder:
-        readSearchParam(searchParams, QUERY_PARAM_KEYS.sortOrder, 'sortOrder') ===
-          'asc' ||
-        readSearchParam(searchParams, QUERY_PARAM_KEYS.sortOrder, 'sortOrder') ===
-          'desc'
+        readSearchParam(
+          searchParams,
+          QUERY_PARAM_KEYS.sortOrder,
+          'sortOrder'
+        ) === 'asc' ||
+        readSearchParam(
+          searchParams,
+          QUERY_PARAM_KEYS.sortOrder,
+          'sortOrder'
+        ) === 'desc'
           ? (readSearchParam(
               searchParams,
               QUERY_PARAM_KEYS.sortOrder,
@@ -357,7 +360,9 @@ export const SearchPage = () => {
         ? current
         : initialState.selectedSuggestions
     })
-    setPage((current) => (current === initialState.page ? current : initialState.page))
+    setPage((current) =>
+      current === initialState.page ? current : initialState.page
+    )
     setSortField((current) =>
       current === initialState.sortField ? current : initialState.sortField
     )
@@ -382,7 +387,16 @@ export const SearchPage = () => {
         scroll: false
       })
     }
-  }, [page, pathname, query, router, searchParams, selectedSuggestions, sortField, sortOrder])
+  }, [
+    page,
+    pathname,
+    query,
+    router,
+    searchParams,
+    selectedSuggestions,
+    sortField,
+    sortOrder
+  ])
 
   useEffect(() => {
     if (selectedSuggestions.length) {
@@ -417,7 +431,9 @@ export const SearchPage = () => {
         headerEndContent={<SearchOption />}
         endContent={
           <div className="text-default-500">
-            <p>支持按游戏标题、详情正文、标签、会社名称进行单一或联合模糊搜索。</p>
+            <p>
+              支持按游戏标题、详情正文、标签、会社名称进行单一或联合模糊搜索。
+            </p>
             <p>如果想搜游戏介绍里的内容，请在搜索设置里开启“包含正文”。</p>
           </div>
         }
@@ -461,7 +477,9 @@ export const SearchPage = () => {
         <div className="space-y-6">
           {patches.length > 0 ? (
             <>
-              {showHiddenHint ? <NsfwVisibilityHint count={hiddenCount} /> : null}
+              {showHiddenHint ? (
+                <NsfwVisibilityHint count={hiddenCount} />
+              ) : null}
 
               <div className="mx-auto mb-8 grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
                 {patches.map((patch) => (

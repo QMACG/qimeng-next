@@ -34,6 +34,7 @@ const appendPatchFormData = (
 ) => {
   formDataToSend.append('banner', data.banner)
   formDataToSend.append('name', data.name)
+  formDataToSend.append('publishedAt', data.publishedAt)
   formDataToSend.append(
     'companyIds',
     JSON.stringify(data.companies.map((company) => company.id))
@@ -121,7 +122,10 @@ export const AdminPublishButton = ({ setErrors, className }: Props) => {
         toast('正在保存资源...')
       }
 
-      const failedDrafts = await createResources(response.patchId, resourceDrafts)
+      const failedDrafts = await createResources(
+        response.patchId,
+        resourceDrafts
+      )
       resetData()
 
       if (failedDrafts.length) {

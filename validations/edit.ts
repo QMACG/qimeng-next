@@ -28,16 +28,25 @@ const optionalNumberArray = z
     }
   })
 
+const publishedAtSchema = z
+  .string()
+  .trim()
+  .min(1, { message: '请选择发布时间' })
+  .refine((value) => !Number.isNaN(new Date(value).getTime()), {
+    message: '发布时间格式不正确'
+  })
+
 export const patchCreateSchema = z.object({
   banner: createHttpUrlOrPathSchema('封面必须是合法的图片链接或站内路径'),
   name: z.string().trim().min(1, { message: '游戏名称为必填项' }),
+  publishedAt: publishedAtSchema,
   companyIds: optionalNumberArray,
   resourceNote: z.string().trim().max(20000).optional().default(''),
   introduction: z
     .string()
     .trim()
     .min(10, { message: '游戏介绍至少需要 10 个字符' })
-    .max(100007, { message: '游戏介绍最多 100007 个字符' }),
+    .max(100007, { message: '游戏介绍最大 100007 个字符' }),
   tag: z.string().max(2333, { message: '标签总长度不能超过 2333 个字符' }),
   status: z.coerce.number().min(0).max(3),
   released: z.string(),
@@ -48,19 +57,20 @@ export const patchUpdateSchema = z.object({
   id: z.coerce.number().min(1).max(9999999),
   banner: createHttpUrlOrPathSchema('封面必须是合法的图片链接或站内路径'),
   name: z.string().trim().min(1, { message: '游戏名称为必填项' }),
+  publishedAt: publishedAtSchema,
   companyIds: z.array(z.coerce.number().int().min(1)).optional().default([]),
   resourceNote: z.string().trim().max(20000).optional().default(''),
   introduction: z
     .string()
     .trim()
     .min(10, { message: '游戏介绍至少需要 10 个字符' })
-    .max(100007, { message: '游戏介绍最多 100007 个字符' }),
+    .max(100007, { message: '游戏介绍最大 100007 个字符' }),
   tag: z.array(
     z
       .string()
       .trim()
       .min(1, { message: '单个标签至少需要 1 个字符' })
-      .max(500, { message: '单个标签最多 500 个字符' })
+      .max(500, { message: '单个标签最大 500 个字符' })
   ),
   status: z.coerce.number().min(0).max(3),
   contentLimit: z.string().max(10),

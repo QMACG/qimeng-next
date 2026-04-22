@@ -59,7 +59,7 @@ export interface AdminGalgame {
   banner: string
   status: number
   user: KunUser
-  created: Date | string
+  publishedAt: Date | string
 }
 
 export interface AdminResource extends PatchResource {

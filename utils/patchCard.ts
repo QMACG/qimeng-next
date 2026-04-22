@@ -14,7 +14,7 @@ interface PatchCardRecord {
   type: Prisma.JsonValue | null
   language: Prisma.JsonValue | null
   platform: Prisma.JsonValue | null
-  created: Date
+  published: Date
   tag: { tag: { name: string } }[]
   _count: {
     favorite_folder: number
@@ -51,7 +51,7 @@ export const mapPatchRecordToGalgameCard = (
   language: parseJsonStringArray(patch.language),
   platform: parseJsonStringArray(patch.platform),
   tags: patch.tag.map((item) => item.tag.name).slice(0, 3),
-  created: patch.created,
+  created: patch.published,
   _count: patch._count,
   averageRating: patch.rating_stat?.avg_overall
     ? Math.round(patch.rating_stat.avg_overall * 10) / 10

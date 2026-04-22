@@ -98,7 +98,7 @@ const getRanking = async (
       language: parseJsonStringArray(gal.language),
       platform: parseJsonStringArray(gal.platform),
       tags: gal.tag.map((tag) => tag.tag.name).slice(0, 3),
-      created: gal.created,
+      created: gal.published,
       _count: gal._count,
       averageRating: ratingCount > 0 ? Math.round(ratingAvg * 10) / 10 : 0,
       ratingCount,
@@ -157,4 +157,3 @@ export const GET = async (req: NextRequest) => {
   )
   return NextResponse.json(response)
 }
-

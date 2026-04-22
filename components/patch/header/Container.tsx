@@ -30,6 +30,7 @@ export const PatchHeaderContainer = ({
     setData({
       id: patch.id,
       uniqueId: patch.uniqueId,
+      publishedAt: String(patch.created),
       status: patch.status,
       banner: patch.banner,
       name: patch.name,

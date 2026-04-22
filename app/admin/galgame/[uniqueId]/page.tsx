@@ -55,6 +55,7 @@ export default async function AdminEditGalgamePage({ params }: Props) {
       initialData={{
         id: patch.id,
         uniqueId: patch.unique_id,
+        publishedAt: patch.published.toISOString(),
         status: patch.visibility,
         banner: patch.banner,
         name: patch.name,

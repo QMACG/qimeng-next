@@ -16,6 +16,7 @@ export const updateGalgame = async (
 
   const {
     id,
+    publishedAt,
     companyIds,
     resourceNote,
     name,
@@ -24,6 +25,11 @@ export const updateGalgame = async (
     contentLimit,
     released
   } = input
+
+  const nextPublishedAt = new Date(publishedAt)
+  const shouldUpdatePublishedAt =
+    !Number.isNaN(nextPublishedAt.getTime()) &&
+    nextPublishedAt.getTime() !== patch.published.getTime()
 
   await prisma.patch.update({
     where: { id },
@@ -34,7 +40,8 @@ export const updateGalgame = async (
       resource_note: resourceNote,
       visibility: status,
       content_limit: contentLimit,
-      released
+      released,
+      ...(shouldUpdatePublishedAt ? { published: nextPublishedAt } : {})
     }
   })
 
@@ -44,7 +51,10 @@ export const updateGalgame = async (
   try {
     await invalidatePatchContentCache(patch.unique_id)
   } catch (error) {
-    console.error(`Failed to invalidate patch cache for ${patch.unique_id}:`, error)
+    console.error(
+      `Failed to invalidate patch cache for ${patch.unique_id}:`,
+      error
+    )
   }
 
   return {}

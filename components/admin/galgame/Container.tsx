@@ -32,7 +32,7 @@ const columns = [
   { name: '标题', uid: 'name' },
   { name: '状态', uid: 'status' },
   { name: '作者', uid: 'user' },
-  { name: '创建时间', uid: 'created' },
+  { name: '发布时间', uid: 'publishedAt' },
   { name: '操作', uid: 'actions' }
 ]
 

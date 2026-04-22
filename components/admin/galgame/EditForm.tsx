@@ -24,10 +24,12 @@ import { CompanySelector } from '~/components/edit/components/CompanySelector'
 import { ResourceNoteEditor } from './ResourceNoteEditor'
 import { CONTENT_VISIBILITY_OPTIONS } from '~/constants/contentVisibility'
 import type { RewritePatchData } from '~/store/rewriteStore'
+import { toDatetimeLocalValue, toIsoString } from './datetime'
 
 const LABEL_EDIT_GAME = '编辑游戏'
-const LABEL_PUBLISH_STATUS = '发布状态'
-const LABEL_VISIBILITY = '可见性'
+const LABEL_PUBLISH_STATUS = '发布设置'
+const LABEL_VISIBILITY = '可见状态'
+const LABEL_PUBLISHED_AT = '发布时间'
 const LABEL_BANNER = '封面图片链接'
 const LABEL_BANNER_URL = '封面 URL'
 const LABEL_BANNER_PLACEHOLDER = '填写游戏封面的图片直链'
@@ -45,6 +47,7 @@ export const EditForm = () => {
   const handleSubmit = async () => {
     const result = patchUpdateSchema.safeParse({
       ...data,
+      publishedAt: toIsoString(data.publishedAt),
       companyIds: data.companies.map((company) => company.id)
     })
 
@@ -66,6 +69,7 @@ export const EditForm = () => {
     try {
       const response = await kunFetchPut<KunResponse<{}>>('/edit', {
         ...data,
+        publishedAt: toIsoString(data.publishedAt),
         companyIds: data.companies.map((company) => company.id)
       })
       if (typeof response === 'string') {
@@ -109,18 +113,37 @@ export const EditForm = () => {
 
           <div className="space-y-2">
             <h2 className="text-xl">{LABEL_PUBLISH_STATUS}</h2>
-            <Select
-              label={LABEL_VISIBILITY}
-              labelPlacement="outside"
-              selectedKeys={new Set([String(data.status)])}
-              onChange={(event) =>
-                setData({ ...data, status: Number(event.target.value) })
-              }
-            >
-              {CONTENT_VISIBILITY_OPTIONS.map((option) => (
-                <SelectItem key={String(option.value)}>{option.label}</SelectItem>
-              ))}
-            </Select>
+            <div className="grid gap-4 md:grid-cols-2">
+              <Select
+                label={LABEL_VISIBILITY}
+                labelPlacement="outside"
+                selectedKeys={new Set([String(data.status)])}
+                onChange={(event) =>
+                  setData({ ...data, status: Number(event.target.value) })
+                }
+              >
+                {CONTENT_VISIBILITY_OPTIONS.map((option) => (
+                  <SelectItem key={String(option.value)}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </Select>
+
+              <Input
+                type="datetime-local"
+                label={LABEL_PUBLISHED_AT}
+                labelPlacement="outside"
+                value={toDatetimeLocalValue(data.publishedAt)}
+                onChange={(event) =>
+                  setData({
+                    ...data,
+                    publishedAt: toIsoString(event.target.value)
+                  })
+                }
+                isInvalid={!!errors.publishedAt}
+                errorMessage={errors.publishedAt}
+              />
+            </div>
           </div>
 
           <div className="space-y-2">

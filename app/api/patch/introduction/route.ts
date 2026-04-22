@@ -86,7 +86,7 @@ const getPatchIntroduction = async (
       ...item.company,
       alias: parseJsonStringArray(item.company.alias)
     })),
-    created: patch.created,
+    created: patch.published,
     updated: patch.updated,
     resourceUpdateTime: patch.resource_update_time
   }

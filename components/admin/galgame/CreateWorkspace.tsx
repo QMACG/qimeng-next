@@ -22,12 +22,14 @@ import { AdminPublishButton } from './AdminPublishButton'
 import { ResourceNoteEditor } from './ResourceNoteEditor'
 import { CONTENT_VISIBILITY_OPTIONS } from '~/constants/contentVisibility'
 import type { CreatePatchRequestData } from '~/store/editStore'
+import { toDatetimeLocalValue, toIsoString } from './datetime'
 
 const LABEL_NEW_GAME = '新建游戏'
 const LABEL_GAME_NAME = '游戏名称'
 const LABEL_GAME_NAME_PLACEHOLDER = '输入游戏名称'
-const LABEL_PUBLISH_STATUS = '发布状态'
-const LABEL_VISIBILITY = '可见性'
+const LABEL_PUBLISH_STATUS = '发布设置'
+const LABEL_VISIBILITY = '可见状态'
+const LABEL_PUBLISHED_AT = '发布时间'
 
 export const CreateWorkspace = () => {
   const { data, setData } = useCreatePatchStore()
@@ -63,18 +65,37 @@ export const CreateWorkspace = () => {
 
           <div className="space-y-2">
             <h2 className="text-xl">{LABEL_PUBLISH_STATUS}</h2>
-            <Select
-              label={LABEL_VISIBILITY}
-              labelPlacement="outside"
-              selectedKeys={new Set([String(data.status)])}
-              onChange={(event) =>
-                setData({ ...data, status: Number(event.target.value) })
-              }
-            >
-              {CONTENT_VISIBILITY_OPTIONS.map((option) => (
-                <SelectItem key={String(option.value)}>{option.label}</SelectItem>
-              ))}
-            </Select>
+            <div className="grid gap-4 md:grid-cols-2">
+              <Select
+                label={LABEL_VISIBILITY}
+                labelPlacement="outside"
+                selectedKeys={new Set([String(data.status)])}
+                onChange={(event) =>
+                  setData({ ...data, status: Number(event.target.value) })
+                }
+              >
+                {CONTENT_VISIBILITY_OPTIONS.map((option) => (
+                  <SelectItem key={String(option.value)}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </Select>
+
+              <Input
+                type="datetime-local"
+                label={LABEL_PUBLISHED_AT}
+                labelPlacement="outside"
+                value={toDatetimeLocalValue(data.publishedAt)}
+                onChange={(event) =>
+                  setData({
+                    ...data,
+                    publishedAt: toIsoString(event.target.value)
+                  })
+                }
+                isInvalid={!!errors.publishedAt}
+                errorMessage={errors.publishedAt}
+              />
+            </div>
           </div>
 
           <BannerImage errors={errors.banner} />

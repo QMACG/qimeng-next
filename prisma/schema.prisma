@@ -504,6 +504,7 @@ model patch {
   visibility           Int      @default(1)
   download             Int      @default(0)
   view                 Int      @default(0)
+  published            DateTime @default(now())
   resource_update_time DateTime @default(now())
   type                 Json
   language             Json
@@ -525,6 +526,8 @@ model patch {
 
   created DateTime @default(now())
   updated DateTime @updatedAt
+
+  @@index([visibility, published])
 }
 model user {
   id            Int      @id @default(autoincrement())

@@ -18,7 +18,7 @@ export const GalgameCardSelectField = {
   type: true,
   language: true,
   platform: true,
-  created: true,
+  published: true,
   rating_stat: {
     select: {
       avg_overall: true

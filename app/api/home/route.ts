@@ -40,7 +40,7 @@ const getHomeData = async (
 
   const [data, nsfwHiddenCount] = await Promise.all([
     prisma.patch.findMany({
-      orderBy: { created: 'desc' },
+      orderBy: { published: 'desc' },
       where,
       select: GalgameCardSelectField,
       take: bypassGuestContentScope ? 60 : HOME_PATCH_LIMIT

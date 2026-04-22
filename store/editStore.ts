@@ -4,6 +4,7 @@ import type { Company } from '~/types/api/company'
 
 export interface CreatePatchData {
   name: string
+  publishedAt: string
   introduction: string
   status: number
   tag: string[]
@@ -38,6 +39,7 @@ export const createPatchEditStoreKey = 'kun-patch-edit-store'
 
 const initialState: CreatePatchData = {
   name: '',
+  publishedAt: new Date().toISOString(),
   introduction: '',
   status: 1,
   tag: [],
@@ -61,7 +63,21 @@ export const useCreatePatchStore = create<StoreState>()(
     }),
     {
       name: createPatchEditStoreKey,
-      storage: createJSONStorage(() => localStorage)
+      storage: createJSONStorage(() => localStorage),
+      merge: (persistedState, currentState) => {
+        const typedState = (persistedState as Partial<StoreState>) ?? {}
+
+        return {
+          ...currentState,
+          ...typedState,
+          data: {
+            ...currentState.data,
+            ...(typedState.data ?? {})
+          },
+          resourceDrafts:
+            typedState.resourceDrafts ?? currentState.resourceDrafts
+        }
+      }
     }
   )
 )

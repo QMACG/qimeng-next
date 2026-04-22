@@ -27,5 +27,9 @@ export const buildGalgameOrderBy = (
     return { rating_stat: { avg_overall: sortOrder } }
   }
 
+  if (sortField === 'created') {
+    return { published: sortOrder }
+  }
+
   return { [sortField]: sortOrder }
 }

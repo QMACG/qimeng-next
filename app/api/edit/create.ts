@@ -12,6 +12,7 @@ export const createGalgame = async (
 ) => {
   const {
     name,
+    publishedAt,
     companyIds,
     resourceNote,
     banner,
@@ -30,6 +31,7 @@ export const createGalgame = async (
         data: {
           name,
           unique_id: galgameUniqueId,
+          published: new Date(publishedAt),
           introduction,
           user_id: uid,
           banner,
