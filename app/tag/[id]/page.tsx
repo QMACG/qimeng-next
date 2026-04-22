@@ -75,6 +75,9 @@ export default async function Kun({ params, searchParams }: Props) {
           initialPatches={response.galgames}
           total={response.total}
           initialNsfwHiddenCount={response.nsfwHiddenCount}
+          initialPage={currentPage}
+          initialSortField={sortField}
+          initialSortOrder={sortOrder}
         />
       ) : (
         <KunNull message="请登录后查看标签详情信息" />

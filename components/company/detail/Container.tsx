@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
 import { Chip } from '@heroui/react'
 import { useMounted } from '~/hooks/useMounted'
+import { useSyncedGalgameListQuery } from '~/hooks/useSyncedGalgameListQuery'
 import { KunHeader } from '~/components/kun/Header'
 import { KunUser } from '~/components/kun/floating-card/KunUser'
 import { KunLoading } from '~/components/kun/Loading'
@@ -18,46 +18,43 @@ import { FilterBar } from '~/components/galgame/FilterBar'
 import type { CompanyDetail } from '~/types/api/company'
 import type { SortField, SortOrder } from '~/components/galgame/_sort'
 import type { FC } from 'react'
-import {
-  DEFAULT_GALGAME_SORT_FIELD,
-  DEFAULT_GALGAME_SORT_ORDER,
-  parsePositiveIntParam
-} from '~/utils/galgameFilter'
 import { errorReporter, kunErrorHandler } from '~/utils/kunErrorHandler'
 
 interface Props {
   initialCompany: CompanyDetail
   initialPatches: GalgameCard[]
   total: number
+  initialPage: number
+  initialSortField: SortField
+  initialSortOrder: SortOrder
 }
 
 export const CompanyDetailContainer: FC<Props> = ({
   initialCompany,
   initialPatches,
-  total
+  total,
+  initialPage,
+  initialSortField,
+  initialSortOrder
 }) => {
   const isMounted = useMounted()
-  const searchParams = useSearchParams()
-  const [page, setPage] = useState(
-    parsePositiveIntParam(searchParams.get('page'), 1)
-  )
-  const [sortField, setSortField] = useState<SortField>(
-    (searchParams.get('sortField') as SortField) || DEFAULT_GALGAME_SORT_FIELD
-  )
-  const [sortOrder, setSortOrder] = useState<SortOrder>(
-    (searchParams.get('sortOrder') as SortOrder) || DEFAULT_GALGAME_SORT_ORDER
-  )
+  const {
+    page,
+    setPage,
+    sortField,
+    sortOrder,
+    setSortFieldWithPageReset,
+    setSortOrderWithPageReset
+  } = useSyncedGalgameListQuery({
+    initialPage,
+    initialSortField,
+    initialSortOrder
+  })
 
   const [company] = useState(initialCompany)
   const [patches, setPatches] = useState<GalgameCard[]>(initialPatches)
   const [totalCount, setTotalCount] = useState(total)
   const [loading, setLoading] = useState(false)
-  const withPageReset = <T,>(setter: (value: T) => void) => {
-    return (value: T) => {
-      setPage(1)
-      setter(value)
-    }
-  }
 
   const fetchPatches = async () => {
     setLoading(true)
@@ -169,9 +166,9 @@ export const CompanyDetailContainer: FC<Props> = ({
 
       <FilterBar
         sortField={sortField}
-        setSortField={withPageReset(setSortField)}
+        setSortField={setSortFieldWithPageReset}
         sortOrder={sortOrder}
-        setSortOrder={withPageReset(setSortOrder)}
+        setSortOrder={setSortOrderWithPageReset}
       />
 
       {company.parent_brand.length > 0 && (

@@ -7,6 +7,7 @@ import { SearchTags } from './SearchTag'
 import { TagList } from './TagList'
 import { kunFetchGet, kunFetchPost } from '~/utils/kunFetch'
 import { useMounted } from '~/hooks/useMounted'
+import { useSyncedPageInUrl } from '~/hooks/useSyncedPageInUrl'
 import { KunPagination } from '~/components/kun/Pagination'
 import { KunNull } from '~/components/kun/Null'
 import type { Tag as TagType } from '~/types/api/tag'
@@ -14,12 +15,18 @@ import type { Tag as TagType } from '~/types/api/tag'
 interface Props {
   initialTags: TagType[]
   initialTotal: number
+  initialPage: number
   uid?: number
 }
 
-export const Container = ({ initialTags, initialTotal, uid }: Props) => {
+export const Container = ({
+  initialTags,
+  initialTotal,
+  initialPage,
+  uid
+}: Props) => {
   const [tags, setTags] = useState<TagType[]>(initialTags)
-  const [page, setPage] = useState(1)
+  const { page, setPage } = useSyncedPageInUrl(initialPage)
   const [total, setTotal] = useState(initialTotal)
   const [loading, setLoading] = useState(false)
   const isMounted = useMounted()

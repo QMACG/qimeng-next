@@ -6,6 +6,7 @@ import { KunPagination } from '~/components/kun/Pagination'
 import { RankingControls } from './RankingControls'
 import { RankingList } from './RankingList'
 import { useMounted } from '~/hooks/useMounted'
+import { useSyncedRankingListQuery } from '~/hooks/useSyncedRankingListQuery'
 import { kunFetchGet } from '~/utils/kunFetch'
 import type { RankingCard, RankingSortField } from '~/types/api/ranking'
 
@@ -14,9 +15,13 @@ type SortOrder = 'asc' | 'desc'
 interface Props {
   initialGalgames: RankingCard[]
   initialTotal: number
+  initialPage: number
   initialSortField: RankingSortField
   initialSortOrder: SortOrder
   initialMinRatingCount: number
+  defaultSortField: RankingSortField
+  defaultSortOrder: SortOrder
+  defaultMinRatingCount: number
   pageSize?: number
 }
 
@@ -25,22 +30,38 @@ const DEFAULT_PAGE_SIZE = 48
 export const RankingContainer = ({
   initialGalgames,
   initialTotal,
+  initialPage,
   initialSortField,
   initialSortOrder,
   initialMinRatingCount,
+  defaultSortField,
+  defaultSortOrder,
+  defaultMinRatingCount,
   pageSize = DEFAULT_PAGE_SIZE
 }: Props) => {
   const isMounted = useMounted()
+  const {
+    page,
+    setPage,
+    sortField,
+    sortOrder,
+    minRatingCount,
+    setSortFieldWithPageReset,
+    setSortOrderWithPageReset,
+    setMinRatingCountWithPageReset
+  } = useSyncedRankingListQuery({
+    initialPage,
+    initialSortField,
+    initialSortOrder,
+    initialMinRatingCount,
+    defaultSortField,
+    defaultSortOrder,
+    defaultMinRatingCount
+  })
 
   const [galgames, setGalgames] = useState<RankingCard[]>(initialGalgames)
   const [total, setTotal] = useState(initialTotal)
   const [loading, setLoading] = useState(false)
-  const [sortField, setSortField] = useState<RankingSortField>(initialSortField)
-  const [sortOrder, setSortOrder] = useState<SortOrder>(initialSortOrder)
-  const [minRatingCount, setMinRatingCount] = useState<number>(
-    initialMinRatingCount
-  )
-  const [page, setPage] = useState(1)
 
   const fetchRanking = async () => {
     setLoading(true)
@@ -65,16 +86,8 @@ export const RankingContainer = ({
     if (!isMounted) {
       return
     }
-    fetchRanking()
-  }, [page])
-
-  useEffect(() => {
-    if (!isMounted) {
-      return
-    }
-    fetchRanking()
-    setPage(1)
-  }, [sortField, sortOrder, minRatingCount])
+    void fetchRanking()
+  }, [isMounted, page, sortField, sortOrder, minRatingCount])
 
   return (
     <div className="container mx-auto my-4 space-y-6">
@@ -88,17 +101,17 @@ export const RankingContainer = ({
         sortOrder={sortOrder}
         minRatingCount={minRatingCount}
         isLoading={loading}
-        onSortFieldChange={setSortField}
-        onSortOrderChange={setSortOrder}
-        onMinRatingCountChange={setMinRatingCount}
+        onSortFieldChange={setSortFieldWithPageReset}
+        onSortOrderChange={setSortOrderWithPageReset}
+        onMinRatingCountChange={setMinRatingCountWithPageReset}
       />
 
       <RankingList galgames={galgames} page={page} pageSize={pageSize} />
 
-      {total > DEFAULT_PAGE_SIZE && (
+      {total > pageSize && (
         <div className="flex justify-center">
           <KunPagination
-            total={Math.ceil(total / DEFAULT_PAGE_SIZE)}
+            total={Math.ceil(total / pageSize)}
             page={page}
             onPageChange={setPage}
             isLoading={loading}

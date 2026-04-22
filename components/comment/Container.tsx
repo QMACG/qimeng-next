@@ -5,38 +5,58 @@ import { kunFetchGet } from '~/utils/kunFetch'
 import { CommentCard } from './CommentCard'
 import { FilterBar } from './FilterBar'
 import { useMounted } from '~/hooks/useMounted'
+import { useSyncedCommentListQuery } from '~/hooks/useSyncedCommentListQuery'
 import { KunLoading } from '~/components/kun/Loading'
 import { KunHeader } from '../kun/Header'
-import { useSearchParams } from 'next/navigation'
 import { KunPagination } from '~/components/kun/Pagination'
 import { KunNull } from '~/components/kun/Null'
 import type { SortDirection, SortOption } from './_sort'
 import type { PatchComment } from '~/types/api/comment'
 
+const DEFAULT_SORT_FIELD: SortOption = 'created'
+const DEFAULT_SORT_ORDER: SortDirection = 'desc'
+
 interface Props {
   initialComments: PatchComment[]
   initialTotal: number
+  initialPage: number
+  initialSortField: SortOption
+  initialSortOrder: SortDirection
   uid?: number
 }
 
 export const CardContainer = ({
   initialComments,
   initialTotal,
+  initialPage,
+  initialSortField,
+  initialSortOrder,
   uid
 }: Props) => {
+  const {
+    page,
+    setPage,
+    sortField,
+    sortOrder,
+    setSortFieldWithPageReset,
+    setSortOrderWithPageReset
+  } = useSyncedCommentListQuery({
+    initialPage,
+    initialSortField,
+    initialSortOrder,
+    defaultSortField: DEFAULT_SORT_FIELD,
+    defaultSortOrder: DEFAULT_SORT_ORDER
+  })
+
   const [comments, setComments] = useState<PatchComment[]>(initialComments)
   const [total, setTotal] = useState(initialTotal)
   const [loading, setLoading] = useState(false)
-  const [sortField, setSortField] = useState<SortOption>('created')
-  const [sortOrder, setSortOrder] = useState<SortDirection>('desc')
   const isMounted = useMounted()
-  const searchParams = useSearchParams()
-  const [page, setPage] = useState(Number(searchParams.get('page')) || 1)
 
   const fetchData = async () => {
     setLoading(true)
 
-    const { comments } = await kunFetchGet<{
+    const { comments, total: nextTotal } = await kunFetchGet<{
       comments: PatchComment[]
       total: number
     }>('/comment', {
@@ -47,7 +67,7 @@ export const CardContainer = ({
     })
 
     setComments(comments)
-    setTotal(total)
+    setTotal(nextTotal)
     setLoading(false)
   }
 
@@ -55,8 +75,8 @@ export const CardContainer = ({
     if (!isMounted) {
       return
     }
-    fetchData()
-  }, [sortField, sortOrder, page])
+    void fetchData()
+  }, [sortField, sortOrder, page, isMounted])
 
   return (
     <div className="container mx-auto my-4 space-y-6">
@@ -69,9 +89,9 @@ export const CardContainer = ({
         <>
           <FilterBar
             sortField={sortField}
-            setSortField={setSortField}
+            setSortField={setSortFieldWithPageReset}
             sortOrder={sortOrder}
-            setSortOrder={setSortOrder}
+            setSortOrder={setSortOrderWithPageReset}
           />
 
           {loading ? (

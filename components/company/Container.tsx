@@ -7,6 +7,7 @@ import { CompanyHeader } from './CompanyHeader'
 import { SearchCompanies } from './SearchCompanies'
 import { CompanyList } from './CompanyList'
 import { useMounted } from '~/hooks/useMounted'
+import { useSyncedPageInUrl } from '~/hooks/useSyncedPageInUrl'
 import { kunFetchGet, kunFetchPost } from '~/utils/kunFetch'
 import type { FC } from 'react'
 import type { Company as CompanyType } from '~/types/api/company'
@@ -14,11 +15,16 @@ import type { Company as CompanyType } from '~/types/api/company'
 interface Props {
   initialCompanies: CompanyType[]
   initialTotal: number
+  initialPage: number
 }
 
-export const Container: FC<Props> = ({ initialCompanies, initialTotal }) => {
+export const Container: FC<Props> = ({
+  initialCompanies,
+  initialTotal,
+  initialPage
+}) => {
   const [companies, setCompanies] = useState<CompanyType[]>(initialCompanies)
-  const [page, setPage] = useState(1)
+  const { page, setPage } = useSyncedPageInUrl(initialPage)
   const [total, setTotal] = useState(initialTotal)
   const [loading, startTransition] = useTransition()
   const isMounted = useMounted()

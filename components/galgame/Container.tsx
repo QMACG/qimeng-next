@@ -1,20 +1,15 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { kunFetchGet } from '~/utils/kunFetch'
-import { GalgameCard } from './Card'
+import { GalgameCard as GalgameCardView } from './Card'
 import { FilterBar } from './FilterBar'
 import { useMounted } from '~/hooks/useMounted'
+import { useSyncedGalgameListQuery } from '~/hooks/useSyncedGalgameListQuery'
 import { KunHeader } from '../kun/Header'
 import { NsfwVisibilityHint } from '../kun/NsfwVisibilityHint'
 import { KunPagination } from '../kun/Pagination'
 import type { SortField, SortOrder } from './_sort'
-import {
-  DEFAULT_GALGAME_SORT_FIELD,
-  DEFAULT_GALGAME_SORT_ORDER,
-  parsePositiveIntParam
-} from '~/utils/galgameFilter'
 
 interface Props {
   initialGalgames: GalgameCard[]
@@ -34,24 +29,23 @@ export const CardContainer = ({
   initialSortOrder
 }: Props) => {
   const isMounted = useMounted()
-  const pathname = usePathname()
-  const router = useRouter()
-  const searchParams = useSearchParams()
+  const {
+    page,
+    setPage,
+    sortField,
+    sortOrder,
+    setSortFieldWithPageReset,
+    setSortOrderWithPageReset
+  } = useSyncedGalgameListQuery({
+    initialPage,
+    initialSortField,
+    initialSortOrder
+  })
 
-  const [galgames, setGalgames] = useState<GalgameCard[]>(initialGalgames)
+  const [galgames, setGalgames] = useState(initialGalgames)
   const [total, setTotal] = useState(initialTotal)
   const [nsfwHiddenCount, setNsfwHiddenCount] = useState(initialNsfwHiddenCount)
   const [loading, setLoading] = useState(false)
-  const [sortField, setSortField] = useState<SortField>(initialSortField)
-  const [sortOrder, setSortOrder] = useState<SortOrder>(initialSortOrder)
-  const [page, setPage] = useState(initialPage)
-
-  const withPageReset = <T,>(setter: (value: T) => void) => {
-    return (value: T) => {
-      setPage(1)
-      setter(value)
-    }
-  }
 
   const fetchPatches = async () => {
     setLoading(true)
@@ -80,57 +74,6 @@ export const CardContainer = ({
     void fetchPatches()
   }, [isMounted, sortField, sortOrder, page])
 
-  useEffect(() => {
-    if (!isMounted) {
-      return
-    }
-
-    const params = new URLSearchParams(searchParams.toString())
-
-    if (page > 1) {
-      params.set('page', String(page))
-    } else {
-      params.delete('page')
-    }
-
-    if (sortField !== DEFAULT_GALGAME_SORT_FIELD) {
-      params.set('sortField', sortField)
-    } else {
-      params.delete('sortField')
-    }
-
-    if (sortOrder !== DEFAULT_GALGAME_SORT_ORDER) {
-      params.set('sortOrder', sortOrder)
-    } else {
-      params.delete('sortOrder')
-    }
-
-    const nextQuery = params.toString()
-    const currentQuery = searchParams.toString()
-
-    if (nextQuery !== currentQuery) {
-      router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, {
-        scroll: false
-      })
-    }
-  }, [isMounted, page, pathname, router, searchParams, sortField, sortOrder])
-
-  useEffect(() => {
-    const nextPage = parsePositiveIntParam(searchParams.get('page'), initialPage)
-    const nextSortField =
-      (searchParams.get('sortField') as SortField) || initialSortField
-    const nextSortOrder =
-      (searchParams.get('sortOrder') as SortOrder) || initialSortOrder
-
-    setPage((current) => (current === nextPage ? current : nextPage))
-    setSortField((current) =>
-      current === nextSortField ? current : nextSortField
-    )
-    setSortOrder((current) =>
-      current === nextSortOrder ? current : nextSortOrder
-    )
-  }, [initialPage, initialSortField, initialSortOrder, searchParams])
-
   return (
     <div className="container mx-auto my-4 space-y-6">
       <KunHeader
@@ -142,14 +85,14 @@ export const CardContainer = ({
 
       <FilterBar
         sortField={sortField}
-        setSortField={withPageReset(setSortField)}
+        setSortField={setSortFieldWithPageReset}
         sortOrder={sortOrder}
-        setSortOrder={withPageReset(setSortOrder)}
+        setSortOrder={setSortOrderWithPageReset}
       />
 
       <div className="mx-auto mb-8 grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
         {galgames.map((pa) => (
-          <GalgameCard key={pa.id} patch={pa} />
+          <GalgameCardView key={pa.id} patch={pa} />
         ))}
       </div>
 

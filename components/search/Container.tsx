@@ -236,6 +236,17 @@ export const SearchPage = () => {
   const searchData = useSearchStore((state) => state.data)
   const setSearchData = useSearchStore((state) => state.setData)
 
+  const [searchStoreHydrated, setSearchStoreHydrated] = useState(false)
+  useEffect(() => {
+    if (useSearchStore.persist.hasHydrated()) {
+      setSearchStoreHydrated(true)
+      return
+    }
+    return useSearchStore.persist.onFinishHydration(() => {
+      setSearchStoreHydrated(true)
+    })
+  }, [])
+
   const addToHistory = (suggestions: SearchSuggestionType[]) => {
     if (suggestions.length === 0) {
       return
@@ -400,6 +411,9 @@ export const SearchPage = () => {
 
   useEffect(() => {
     if (selectedSuggestions.length) {
+      if (!searchStoreHydrated) {
+        return
+      }
       void handleSearch()
       return
     }
@@ -419,7 +433,8 @@ export const SearchPage = () => {
     searchData.searchInIntroduction,
     searchData.searchInAlias,
     searchData.searchInTag,
-    searchData.searchInCompany
+    searchData.searchInCompany,
+    searchStoreHydrated
   ])
 
   const showHiddenHint = hiddenCount > 0

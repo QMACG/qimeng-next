@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
 import { Chip } from '@heroui/chip'
 import { kunFetchGet } from '~/utils/kunFetch'
 import { GalgameCard } from '~/components/galgame/Card'
@@ -13,12 +12,8 @@ import { KunPagination } from '~/components/kun/Pagination'
 import { NsfwVisibilityHint } from '~/components/kun/NsfwVisibilityHint'
 import { KunUser } from '~/components/kun/floating-card/KunUser'
 import { useMounted } from '~/hooks/useMounted'
+import { useSyncedGalgameListQuery } from '~/hooks/useSyncedGalgameListQuery'
 import { errorReporter, kunErrorHandler } from '~/utils/kunErrorHandler'
-import {
-  DEFAULT_GALGAME_SORT_FIELD,
-  DEFAULT_GALGAME_SORT_ORDER,
-  parsePositiveIntParam
-} from '~/utils/galgameFilter'
 import { formatTimeDifference } from '~/utils/time'
 import type { SortField, SortOrder } from '~/components/galgame/_sort'
 import type { TagDetail } from '~/types/api/tag'
@@ -28,38 +23,39 @@ interface Props {
   initialPatches: GalgameCard[]
   total: number
   initialNsfwHiddenCount: number
+  initialPage: number
+  initialSortField: SortField
+  initialSortOrder: SortOrder
 }
 
 export const TagDetailContainer = ({
   initialTag,
   initialPatches,
   total,
-  initialNsfwHiddenCount
+  initialNsfwHiddenCount,
+  initialPage,
+  initialSortField,
+  initialSortOrder
 }: Props) => {
   const isMounted = useMounted()
-  const searchParams = useSearchParams()
-  const [page, setPage] = useState(
-    parsePositiveIntParam(searchParams.get('page'), 1)
-  )
-  const [sortField, setSortField] = useState<SortField>(
-    (searchParams.get('sortField') as SortField) || DEFAULT_GALGAME_SORT_FIELD
-  )
-  const [sortOrder, setSortOrder] = useState<SortOrder>(
-    (searchParams.get('sortOrder') as SortOrder) || DEFAULT_GALGAME_SORT_ORDER
-  )
+  const {
+    page,
+    setPage,
+    sortField,
+    sortOrder,
+    setSortFieldWithPageReset,
+    setSortOrderWithPageReset
+  } = useSyncedGalgameListQuery({
+    initialPage,
+    initialSortField,
+    initialSortOrder
+  })
 
   const [tag] = useState(initialTag)
   const [patches, setPatches] = useState<GalgameCard[]>(initialPatches)
   const [totalCount, setTotalCount] = useState(total)
   const [nsfwHiddenCount, setNsfwHiddenCount] = useState(initialNsfwHiddenCount)
   const [loading, setLoading] = useState(false)
-
-  const withPageReset = <T,>(setter: (value: T) => void) => {
-    return (value: T) => {
-      setPage(1)
-      setter(value)
-    }
-  }
 
   const fetchPatches = async () => {
     setLoading(true)
@@ -137,9 +133,9 @@ export const TagDetailContainer = ({
 
       <FilterBar
         sortField={sortField}
-        setSortField={withPageReset(setSortField)}
+        setSortField={setSortFieldWithPageReset}
         sortOrder={sortOrder}
-        setSortOrder={withPageReset(setSortOrder)}
+        setSortOrder={setSortOrderWithPageReset}
       />
 
       {tag.alias.length > 0 && (

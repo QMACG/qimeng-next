@@ -65,6 +65,9 @@ export default async function Kun({ params, searchParams }: Props) {
       initialCompany={company}
       initialPatches={response.galgames}
       total={response.total}
+      initialPage={currentPage}
+      initialSortField={sortField}
+      initialSortOrder={sortOrder}
     />
   )
 }
