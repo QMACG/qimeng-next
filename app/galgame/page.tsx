@@ -1,5 +1,6 @@
 import { CardContainer } from '~/components/galgame/Container'
 import { kunMetadata } from './metadata'
+import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import { kunGetActions } from './actions'
 import { ErrorComponent } from '~/components/error/ErrorComponent'
@@ -53,6 +54,31 @@ export default async function Kun({ searchParams }: Props) {
   const initialSortOrder = normalizeSortOrder(
     getSearchParamValue(resolvedSearchParams.sortOrder)
   )
+
+  if (
+    getSearchParamValue(resolvedSearchParams.sortField) === undefined ||
+    getSearchParamValue(resolvedSearchParams.sortOrder) === undefined
+  ) {
+    const sp = new URLSearchParams()
+    for (const [key, value] of Object.entries(resolvedSearchParams)) {
+      if (value === undefined) {
+        continue
+      }
+      if (key === 'sortField' || key === 'sortOrder') {
+        continue
+      }
+      if (Array.isArray(value)) {
+        for (const v of value) {
+          sp.append(key, v)
+        }
+      } else {
+        sp.set(key, value)
+      }
+    }
+    sp.set('sortField', initialSortField)
+    sp.set('sortOrder', initialSortOrder)
+    redirect(`/galgame?${sp.toString()}`)
+  }
 
   const response = await kunGetActions({
     sortField: initialSortField,

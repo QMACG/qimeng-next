@@ -4,11 +4,7 @@ import { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useMounted } from '~/hooks/useMounted'
 import type { SortField, SortOrder } from '~/components/galgame/_sort'
-import {
-  DEFAULT_GALGAME_SORT_FIELD,
-  DEFAULT_GALGAME_SORT_ORDER,
-  parsePositiveIntParam
-} from '~/utils/galgameFilter'
+import { parsePositiveIntParam } from '~/utils/galgameFilter'
 
 export interface UseSyncedGalgameListQueryArgs {
   initialPage: number
@@ -77,17 +73,9 @@ export function useSyncedGalgameListQuery({
       params.delete('page')
     }
 
-    if (sortField !== DEFAULT_GALGAME_SORT_FIELD) {
-      params.set('sortField', sortField)
-    } else {
-      params.delete('sortField')
-    }
-
-    if (sortOrder !== DEFAULT_GALGAME_SORT_ORDER) {
-      params.set('sortOrder', sortOrder)
-    } else {
-      params.delete('sortOrder')
-    }
+    // 始终写入排序参数，与默认一致也从 URL 省略改为显式带参，避免与导航/同步状态打架出现 replace 死循环
+    params.set('sortField', sortField)
+    params.set('sortOrder', sortOrder)
 
     const nextQuery = params.toString()
     const currentQuery = searchParams.toString()
