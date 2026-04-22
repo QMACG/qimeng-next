@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useMounted } from '~/hooks/useMounted'
 import type { SortField, SortOrder } from '~/components/galgame/_sort'
@@ -43,7 +43,27 @@ export function useSyncedGalgameListQuery({
     []
   )
 
-  // 段 A：state -> URL
+  // 段 B：先（layout）把地址栏 + RSC initial* 收进 state，避免段 A 用旧 state 与导航后的 URL 打架导致 replace 死循环
+  useLayoutEffect(() => {
+    const nextPage = parsePositiveIntParam(
+      searchParams.get('page'),
+      initialPage
+    )
+    const nextSortField =
+      (searchParams.get('sortField') as SortField) || initialSortField
+    const nextSortOrder =
+      (searchParams.get('sortOrder') as SortOrder) || initialSortOrder
+
+    setPage((current) => (current === nextPage ? current : nextPage))
+    setSortField((current) =>
+      current === nextSortField ? current : nextSortField
+    )
+    setSortOrder((current) =>
+      current === nextSortOrder ? current : nextSortOrder
+    )
+  }, [initialPage, initialSortField, initialSortOrder, searchParams])
+
+  // 段 A：state -> URL（在段 B 触发的重绘之后再跑）
   useEffect(() => {
     if (!isMounted) {
       return
@@ -78,26 +98,6 @@ export function useSyncedGalgameListQuery({
       })
     }
   }, [isMounted, page, pathname, router, searchParams, sortField, sortOrder])
-
-  // 段 B：URL + RSC initial* -> state
-  useEffect(() => {
-    const nextPage = parsePositiveIntParam(
-      searchParams.get('page'),
-      initialPage
-    )
-    const nextSortField =
-      (searchParams.get('sortField') as SortField) || initialSortField
-    const nextSortOrder =
-      (searchParams.get('sortOrder') as SortOrder) || initialSortOrder
-
-    setPage((current) => (current === nextPage ? current : nextPage))
-    setSortField((current) =>
-      current === nextSortField ? current : nextSortField
-    )
-    setSortOrder((current) =>
-      current === nextSortOrder ? current : nextSortOrder
-    )
-  }, [initialPage, initialSortField, initialSortOrder, searchParams])
 
   return {
     page,

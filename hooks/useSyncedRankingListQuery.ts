@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useMounted } from '~/hooks/useMounted'
 import { parsePositiveIntParam } from '~/utils/galgameFilter'
@@ -63,6 +63,36 @@ export function useSyncedRankingListQuery({
     []
   )
 
+  useLayoutEffect(() => {
+    const sp = searchParams
+    setPage((c) => {
+      const n = parsePositiveIntParam(sp.get('page'), initialPage)
+      return c === n ? c : n
+    })
+    setSortField((c) => {
+      const n = parseRankingSort(sp.get('sortField'), initialSortField)
+      return c === n ? c : n
+    })
+    setSortOrder((c) => {
+      const n = parseOrder(sp.get('sortOrder'), initialSortOrder)
+      return c === n ? c : n
+    })
+    setMinRatingCount((c) => {
+      const raw = sp.get('minRatingCount')
+      const parsed = raw != null && raw !== '' ? Number.parseInt(raw, 10) : NaN
+      const n = Number.isFinite(parsed)
+        ? Math.max(0, Math.floor(parsed))
+        : initialMinRatingCount
+      return c === n ? c : n
+    })
+  }, [
+    initialPage,
+    initialMinRatingCount,
+    initialSortField,
+    initialSortOrder,
+    searchParams
+  ])
+
   useEffect(() => {
     if (!isMounted) {
       return
@@ -105,36 +135,6 @@ export function useSyncedRankingListQuery({
     searchParams,
     sortField,
     sortOrder
-  ])
-
-  useEffect(() => {
-    const sp = searchParams
-    setPage((c) => {
-      const n = parsePositiveIntParam(sp.get('page'), initialPage)
-      return c === n ? c : n
-    })
-    setSortField((c) => {
-      const n = parseRankingSort(sp.get('sortField'), initialSortField)
-      return c === n ? c : n
-    })
-    setSortOrder((c) => {
-      const n = parseOrder(sp.get('sortOrder'), initialSortOrder)
-      return c === n ? c : n
-    })
-    setMinRatingCount((c) => {
-      const raw = sp.get('minRatingCount')
-      const parsed = raw != null && raw !== '' ? Number.parseInt(raw, 10) : NaN
-      const n = Number.isFinite(parsed)
-        ? Math.max(0, Math.floor(parsed))
-        : initialMinRatingCount
-      return c === n ? c : n
-    })
-  }, [
-    initialPage,
-    initialMinRatingCount,
-    initialSortField,
-    initialSortOrder,
-    searchParams
   ])
 
   return {

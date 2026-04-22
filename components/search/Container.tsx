@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useDebounce } from 'use-debounce'
 import { FilterBar } from '~/components/galgame/FilterBar'
@@ -360,7 +360,7 @@ export const SearchPage = () => {
     }
   }, [])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setQuery((current: string) =>
       current === initialState.query ? current : initialState.query
     )

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useMounted } from '~/hooks/useMounted'
 import type { SortDirection, SortOption } from '~/components/comment/_sort'
@@ -61,6 +61,21 @@ export function useSyncedCommentListQuery({
     []
   )
 
+  useLayoutEffect(() => {
+    const nPage = parsePositiveIntParam(searchParams.get('page'), initialPage)
+    const nField = parseSortField(
+      searchParams.get('sortField'),
+      initialSortField
+    )
+    const nOrder = parseSortOrder(
+      searchParams.get('sortOrder'),
+      initialSortOrder
+    )
+    setPage((c) => (c === nPage ? c : nPage))
+    setSortField((c) => (c === nField ? c : nField))
+    setSortOrder((c) => (c === nOrder ? c : nOrder))
+  }, [initialPage, initialSortField, initialSortOrder, searchParams])
+
   useEffect(() => {
     if (!isMounted) {
       return
@@ -97,21 +112,6 @@ export function useSyncedCommentListQuery({
     sortField,
     sortOrder
   ])
-
-  useEffect(() => {
-    const nPage = parsePositiveIntParam(searchParams.get('page'), initialPage)
-    const nField = parseSortField(
-      searchParams.get('sortField'),
-      initialSortField
-    )
-    const nOrder = parseSortOrder(
-      searchParams.get('sortOrder'),
-      initialSortOrder
-    )
-    setPage((c) => (c === nPage ? c : nPage))
-    setSortField((c) => (c === nField ? c : nField))
-    setSortOrder((c) => (c === nOrder ? c : nOrder))
-  }, [initialPage, initialSortField, initialSortOrder, searchParams])
 
   return {
     page,

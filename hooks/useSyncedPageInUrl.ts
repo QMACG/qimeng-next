@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useMounted } from '~/hooks/useMounted'
 import { parsePositiveIntParam } from '~/utils/galgameFilter'
@@ -15,6 +15,11 @@ export function useSyncedPageInUrl(initialPage: number) {
   const searchParams = useSearchParams()
 
   const [page, setPage] = useState(initialPage)
+
+  useLayoutEffect(() => {
+    const next = parsePositiveIntParam(searchParams.get('page'), initialPage)
+    setPage((c) => (c === next ? c : next))
+  }, [initialPage, searchParams])
 
   useEffect(() => {
     if (!isMounted) {
@@ -35,11 +40,6 @@ export function useSyncedPageInUrl(initialPage: number) {
       })
     }
   }, [isMounted, page, pathname, router, searchParams])
-
-  useEffect(() => {
-    const next = parsePositiveIntParam(searchParams.get('page'), initialPage)
-    setPage((c) => (c === next ? c : next))
-  }, [initialPage, searchParams])
 
   return { page, setPage }
 }
