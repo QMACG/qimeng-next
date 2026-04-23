@@ -3,10 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { kunParseGetQuery } from '~/app/api/utils/parseQuery'
 import { markdownToHtml } from '~/app/api/utils/render/markdownToHtml'
 import { FEEDBACK_DOC_PATH, FEEDBACK_DOC_SLUG } from '~/constants/feedback'
-import {
-  FEEDBACK_COMMENT_STATUS,
-  FEEDBACK_COMMENT_STATUS_VALUE_MAP
-} from '~/constants/feedbackComment'
+import { FEEDBACK_COMMENT_STATUS_VALUE_MAP } from '~/constants/feedbackComment'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 import { prisma } from '~/prisma/index'
 import type { AdminFeedback } from '~/types/api/admin'
@@ -115,18 +112,6 @@ const getFeedback = async (
       : {})
   }
 
-  const statusOrderWeight: number[] = [
-    FEEDBACK_COMMENT_STATUS.pending,
-    FEEDBACK_COMMENT_STATUS.inProgress,
-    FEEDBACK_COMMENT_STATUS.suspended,
-    FEEDBACK_COMMENT_STATUS.closed,
-    FEEDBACK_COMMENT_STATUS.resolved
-  ]
-  const getStatusOrder = (status: number) => {
-    const index = statusOrderWeight.indexOf(status)
-    return index === -1 ? 999 : index
-  }
-
   const [data, total] = await Promise.all([
     prisma.doc_post_comment.findMany({
       where,
@@ -153,25 +138,14 @@ const getFeedback = async (
           }
         }
       },
-      orderBy: [{ created: 'desc' }],
+      orderBy: [{ status: 'asc' }, { created: 'desc' }],
       skip: offset,
       take: limit
     }),
     prisma.doc_post_comment.count({ where })
   ])
 
-  const sortedData = [...data].sort((a, b) => {
-    const aIndex = getStatusOrder(a.status)
-    const bIndex = getStatusOrder(b.status)
-
-    if (aIndex !== bIndex) {
-      return aIndex - bIndex
-    }
-
-    return b.created.getTime() - a.created.getTime()
-  })
-
-  const feedbacks = await Promise.all(sortedData.map(mapAdminFeedback))
+  const feedbacks = await Promise.all(data.map(mapAdminFeedback))
   return { feedbacks, total }
 }
 
