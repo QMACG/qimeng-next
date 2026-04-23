@@ -9,7 +9,10 @@ export const getRedirectBoxAdvertisement = async (
   viewer: ViewerContext = {}
 ): Promise<RedirectBoxAdvertisement | null> => {
   const advertisementModel = getAdvertisementModel()
-  if (!advertisementModel || typeof advertisementModel.findFirst !== 'function') {
+  if (
+    !advertisementModel ||
+    typeof advertisementModel.findFirst !== 'function'
+  ) {
     console.warn(
       '[advertisement] Prisma Client 尚未包含 site_advertisement 模型，跳转页将暂时按无广告处理。'
     )

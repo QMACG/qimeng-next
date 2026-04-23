@@ -97,4 +97,3 @@ export const POST = async (req: NextRequest) => {
   const response = await login(input)
   return NextResponse.json(response)
 }
-

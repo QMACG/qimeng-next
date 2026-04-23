@@ -195,7 +195,9 @@ export const AdminTagContainer = ({
           }
         >
           <TableHeader columns={columns}>
-            {(column) => <TableColumn key={column.uid}>{column.name}</TableColumn>}
+            {(column) => (
+              <TableColumn key={column.uid}>{column.name}</TableColumn>
+            )}
           </TableHeader>
           <TableBody items={tags}>
             {(item) => (
@@ -281,7 +283,8 @@ export const AdminTagContainer = ({
         <ModalContent>
           <ModalHeader>删除标签</ModalHeader>
           <ModalBody>
-            确定要删除标签《{deletingTag?.name ?? ''}》吗？删除后会同步移除相关游戏上的该标签，且无法恢复。
+            确定要删除标签《{deletingTag?.name ?? ''}
+            》吗？删除后会同步移除相关游戏上的该标签，且无法恢复。
           </ModalBody>
           <ModalFooter>
             <Button variant="light" onPress={onClose}>

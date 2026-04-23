@@ -34,12 +34,13 @@ export const FeedbackCommentContent = ({ content }: Props) => {
       root.className = element.className
       element.replaceWith(root)
       const externalLinkRoot = createRoot(root)
-      externalLinkRoot.render(<KunExternalLink link={href}>{text}</KunExternalLink>)
+      externalLinkRoot.render(
+        <KunExternalLink link={href}>{text}</KunExternalLink>
+      )
     })
 
-    const buttonElements = contentRef.current.querySelectorAll(
-      '[data-kun-button]'
-    )
+    const buttonElements =
+      contentRef.current.querySelectorAll('[data-kun-button]')
     buttonElements.forEach((element) => {
       const href = element.getAttribute('data-href')
       const text = element.getAttribute('data-text')

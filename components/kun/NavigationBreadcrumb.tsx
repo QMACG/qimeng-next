@@ -32,11 +32,7 @@ export const KunNavigationBreadcrumb = () => {
     setItems([...initialItem, ...newItem])
   }, [pathname])
 
-  const hideBreadcrumbRoutes = [
-    '/',
-    '/redirect',
-    '/friend-link'
-  ]
+  const hideBreadcrumbRoutes = ['/', '/redirect', '/friend-link']
 
   return (
     <>

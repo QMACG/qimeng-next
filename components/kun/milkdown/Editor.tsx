@@ -33,7 +33,9 @@ export const KunEditor = ({
       className="w-full min-h-64"
       style={
         minHeight
-          ? ({ ['--kun-editor-min-height' as string]: minHeight } as CSSProperties)
+          ? ({
+              ['--kun-editor-min-height' as string]: minHeight
+            } as CSSProperties)
           : undefined
       }
       onClick={(event) => event.stopPropagation()}

@@ -29,7 +29,9 @@ const getReceivedFavoriteCount = async (uid: number) => {
   })
 
   const uniqueFavorites = new Set(
-    relations.map((relation) => `${relation.folder.user_id}:${relation.patch_id}`)
+    relations.map(
+      (relation) => `${relation.folder.user_id}:${relation.patch_id}`
+    )
   )
 
   return uniqueFavorites.size

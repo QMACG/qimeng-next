@@ -29,10 +29,12 @@ export const KunExternalLink = ({
     .filter((domain): domain is string => Boolean(domain))
     .map((domain) => domain.replace(/\/+$/, ''))
   const currentOrigin =
-    typeof window === 'undefined' ? '' : window.location.origin.replace(/\/+$/, '')
-  const siteDomains = Array.from(new Set([currentOrigin, ...publicSiteDomains])).filter(
-    Boolean
-  )
+    typeof window === 'undefined'
+      ? ''
+      : window.location.origin.replace(/\/+$/, '')
+  const siteDomains = Array.from(
+    new Set([currentOrigin, ...publicSiteDomains])
+  ).filter(Boolean)
 
   const isInternalLink =
     /^(\/(?!\/)|#|mailto:|tel:)/i.test(link) ||

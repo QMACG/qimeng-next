@@ -35,4 +35,3 @@ export const POST = async (req: NextRequest) => {
   const response = await create(input, payload.uid)
   return NextResponse.json(response)
 }
-

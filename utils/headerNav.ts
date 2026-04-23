@@ -8,7 +8,8 @@ export const toPublicHeaderNavItems = (
 ): KunNavItem[] =>
   [...config.items]
     .sort(
-      (left, right) => left.sortOrder - right.sortOrder || left.name.localeCompare(right.name)
+      (left, right) =>
+        left.sortOrder - right.sortOrder || left.name.localeCompare(right.name)
     )
     .map((item) => ({
       name: item.name,

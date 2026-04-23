@@ -221,7 +221,9 @@ export const Comment = ({
                   fullWidth
                   isClearable
                   placeholder={currentPlaceholder}
-                  startContent={<Search className="text-default-300" size={20} />}
+                  startContent={
+                    <Search className="text-default-300" size={20} />
+                  }
                   value={searchQuery}
                   onValueChange={(value) => {
                     setSearchQuery(value)
@@ -280,7 +282,9 @@ export const Comment = ({
                   />
                 ))
               ) : (
-                <div className="py-12 text-center text-default-500">暂无评论</div>
+                <div className="py-12 text-center text-default-500">
+                  暂无评论
+                </div>
               )}
             </div>
 
@@ -304,7 +308,9 @@ export const Comment = ({
 
       <Modal isOpen={isOpenDelete} onClose={onCloseDelete} placement="center">
         <ModalContent>
-          <ModalHeader className="flex flex-col gap-1">批量删除评论</ModalHeader>
+          <ModalHeader className="flex flex-col gap-1">
+            批量删除评论
+          </ModalHeader>
           <ModalBody>
             <p>
               确认删除已选中的 {selectedCommentIds.size}
@@ -329,4 +335,3 @@ export const Comment = ({
     </div>
   )
 }
-

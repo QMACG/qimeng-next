@@ -30,7 +30,11 @@ export const KunCardStats = ({
       )}
     >
       {showViewCount ? (
-        <Tooltip isDisabled={disableTooltip} content="浏览数" placement="bottom">
+        <Tooltip
+          isDisabled={disableTooltip}
+          content="浏览数"
+          placement="bottom"
+        >
           <div className="flex items-center gap-1">
             <Eye className="size-4" />
             <span>{formatNumber(patch.view)}</span>
@@ -39,7 +43,11 @@ export const KunCardStats = ({
       ) : null}
 
       {showDownloadCount ? (
-        <Tooltip isDisabled={disableTooltip} content="下载数" placement="bottom">
+        <Tooltip
+          isDisabled={disableTooltip}
+          content="下载数"
+          placement="bottom"
+        >
           <div className="flex items-center gap-1">
             <Download className="size-4" />
             <span>{formatNumber(patch.download)}</span>
@@ -55,7 +63,11 @@ export const KunCardStats = ({
       </Tooltip>
 
       {!isMobile ? (
-        <Tooltip isDisabled={disableTooltip} content="资源数" placement="bottom">
+        <Tooltip
+          isDisabled={disableTooltip}
+          content="资源数"
+          placement="bottom"
+        >
           <div className="flex items-center gap-1">
             <Puzzle className="size-4" />
             <span>{formatNumber(patch._count.resource || 0)}</span>
@@ -65,7 +77,10 @@ export const KunCardStats = ({
 
       <Tooltip isDisabled={disableTooltip} content="评论数" placement="bottom">
         <div
-          className={cn('flex items-center gap-1', isMobile && 'hidden sm:flex')}
+          className={cn(
+            'flex items-center gap-1',
+            isMobile && 'hidden sm:flex'
+          )}
         >
           <MessageSquare className="size-4" />
           <span>{formatNumber(patch._count.comment || 0)}</span>

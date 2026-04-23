@@ -57,4 +57,3 @@ export const PUT = async (req: NextRequest) => {
 
   return NextResponse.json({})
 }
-

@@ -40,7 +40,11 @@ const sendRegisterCode = async (
     return '该邮箱已被注册，请更换后重试'
   }
 
-  const result = await sendVerificationCodeEmail(headers, input.email, 'register')
+  const result = await sendVerificationCodeEmail(
+    headers,
+    input.email,
+    'register'
+  )
   if (result) {
     return result
   }
@@ -64,4 +68,3 @@ export const POST = async (req: NextRequest) => {
   const response = await sendRegisterCode(input, req.headers)
   return NextResponse.json(response)
 }
-

@@ -28,4 +28,3 @@ export const GET = async (req: NextRequest) => {
   const response = await getRandomUniqueId(nsfwEnable)
   return NextResponse.json(response)
 }
-

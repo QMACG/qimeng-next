@@ -35,7 +35,9 @@ export const getPublicSiteAnalyticsScripts = async () => {
     if (cached) {
       return JSON.parse(cached) as AdminSiteAnalyticsScript[]
     }
-  } catch {}
+  } catch {
+    // ignore cache read errors
+  }
 
   const items = await siteAnalyticsScript.findMany({
     where: {
@@ -48,7 +50,9 @@ export const getPublicSiteAnalyticsScripts = async () => {
 
   try {
     await setKv(CACHE_KEY, JSON.stringify(mapped), CACHE_SECONDS)
-  } catch {}
+  } catch {
+    // ignore cache write errors
+  }
 
   return mapped
 }
@@ -56,5 +60,7 @@ export const getPublicSiteAnalyticsScripts = async () => {
 export const clearSiteAnalyticsScriptsCache = async () => {
   try {
     await delKv(CACHE_KEY)
-  } catch {}
+  } catch {
+    // ignore cache delete errors
+  }
 }

@@ -168,8 +168,9 @@ export const AdminAdvertisementContainer = ({
   initialAdvertisements,
   docCandidates
 }: Props) => {
-  const [advertisements, setAdvertisements] =
-    useState<AdminAdvertisement[]>(initialAdvertisements)
+  const [advertisements, setAdvertisements] = useState<AdminAdvertisement[]>(
+    initialAdvertisements
+  )
   const [submitting, setSubmitting] = useState(false)
   const [deletingId, setDeletingId] = useState<number | null>(null)
   const [deletingAdvertisement, setDeletingAdvertisement] =
@@ -177,21 +178,24 @@ export const AdminAdvertisementContainer = ({
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
 
   const [homeModalOpen, setHomeModalOpen] = useState(false)
-  const [editingHomeAd, setEditingHomeAd] =
-    useState<AdminAdvertisement | null>(null)
+  const [editingHomeAd, setEditingHomeAd] = useState<AdminAdvertisement | null>(
+    null
+  )
   const [homeForm, setHomeForm] = useState<HomeBoxFormState>(EMPTY_HOME_FORM(1))
 
   const [redirectModalOpen, setRedirectModalOpen] = useState(false)
   const [editingRedirectAd, setEditingRedirectAd] =
     useState<AdminAdvertisement | null>(null)
-  const [redirectForm, setRedirectForm] =
-    useState<RedirectBoxFormState>(EMPTY_REDIRECT_FORM())
+  const [redirectForm, setRedirectForm] = useState<RedirectBoxFormState>(
+    EMPTY_REDIRECT_FORM()
+  )
 
   const [featuredModalOpen, setFeaturedModalOpen] = useState(false)
   const [editingFeaturedAd, setEditingFeaturedAd] =
     useState<AdminAdvertisement | null>(null)
-  const [featuredForm, setFeaturedForm] =
-    useState<FeaturedPostFormState>(EMPTY_FEATURED_FORM())
+  const [featuredForm, setFeaturedForm] = useState<FeaturedPostFormState>(
+    EMPTY_FEATURED_FORM()
+  )
 
   const homeBoxAds = useMemo(
     () =>
@@ -304,7 +308,9 @@ export const AdminAdvertisementContainer = ({
       setDeleteModalOpen(false)
       setDeletingAdvertisement(null)
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : '删除广告失败，请稍后重试')
+      toast.error(
+        error instanceof Error ? error.message : '删除广告失败，请稍后重试'
+      )
     } finally {
       setDeletingId(null)
     }
@@ -375,7 +381,9 @@ export const AdminAdvertisementContainer = ({
       setHomeModalOpen(false)
       toast.success(editingHomeAd ? '首页广告已更新' : '首页广告已创建')
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : '保存首页广告失败，请稍后重试')
+      toast.error(
+        error instanceof Error ? error.message : '保存首页广告失败，请稍后重试'
+      )
     } finally {
       setSubmitting(false)
     }
@@ -432,7 +440,9 @@ export const AdminAdvertisementContainer = ({
       toast.success(editingRedirectAd ? '跳转页广告已更新' : '跳转页广告已创建')
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : '保存跳转页广告失败，请稍后重试'
+        error instanceof Error
+          ? error.message
+          : '保存跳转页广告失败，请稍后重试'
       )
     } finally {
       setSubmitting(false)
@@ -502,10 +512,14 @@ export const AdminAdvertisementContainer = ({
 
       upsertAdvertisement(response)
       setFeaturedModalOpen(false)
-      toast.success(editingFeaturedAd ? '置顶文章广告已更新' : '置顶文章广告已创建')
+      toast.success(
+        editingFeaturedAd ? '置顶文章广告已更新' : '置顶文章广告已创建'
+      )
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : '保存置顶文章广告失败，请稍后重试'
+        error instanceof Error
+          ? error.message
+          : '保存置顶文章广告失败，请稍后重试'
       )
     } finally {
       setSubmitting(false)
@@ -534,8 +548,8 @@ export const AdminAdvertisementContainer = ({
                 </Chip>
               </div>
               <p className="mt-3 text-sm text-default-500">
-                可见广告为 1 条时整卡展示，2 条时上下排列，3 条时上中下排列，4 条时为 2 x 2
-                四宫格。
+                可见广告为 1 条时整卡展示，2 条时上下排列，3 条时上中下排列，4
+                条时为 2 x 2 四宫格。
               </p>
             </div>
 
@@ -598,7 +612,9 @@ export const AdminAdvertisementContainer = ({
 
             <Table aria-label="首页广告框列表">
               <TableHeader columns={HOME_BOX_COLUMNS}>
-                {(column) => <TableColumn key={column.uid}>{column.name}</TableColumn>}
+                {(column) => (
+                  <TableColumn key={column.uid}>{column.name}</TableColumn>
+                )}
               </TableHeader>
               <TableBody items={homeBoxRows}>
                 {(row) => (
@@ -642,7 +658,9 @@ export const AdminAdvertisementContainer = ({
                         <a
                           href={row.advertisement.link}
                           target={
-                            isExternalLink(row.advertisement.link) ? '_blank' : undefined
+                            isExternalLink(row.advertisement.link)
+                              ? '_blank'
+                              : undefined
                           }
                           rel={
                             isExternalLink(row.advertisement.link)
@@ -674,7 +692,9 @@ export const AdminAdvertisementContainer = ({
                               isIconOnly
                               size="sm"
                               variant="light"
-                              onPress={() => handleOpenEditHome(row.advertisement!)}
+                              onPress={() =>
+                                handleOpenEditHome(row.advertisement!)
+                              }
                             >
                               <Edit2 size={16} />
                             </Button>
@@ -698,7 +718,9 @@ export const AdminAdvertisementContainer = ({
                               variant="light"
                               color="danger"
                               isLoading={deletingId === row.advertisement.id}
-                              onPress={() => handleOpenDelete(row.advertisement!)}
+                              onPress={() =>
+                                handleOpenDelete(row.advertisement!)
+                              }
                             >
                               <Trash2 size={16} />
                             </Button>
@@ -754,7 +776,9 @@ export const AdminAdvertisementContainer = ({
 
             <Table aria-label="跳转页广告列表">
               <TableHeader columns={REDIRECT_COLUMNS}>
-                {(column) => <TableColumn key={column.uid}>{column.name}</TableColumn>}
+                {(column) => (
+                  <TableColumn key={column.uid}>{column.name}</TableColumn>
+                )}
               </TableHeader>
               <TableBody items={redirectAds}>
                 {(advertisement) => (
@@ -775,7 +799,9 @@ export const AdminAdvertisementContainer = ({
                       <Chip
                         size="sm"
                         variant="flat"
-                        color={advertisement.visibleForGuest ? 'success' : 'warning'}
+                        color={
+                          advertisement.visibleForGuest ? 'success' : 'warning'
+                        }
                       >
                         {advertisement.visibleForGuest ? '是' : '否'}
                       </Chip>
@@ -785,7 +811,9 @@ export const AdminAdvertisementContainer = ({
                       <a
                         href={advertisement.link}
                         target={
-                          isExternalLink(advertisement.link) ? '_blank' : undefined
+                          isExternalLink(advertisement.link)
+                            ? '_blank'
+                            : undefined
                         }
                         rel={
                           isExternalLink(advertisement.link)
@@ -816,7 +844,9 @@ export const AdminAdvertisementContainer = ({
                           as={Link}
                           href={advertisement.link}
                           target={
-                            isExternalLink(advertisement.link) ? '_blank' : undefined
+                            isExternalLink(advertisement.link)
+                              ? '_blank'
+                              : undefined
                           }
                           isIconOnly
                           size="sm"
@@ -870,7 +900,9 @@ export const AdminAdvertisementContainer = ({
 
             <Table aria-label="置顶文章广告列表">
               <TableHeader columns={FEATURED_COLUMNS}>
-                {(column) => <TableColumn key={column.uid}>{column.name}</TableColumn>}
+                {(column) => (
+                  <TableColumn key={column.uid}>{column.name}</TableColumn>
+                )}
               </TableHeader>
               <TableBody items={featuredAds}>
                 {(advertisement) => {
@@ -922,7 +954,9 @@ export const AdminAdvertisementContainer = ({
                           size="sm"
                           variant="flat"
                           color={
-                            advertisement.visibleForGuest ? 'success' : 'warning'
+                            advertisement.visibleForGuest
+                              ? 'success'
+                              : 'warning'
                           }
                         >
                           {advertisement.visibleForGuest ? '是' : '否'}
@@ -932,7 +966,9 @@ export const AdminAdvertisementContainer = ({
                       <TableCell>
                         <a
                           href={previewLink}
-                          target={isExternalLink(previewLink) ? '_blank' : undefined}
+                          target={
+                            isExternalLink(previewLink) ? '_blank' : undefined
+                          }
                           rel={
                             isExternalLink(previewLink)
                               ? 'noopener noreferrer'
@@ -949,14 +985,18 @@ export const AdminAdvertisementContainer = ({
                             isIconOnly
                             size="sm"
                             variant="light"
-                            onPress={() => handleOpenEditFeatured(advertisement)}
+                            onPress={() =>
+                              handleOpenEditFeatured(advertisement)
+                            }
                           >
                             <Edit2 size={16} />
                           </Button>
                           <Button
                             as={Link}
                             href={previewLink}
-                            target={isExternalLink(previewLink) ? '_blank' : undefined}
+                            target={
+                              isExternalLink(previewLink) ? '_blank' : undefined
+                            }
                             isIconOnly
                             size="sm"
                             variant="light"

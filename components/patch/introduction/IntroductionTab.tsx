@@ -93,9 +93,8 @@ export const IntroductionTab = ({
       linkRoot.render(<KunLink href={href} text={text} />)
     })
 
-    const buttonElements = contentRef.current.querySelectorAll(
-      '[data-kun-button]'
-    )
+    const buttonElements =
+      contentRef.current.querySelectorAll('[data-kun-button]')
     buttonElements.forEach((element) => {
       const href = element.getAttribute('data-href')
       const text = element.getAttribute('data-text')

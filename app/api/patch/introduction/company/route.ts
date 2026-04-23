@@ -70,4 +70,3 @@ export const PUT = async (req: NextRequest) => {
   const response = await handlePatchCompanyAction('delete')(input)
   return NextResponse.json(response)
 }
-

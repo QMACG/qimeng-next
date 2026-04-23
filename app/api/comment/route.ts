@@ -73,4 +73,3 @@ export const GET = async (req: NextRequest) => {
   const response = await getComment(input)
   return NextResponse.json(response)
 }
-

@@ -158,7 +158,8 @@ export const FrontDisplaySetting = ({ setting }: Props) => {
             <div>
               <h3 className="text-lg font-semibold">游戏页相关推荐</h3>
               <p className="text-sm text-default-500">
-                开启后，会在游戏详情页的“游戏信息”标签底部显示 8 个相关推荐卡片。
+                开启后，会在游戏详情页的“游戏信息”标签底部显示 8
+                个相关推荐卡片。
               </p>
             </div>
             <Switch

@@ -49,8 +49,7 @@ const friendLinkBaseSchema = z.object({
     .min(0, { message: '排序值不能小于 0' })
     .max(999999, { message: '排序值不能超过 999999' })
     .default(0),
-  status: z
-    .coerce
+  status: z.coerce
     .number()
     .int()
     .refine(

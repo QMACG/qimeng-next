@@ -38,4 +38,3 @@ export const POST = async (req: NextRequest) => {
   const res = await updateUserAvatar(payload.uid, safeAvatar)
   return NextResponse.json(res)
 }
-

@@ -46,7 +46,8 @@ export const RankingControls = ({
   onMinRatingCountChange
 }: Props) => {
   const selectedLabel =
-    SORT_OPTIONS.find((option) => option.value === sortField)?.label ?? '排序字段'
+    SORT_OPTIONS.find((option) => option.value === sortField)?.label ??
+    '排序字段'
 
   const handleMinCountChange = (value: string) => {
     const parsed = Number(value)
@@ -86,7 +87,9 @@ export const RankingControls = ({
                   }}
                 >
                   {SORT_OPTIONS.map((option) => (
-                    <DropdownItem key={option.value}>{option.label}</DropdownItem>
+                    <DropdownItem key={option.value}>
+                      {option.label}
+                    </DropdownItem>
                   ))}
                 </DropdownMenu>
               </Dropdown>

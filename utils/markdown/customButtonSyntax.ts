@@ -1,14 +1,12 @@
 const CODE_BLOCK_REGEX = /(```[\s\S]*?```|~~~[\s\S]*?~~~)/g
-const BUTTON_TAG_REGEX = /\{button(?<attrs>[^}]*)\}(?<text>[\s\S]*?)\{\/button\}/gi
+const BUTTON_TAG_REGEX =
+  /\{button(?<attrs>[^}]*)\}(?<text>[\s\S]*?)\{\/button\}/gi
 const CALLOUT_BLOCK_REGEX =
   /:::\s*callout(?:\{(?<attrs>[^\n}]*)\})?\s*\n(?<content>[\s\S]*?)\n:::/gi
 const GALLERY_BLOCK_REGEX = /:::\s*gallery\s*\n(?<content>[\s\S]*?)\n:::/gi
 
 const escapeHtml = (value: string) =>
-  value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
+  value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
 const escapeAttribute = (value: string) =>
   escapeHtml(value).replace(/"/g, '&quot;')
@@ -49,19 +47,16 @@ const transformButtonSyntax = (
   })
 
 const transformCalloutSyntaxToMdx = (markdown: string) =>
-  markdown.replace(
-    CALLOUT_BLOCK_REGEX,
-    (_, rawAttrs = '', rawContent = '') => {
-      const attributes = parseAttributes(rawAttrs)
-      const type = (attributes.type ?? 'info').trim() || 'info'
-      const title = (attributes.title ?? '').trim()
-      const content = rawContent.trim()
+  markdown.replace(CALLOUT_BLOCK_REGEX, (_, rawAttrs = '', rawContent = '') => {
+    const attributes = parseAttributes(rawAttrs)
+    const type = (attributes.type ?? 'info').trim() || 'info'
+    const title = (attributes.title ?? '').trim()
+    const content = rawContent.trim()
 
-      return `<MarkdownCallout type="${escapeAttribute(type)}"${title ? ` title="${escapeAttribute(title)}"` : ''}>
+    return `<MarkdownCallout type="${escapeAttribute(type)}"${title ? ` title="${escapeAttribute(title)}"` : ''}>
 ${content}
 </MarkdownCallout>`
-    }
-  )
+  })
 
 const transformGallerySyntaxToMdx = (markdown: string) =>
   markdown.replace(GALLERY_BLOCK_REGEX, (_, rawContent = '') => {

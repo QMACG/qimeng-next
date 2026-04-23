@@ -24,8 +24,9 @@ const DEFAULT_ENDPOINT = 'https://green-cip.cn-beijing.aliyuncs.com'
 const DEFAULT_AUDIT_ERROR = '内容提交失败，请调整后重试'
 const DEFAULT_SERVICE_ERROR = '内容审核服务暂时不可用，请稍后再试'
 
-const splitRules = (items: string[]) =>
-  [...new Set(items.map((item) => item.trim()).filter(Boolean))]
+const splitRules = (items: string[]) => [
+  ...new Set(items.map((item) => item.trim()).filter(Boolean))
+]
 
 const normalizeText = (value: string) => value.trim().toLowerCase()
 
@@ -55,7 +56,10 @@ const matchesUserRule = (
   })
 }
 
-const findMatchedKeyword = (keywords: string[], content: string): string | null => {
+const findMatchedKeyword = (
+  keywords: string[],
+  content: string
+): string | null => {
   const normalizedContent = normalizeText(content)
 
   for (const keyword of keywords) {
@@ -113,8 +117,7 @@ const buildAliyunSignedUrl = (
 const auditByAliyun = async (content: string) => {
   const accessKeyId = process.env.ALIYUN_GREEN_ACCESS_KEY_ID?.trim()
   const accessKeySecret = process.env.ALIYUN_GREEN_ACCESS_KEY_SECRET?.trim()
-  const endpoint =
-    process.env.ALIYUN_GREEN_ENDPOINT?.trim() || DEFAULT_ENDPOINT
+  const endpoint = process.env.ALIYUN_GREEN_ENDPOINT?.trim() || DEFAULT_ENDPOINT
 
   if (!accessKeyId || !accessKeySecret) {
     throw new Error(DEFAULT_SERVICE_ERROR)

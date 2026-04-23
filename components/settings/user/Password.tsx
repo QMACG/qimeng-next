@@ -92,7 +92,8 @@ export const Password = () => {
 
         <CardFooter className="flex-wrap">
           <p className="text-default-500">
-            密码长度至少 6 个字符，可包含数字、字母与常见符号，建议不要与其他网站重复。
+            密码长度至少 6
+            个字符，可包含数字、字母与常见符号，建议不要与其他网站重复。
           </p>
           <Button
             color="primary"

@@ -205,31 +205,30 @@ export const adminUpdateDisableRegisterSchema = z.object({
   disableRegister: z.boolean()
 })
 
-export const adminUpdateFrontDisplaySchema = z.object({
-  enableSite: z.coerce.boolean(),
-  siteCloseMessage: z.string().max(10007),
-  hideViewCountForVisitor: z.coerce.boolean(),
-  hideDownloadCountForVisitor: z.coerce.boolean(),
-  hideCreatorStatsForVisitor: z.coerce.boolean(),
-  enableContentScopeControl: z.coerce.boolean(),
-  enablePatchRelatedGames: z.coerce.boolean(),
-  enableFriendLinkApply: z.coerce.boolean()
-}).superRefine((data, ctx) => {
-  if (!data.enableSite && !data.siteCloseMessage.trim()) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: '关闭站点时请填写站点提示',
-      path: ['siteCloseMessage']
-    })
-  }
-})
+export const adminUpdateFrontDisplaySchema = z
+  .object({
+    enableSite: z.coerce.boolean(),
+    siteCloseMessage: z.string().max(10007),
+    hideViewCountForVisitor: z.coerce.boolean(),
+    hideDownloadCountForVisitor: z.coerce.boolean(),
+    hideCreatorStatsForVisitor: z.coerce.boolean(),
+    enableContentScopeControl: z.coerce.boolean(),
+    enablePatchRelatedGames: z.coerce.boolean(),
+    enableFriendLinkApply: z.coerce.boolean()
+  })
+  .superRefine((data, ctx) => {
+    if (!data.enableSite && !data.siteCloseMessage.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: '关闭站点时请填写站点提示',
+        path: ['siteCloseMessage']
+      })
+    }
+  })
 
 export const adminUpdateHomeAnnouncementConfigSchema = z.object({
   isEnabled: z.coerce.boolean(),
-  title: z
-    .string()
-    .trim()
-    .max(255, { message: '公告标题不能超过 255 个字符' }),
+  title: z.string().trim().max(255, { message: '公告标题不能超过 255 个字符' }),
   content: z
     .string()
     .trim()
@@ -361,7 +360,12 @@ export const adminUpdateCommentAuditConfigSchema = z.object({
   })
 })
 
-const adminHeaderNavFixedKeySchema = z.enum(['galgame', 'tag', 'company', 'doc'])
+const adminHeaderNavFixedKeySchema = z.enum([
+  'galgame',
+  'tag',
+  'company',
+  'doc'
+])
 
 export const adminUpdateHeaderNavConfigSchema = z
   .object({
@@ -405,7 +409,8 @@ export const adminUpdateHeaderNavConfigSchema = z
       if (count !== 1) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: '固定导航项配置不完整，请保留游戏资源、游戏标签、会社、文章这四项'
+          message:
+            '固定导航项配置不完整，请保留游戏资源、游戏标签、会社、文章这四项'
         })
         return
       }

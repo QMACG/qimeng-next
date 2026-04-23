@@ -45,11 +45,7 @@ export const getAllPosts = async () => {
 
   const posts = await prisma.doc_post.findMany({
     where: { visibility: CONTENT_VISIBILITY.public },
-    orderBy: [
-      { pin: 'desc' },
-      { sort_order: 'desc' },
-      { published_at: 'desc' }
-    ]
+    orderBy: [{ pin: 'desc' }, { sort_order: 'desc' }, { published_at: 'desc' }]
   })
 
   return posts.map(toPostMetadata)

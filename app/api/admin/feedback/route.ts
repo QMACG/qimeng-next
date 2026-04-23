@@ -10,8 +10,22 @@ import type { AdminFeedback } from '~/types/api/admin'
 import { parseUserAgentSummary } from '~/utils/userAgentSummary'
 import { adminFeedbackPaginationSchema } from '~/validations/admin'
 
-const mapAdminFeedback = async (
-  comment: {
+const mapAdminFeedback = async (comment: {
+  id: number
+  doc_post_id: number
+  parent_id: number | null
+  content: string
+  status: number
+  user_agent: string
+  created: Date
+  updated: Date
+  user: {
+    id: number
+    name: string
+    avatar: string
+    role: number
+  }
+  reply: Array<{
     id: number
     doc_post_id: number
     parent_id: number | null
@@ -26,24 +40,8 @@ const mapAdminFeedback = async (
       avatar: string
       role: number
     }
-    reply: Array<{
-      id: number
-      doc_post_id: number
-      parent_id: number | null
-      content: string
-      status: number
-      user_agent: string
-      created: Date
-      updated: Date
-      user: {
-        id: number
-        name: string
-        avatar: string
-        role: number
-      }
-    }>
-  }
-): Promise<AdminFeedback> => ({
+  }>
+}): Promise<AdminFeedback> => ({
   id: comment.id,
   docPostId: comment.doc_post_id,
   parentId: comment.parent_id,

@@ -249,7 +249,7 @@ const createDocComment = async (
 const updateDocComment = async (
   input: z.infer<typeof docCommentUpdateSchema>,
   uid: number,
-  username: string,
+  username: string
 ): Promise<DocComment | string> => {
   const comment = await getFeedbackCommentById(input.commentId)
   if (
@@ -360,11 +360,7 @@ export const PUT = async (req: NextRequest) => {
     return NextResponse.json('用户未登录')
   }
 
-  const response = await updateDocComment(
-    input,
-    payload.uid,
-    payload.name
-  )
+  const response = await updateDocComment(input, payload.uid, payload.name)
   return NextResponse.json(response)
 }
 

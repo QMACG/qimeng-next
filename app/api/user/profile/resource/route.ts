@@ -59,4 +59,3 @@ export async function GET(req: NextRequest) {
   const response = await getUserPatchResource(input, nsfwEnable)
   return NextResponse.json(response)
 }
-

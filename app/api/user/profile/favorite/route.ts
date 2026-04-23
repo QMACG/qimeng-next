@@ -54,4 +54,3 @@ export const GET = async (req: NextRequest) => {
   const response = await getUserFavorite(input, nsfwEnable)
   return NextResponse.json(response)
 }
-

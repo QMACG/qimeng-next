@@ -12,18 +12,13 @@ interface SendSiteEmailInput {
 let transporter: Transporter | null = null
 
 const EMAIL_DELIVERY_FAILED = '邮件发送失败，请稍后重试'
-const EMAIL_CONFIG_MISSING =
-  '邮件配置不完整，请检查发信邮箱相关环境变量'
-const EMAIL_RECIPIENT_MISSING =
-  '收件人邮箱为空，请检查填写或数据库中的用户邮箱'
+const EMAIL_CONFIG_MISSING = '邮件配置不完整，请检查发信邮箱相关环境变量'
+const EMAIL_RECIPIENT_MISSING = '收件人邮箱为空，请检查填写或数据库中的用户邮箱'
 const EMAIL_RECIPIENT_INVALID =
   '收件人邮箱格式无效（SMTP 不接受），请检查填写或清理数据库中的异常邮箱'
-const EMAIL_PORT_INVALID =
-  '邮件端口配置无效，请检查邮件端口环境变量'
-const EMAIL_AUTH_FAILED =
-  '邮件服务器认证失败，请检查邮箱账号和密码配置'
-const EMAIL_NETWORK_FAILED =
-  '邮件服务器连接失败，请检查主机、端口和网络配置'
+const EMAIL_PORT_INVALID = '邮件端口配置无效，请检查邮件端口环境变量'
+const EMAIL_AUTH_FAILED = '邮件服务器认证失败，请检查邮箱账号和密码配置'
+const EMAIL_NETWORK_FAILED = '邮件服务器连接失败，请检查主机、端口和网络配置'
 
 const normalizeSmtpHost = (value: string) => {
   const trimmed = value.trim()

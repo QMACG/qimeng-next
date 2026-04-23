@@ -21,14 +21,13 @@ export const HomeAnnouncementSetting = ({ setting }: Props) => {
     setSaving(true)
 
     try {
-      const response = await kunFetchPut<KunResponse<AdminHomeAnnouncementConfig>>(
-        '/admin/setting/home-announcement',
-        {
-          isEnabled,
-          title,
-          content
-        }
-      )
+      const response = await kunFetchPut<
+        KunResponse<AdminHomeAnnouncementConfig>
+      >('/admin/setting/home-announcement', {
+        isEnabled,
+        title,
+        content
+      })
 
       if (typeof response === 'string') {
         toast.error(response)

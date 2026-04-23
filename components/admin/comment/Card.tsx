@@ -52,7 +52,10 @@ export const CommentCard = ({
                 </h2>
                 <span className="text-small text-default-500">
                   评论于{' '}
-                  <Link className="text-primary-500" href={`/${comment.uniqueId}`}>
+                  <Link
+                    className="text-primary-500"
+                    href={`/${comment.uniqueId}`}
+                  >
                     {comment.patchName}
                   </Link>
                 </span>

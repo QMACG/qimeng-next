@@ -55,4 +55,3 @@ export async function GET(req: NextRequest) {
   const res = await getLog(input)
   return NextResponse.json(res)
 }
-

@@ -109,4 +109,3 @@ export const POST = async (req: NextRequest) => {
   const response = await verifyLogin2FA(input, tempToken, payload.id)
   return NextResponse.json(response)
 }
-

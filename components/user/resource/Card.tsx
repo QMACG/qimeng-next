@@ -53,4 +53,3 @@ export const UserResourceCard = ({ resource }: Props) => {
     </Card>
   )
 }
-

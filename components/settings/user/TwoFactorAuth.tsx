@@ -189,7 +189,8 @@ export const TwoFactorAuth = () => {
               两步验证可以为您的账户增加额外保护。启用后，登录时除了密码，还需要输入身份验证器生成的验证码。
             </p>
             <p>
-              当前剩余 <b>{authStatus.backupCodeLength}</b> 个备用验证码。若数量过少，
+              当前剩余 <b>{authStatus.backupCodeLength}</b>{' '}
+              个备用验证码。若数量过少，
               建议重新关闭并启用一次两步验证以生成新的备用码。
             </p>
           </div>
@@ -264,7 +265,11 @@ export const TwoFactorAuth = () => {
                   如果无法扫描二维码，也可以将下方密钥手动输入到身份验证器应用中。
                 </p>
                 <div className="flex gap-2">
-                  <Input value={authStatus.secret} readOnly className="font-mono" />
+                  <Input
+                    value={authStatus.secret}
+                    readOnly
+                    className="font-mono"
+                  />
                   <Button
                     color="primary"
                     variant="flat"

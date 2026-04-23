@@ -32,7 +32,9 @@ const getRequestOrigin = (req: NextRequest) => {
   const forwardedHost = pickForwardedValue(req.headers.get('x-forwarded-host'))
   const host = forwardedHost || req.headers.get('host') || req.nextUrl.host
 
-  const forwardedProto = pickForwardedValue(req.headers.get('x-forwarded-proto'))
+  const forwardedProto = pickForwardedValue(
+    req.headers.get('x-forwarded-proto')
+  )
   const protocol = forwardedProto || req.nextUrl.protocol.replace(':', '')
 
   return `${protocol}://${host}`

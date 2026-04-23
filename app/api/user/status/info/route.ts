@@ -71,4 +71,3 @@ export async function GET(req: NextRequest) {
   const user = await getUserProfile(input, payload?.uid ?? 0)
   return NextResponse.json(user)
 }
-

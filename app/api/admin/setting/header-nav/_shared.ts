@@ -57,13 +57,17 @@ export const getHeaderNavConfig = async (): Promise<AdminHeaderNavConfig> => {
 
   const fixedKeys = new Set<string>(
     items
-      .filter((item: { nav_key: string | null; is_fixed: boolean }) => item.is_fixed)
+      .filter(
+        (item: { nav_key: string | null; is_fixed: boolean }) => item.is_fixed
+      )
       .map((item: { nav_key: string | null }) => item.nav_key)
       .filter(Boolean)
   )
 
   let appendSortOrder = 999000
-  for (const [key, fixedItem] of Object.entries(DEFAULT_HEADER_NAV_FIXED_ITEMS)) {
+  for (const [key, fixedItem] of Object.entries(
+    DEFAULT_HEADER_NAV_FIXED_ITEMS
+  )) {
     if (!fixedKeys.has(key)) {
       await model.create({
         data: {

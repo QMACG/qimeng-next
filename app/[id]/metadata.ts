@@ -42,9 +42,12 @@ export const generateKunMetadataTemplate = (
   return {
     metadataBase: new URL(kunMoyuMoe.domain.main),
     title: `${detailTitle} - ${kunMoyuMoe.titleShort}`,
-    keywords: [patch.name, patchType, ...patch.tags, ...kunMoyuMoe.keywords].filter(
-      Boolean
-    ),
+    keywords: [
+      patch.name,
+      patchType,
+      ...patch.tags,
+      ...kunMoyuMoe.keywords
+    ].filter(Boolean),
     authors: kunMoyuMoe.author,
     creator: kunMoyuMoe.creator.name,
     publisher: kunMoyuMoe.publisher.name,

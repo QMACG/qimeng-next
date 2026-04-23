@@ -16,7 +16,11 @@ export const GET = async (req: NextRequest) => {
   }
   const payload = await verifyHeaderCookie(req)
 
-  const res = await getPatchByFolder(input, payload?.uid ?? 0, payload?.role ?? 0)
+  const res = await getPatchByFolder(
+    input,
+    payload?.uid ?? 0,
+    payload?.role ?? 0
+  )
   return NextResponse.json(res)
 }
 

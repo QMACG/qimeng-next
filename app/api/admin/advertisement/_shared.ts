@@ -66,7 +66,9 @@ export const mapAdvertisement = (advertisement: {
   docPostId: advertisement.doc_post_id,
   created: String(advertisement.created),
   updated: String(advertisement.updated),
-  docPost: advertisement.doc_post ? mapDocCandidate(advertisement.doc_post) : null
+  docPost: advertisement.doc_post
+    ? mapDocCandidate(advertisement.doc_post)
+    : null
 })
 
 export const getAdvertisementDocCandidates = async () => {

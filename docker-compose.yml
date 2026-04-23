@@ -34,7 +34,7 @@ services:
         condition: service_healthy
     ports:
       # 绑定环回地址，避免 Docker 在 0.0.0.0 监听从而绕过防火墙对公网网卡的限制
-      - "${HOST_BIND:-127.0.0.1}:${HOST_PORT:-3001}:3000"
+      - '${HOST_BIND:-127.0.0.1}:${HOST_PORT:-3001}:3000'
     env_file:
       - ${ENV_FILE:-.env}
     environment:

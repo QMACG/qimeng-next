@@ -40,10 +40,14 @@ interface Props {
 
 const COMMENTS_PER_PAGE = 30
 
-const canEditComment = (viewerUid: number, userId: number) => viewerUid === userId
+const canEditComment = (viewerUid: number, userId: number) =>
+  viewerUid === userId
 
-const canDeleteComment = (viewerUid: number, viewerRole: number, userId: number) =>
-  viewerRole >= 3 || viewerUid === userId
+const canDeleteComment = (
+  viewerUid: number,
+  viewerRole: number,
+  userId: number
+) => viewerRole >= 3 || viewerUid === userId
 
 export const FeedbackComments = ({ docPostId, requireCaptcha }: Props) => {
   const user = useUserStore((state) => state.user)
@@ -53,7 +57,9 @@ export const FeedbackComments = ({ docPostId, requireCaptcha }: Props) => {
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(false)
   const [showEditor, setShowEditor] = useState(false)
-  const [deletingCommentId, setDeletingCommentId] = useState<number | null>(null)
+  const [deletingCommentId, setDeletingCommentId] = useState<number | null>(
+    null
+  )
   const [pendingDeleteCommentId, setPendingDeleteCommentId] = useState<
     number | null
   >(null)
@@ -71,7 +77,10 @@ export const FeedbackComments = ({ docPostId, requireCaptcha }: Props) => {
     onClose: onCloseDelete
   } = useDisclosure()
 
-  const prefill = useMemo(() => searchParams.get('prefill') ?? '', [searchParams])
+  const prefill = useMemo(
+    () => searchParams.get('prefill') ?? '',
+    [searchParams]
+  )
 
   useEffect(() => {
     if (prefill.trim()) {
@@ -260,8 +269,13 @@ export const FeedbackComments = ({ docPostId, requireCaptcha }: Props) => {
                       userProps={{
                         name: (
                           <div className="min-w-0">
-                            <FeedbackClientInfo clientInfo={comment.clientInfo} />
-                            <UserName user={comment.user} className="font-semibold" />
+                            <FeedbackClientInfo
+                              clientInfo={comment.clientInfo}
+                            />
+                            <UserName
+                              user={comment.user}
+                              className="font-semibold"
+                            />
                           </div>
                         ),
                         description: formatTimeDifference(comment.created),
@@ -280,7 +294,9 @@ export const FeedbackComments = ({ docPostId, requireCaptcha }: Props) => {
 
                       <Tooltip
                         content={
-                          replyTo?.commentId === comment.id ? '收起回复' : '回复'
+                          replyTo?.commentId === comment.id
+                            ? '收起回复'
+                            : '回复'
                         }
                       >
                         <Button
@@ -399,13 +415,17 @@ export const FeedbackComments = ({ docPostId, requireCaptcha }: Props) => {
                       <Divider />
                       <div className="space-y-4 pl-4">
                         {comment.reply.map((reply) => {
-                          const canEditReply = canEditComment(user.uid, reply.user.id)
+                          const canEditReply = canEditComment(
+                            user.uid,
+                            reply.user.id
+                          )
                           const canDeleteReply = canDeleteComment(
                             user.uid,
                             user.role,
                             reply.user.id
                           )
-                          const isEditingReply = editingTarget?.commentId === reply.id
+                          const isEditingReply =
+                            editingTarget?.commentId === reply.id
 
                           return (
                             <div
@@ -428,7 +448,9 @@ export const FeedbackComments = ({ docPostId, requireCaptcha }: Props) => {
                                         />
                                       </div>
                                     ),
-                                    description: formatTimeDifference(reply.created),
+                                    description: formatTimeDifference(
+                                      reply.created
+                                    ),
                                     avatarProps: {
                                       showFallback: true,
                                       name: reply.user.name,
@@ -441,7 +463,9 @@ export const FeedbackComments = ({ docPostId, requireCaptcha }: Props) => {
                                 <div className="flex flex-wrap items-center justify-end gap-2">
                                   {canEditReply ? (
                                     <Tooltip
-                                      content={isEditingReply ? '取消编辑' : '编辑'}
+                                      content={
+                                        isEditingReply ? '取消编辑' : '编辑'
+                                      }
                                     >
                                       <Button
                                         isIconOnly
@@ -470,8 +494,12 @@ export const FeedbackComments = ({ docPostId, requireCaptcha }: Props) => {
                                         variant="light"
                                         isIconOnly
                                         size="sm"
-                                        isLoading={deletingCommentId === reply.id}
-                                        onPress={() => openDeleteModal(reply.id)}
+                                        isLoading={
+                                          deletingCommentId === reply.id
+                                        }
+                                        onPress={() =>
+                                          openDeleteModal(reply.id)
+                                        }
                                       >
                                         <Trash2 className="size-4" />
                                       </Button>
@@ -493,7 +521,9 @@ export const FeedbackComments = ({ docPostId, requireCaptcha }: Props) => {
                                   }}
                                 />
                               ) : (
-                                <FeedbackCommentContent content={reply.content} />
+                                <FeedbackCommentContent
+                                  content={reply.content}
+                                />
                               )}
                             </div>
                           )
@@ -512,12 +542,21 @@ export const FeedbackComments = ({ docPostId, requireCaptcha }: Props) => {
 
         {totalPages > 1 ? (
           <div className="mt-4 flex justify-center">
-            <Pagination total={totalPages} page={page} onChange={setPage} showControls />
+            <Pagination
+              total={totalPages}
+              page={page}
+              onChange={setPage}
+              showControls
+            />
           </div>
         ) : null}
       </div>
 
-      <Modal isOpen={isOpenDelete} onClose={handleCloseDeleteModal} placement="center">
+      <Modal
+        isOpen={isOpenDelete}
+        onClose={handleCloseDeleteModal}
+        placement="center"
+      >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">删除评论</ModalHeader>
           <ModalBody>

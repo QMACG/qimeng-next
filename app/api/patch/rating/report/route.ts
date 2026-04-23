@@ -94,4 +94,3 @@ export const POST = async (req: NextRequest) => {
   const response = await createReport(input, payload.uid)
   return NextResponse.json(response)
 }
-

@@ -18,7 +18,11 @@ export const kunGetCompanyByIdActions = async (
     return input
   }
 
-  const response = await callRouteGet(getCompanyByIdRoute, '/api/company', input)
+  const response = await callRouteGet(
+    getCompanyByIdRoute,
+    '/api/company',
+    input
+  )
   return response
 }
 

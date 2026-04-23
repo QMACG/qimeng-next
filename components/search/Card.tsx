@@ -41,4 +41,3 @@ export const SearchCard = ({ patch }: Props) => {
     </Card>
   )
 }
-

@@ -42,4 +42,3 @@ export const GET = async (req: NextRequest) => {
   const response = await getCompany(input)
   return NextResponse.json(response)
 }
-

@@ -38,4 +38,3 @@ export const GET = async (req: NextRequest) => {
   const response = await getTag(input)
   return NextResponse.json(response)
 }
-

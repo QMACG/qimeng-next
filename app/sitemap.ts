@@ -141,7 +141,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ...companyRoutes
     ]
   } catch (error) {
-    console.error('Failed to generate dynamic sitemap, fallback to static routes.', error)
+    console.error(
+      'Failed to generate dynamic sitemap, fallback to static routes.',
+      error
+    )
     return staticRoutes
   }
 }

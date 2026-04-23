@@ -22,10 +22,7 @@ import { ArrayAdder } from './ArrayAdder'
 import { SUPPORTED_LANGUAGE_MAP } from '~/constants/resource'
 import type { Company, CompanyDetail } from '~/types/api/company'
 import { kunFetchPost, kunFetchPut } from '~/utils/kunFetch'
-import {
-  errorReporter,
-  kunErrorHandlerAsync
-} from '~/utils/kunErrorHandler'
+import { errorReporter, kunErrorHandlerAsync } from '~/utils/kunErrorHandler'
 import { createCompanySchema } from '~/validations/company'
 
 const companyFormSchema = createCompanySchema.extend({
@@ -62,12 +59,12 @@ export const CompanyFormModal: FC<Props> = ({
 
   const formDefaultValue = useMemo((): CompanyFormData => {
     const defaultValue: CompanyFormData = {
-      name: isEdit ? company?.name ?? '' : '',
-      introduction: isEdit ? company?.introduction ?? '' : '',
-      alias: isEdit ? company?.alias ?? [] : [],
-      primary_language: isEdit ? company?.primary_language ?? [] : [],
-      official_website: isEdit ? company?.official_website ?? [] : [],
-      parent_brand: isEdit ? company?.parent_brand ?? [] : []
+      name: isEdit ? (company?.name ?? '') : '',
+      introduction: isEdit ? (company?.introduction ?? '') : '',
+      alias: isEdit ? (company?.alias ?? []) : [],
+      primary_language: isEdit ? (company?.primary_language ?? []) : [],
+      official_website: isEdit ? (company?.official_website ?? []) : [],
+      parent_brand: isEdit ? (company?.parent_brand ?? []) : []
     }
 
     if (isEdit && company) {

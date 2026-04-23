@@ -30,41 +30,41 @@ export const SearchOption = () => {
           </div>
 
           <div className="flex flex-col flex-wrap gap-3">
-          <Checkbox
-            isSelected={searchData.searchInTitle}
-            onValueChange={(checked) =>
-              setSearchData({ ...searchData, searchInTitle: checked })
-            }
-          >
-            包含标题
-          </Checkbox>
+            <Checkbox
+              isSelected={searchData.searchInTitle}
+              onValueChange={(checked) =>
+                setSearchData({ ...searchData, searchInTitle: checked })
+              }
+            >
+              包含标题
+            </Checkbox>
 
-          <Checkbox
-            isSelected={searchData.searchInIntroduction}
-            onValueChange={(checked) =>
-              setSearchData({ ...searchData, searchInIntroduction: checked })
-            }
-          >
-            包含正文
-          </Checkbox>
+            <Checkbox
+              isSelected={searchData.searchInIntroduction}
+              onValueChange={(checked) =>
+                setSearchData({ ...searchData, searchInIntroduction: checked })
+              }
+            >
+              包含正文
+            </Checkbox>
 
-          <Checkbox
-            isSelected={searchData.searchInTag}
-            onValueChange={(checked) =>
-              setSearchData({ ...searchData, searchInTag: checked })
-            }
-          >
-            包含标签
-          </Checkbox>
+            <Checkbox
+              isSelected={searchData.searchInTag}
+              onValueChange={(checked) =>
+                setSearchData({ ...searchData, searchInTag: checked })
+              }
+            >
+              包含标签
+            </Checkbox>
 
-          <Checkbox
-            isSelected={searchData.searchInCompany}
-            onValueChange={(checked) =>
-              setSearchData({ ...searchData, searchInCompany: checked })
-            }
-          >
-            包含会社
-          </Checkbox>
+            <Checkbox
+              isSelected={searchData.searchInCompany}
+              onValueChange={(checked) =>
+                setSearchData({ ...searchData, searchInCompany: checked })
+              }
+            >
+              包含会社
+            </Checkbox>
           </div>
         </div>
       </PopoverContent>

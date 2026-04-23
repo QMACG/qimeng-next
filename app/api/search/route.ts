@@ -86,7 +86,10 @@ const searchGalgame = async (
         tag: {
           some: {
             tag: {
-              OR: [{ name: { contains: keyword } }, ...buildAliasConditions(keyword)]
+              OR: [
+                { name: { contains: keyword } },
+                ...buildAliasConditions(keyword)
+              ]
             }
           }
         }
@@ -98,7 +101,10 @@ const searchGalgame = async (
         company: {
           some: {
             company: {
-              OR: [{ name: { contains: keyword } }, ...buildAliasConditions(keyword)]
+              OR: [
+                { name: { contains: keyword } },
+                ...buildAliasConditions(keyword)
+              ]
             }
           }
         }

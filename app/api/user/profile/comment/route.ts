@@ -7,9 +7,7 @@ import { markdownToText } from '~/utils/markdownToText'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 import type { UserComment } from '~/types/api/user'
 
-const getUserComment = async (
-  input: z.infer<typeof getUserInfoSchema>
-) => {
+const getUserComment = async (input: z.infer<typeof getUserInfoSchema>) => {
   const { uid, page, limit } = input
   const offset = (page - 1) * limit
 
@@ -68,4 +66,3 @@ export const GET = async (req: NextRequest) => {
   const response = await getUserComment(input)
   return NextResponse.json(response)
 }
-

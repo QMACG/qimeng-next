@@ -84,7 +84,11 @@ export const Reset = () => {
             <Button color="danger" variant="light" onPress={onClose}>
               取消
             </Button>
-            <Button isLoading={loading} color="primary" onPress={handleResetData}>
+            <Button
+              isLoading={loading}
+              color="primary"
+              onPress={handleResetData}
+            >
               确认
             </Button>
           </ModalFooter>

@@ -33,7 +33,9 @@ const formatIssueMessage = (issue: ZodIssue) => {
 
   switch (issue.code) {
     case 'invalid_type':
-      return issue.received === 'undefined' ? '请完整填写必填项' : '输入格式不正确'
+      return issue.received === 'undefined'
+        ? '请完整填写必填项'
+        : '输入格式不正确'
     case 'invalid_string':
       if (issue.validation === 'url') {
         return '请输入有效的链接地址'

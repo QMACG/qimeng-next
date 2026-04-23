@@ -18,7 +18,10 @@ export const GET = async (req: NextRequest) => {
 }
 
 export const PUT = async (req: NextRequest) => {
-  const input = await kunParsePutBody(req, adminUpdateHomeAnnouncementConfigSchema)
+  const input = await kunParsePutBody(
+    req,
+    adminUpdateHomeAnnouncementConfigSchema
+  )
   if (typeof input === 'string') {
     return NextResponse.json(input)
   }

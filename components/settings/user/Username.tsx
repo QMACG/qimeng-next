@@ -80,7 +80,12 @@ export const Username = () => {
           用户名最长 17 个字符，修改一次会消耗 30 萌萌点，且操作不可撤销。
         </p>
 
-        <Button color="primary" variant="solid" className="ml-auto" onPress={onOpen}>
+        <Button
+          color="primary"
+          variant="solid"
+          className="ml-auto"
+          onPress={onOpen}
+        >
           保存
         </Button>
 

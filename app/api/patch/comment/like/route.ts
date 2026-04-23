@@ -59,13 +59,16 @@ const toggleCommentLike = async (
       })
     }
 
-    await createDedupMessage({
-      type: 'like',
-      content: `赞了您的评论：${comment.content.slice(0, 107)}`,
-      sender_id: uid,
-      recipient_id: comment.user_id,
-      link: `/${comment.patch.unique_id}`
-    }, tx)
+    await createDedupMessage(
+      {
+        type: 'like',
+        content: `赞了您的评论：${comment.content.slice(0, 107)}`,
+        sender_id: uid,
+        recipient_id: comment.user_id,
+        link: `/${comment.patch.unique_id}`
+      },
+      tx
+    )
 
     await tx.user.update({
       where: { id: comment.user_id },
@@ -89,4 +92,3 @@ export const PUT = async (req: NextRequest) => {
   const response = await toggleCommentLike(input, payload.uid)
   return NextResponse.json(response)
 }
-

@@ -101,7 +101,9 @@ const getInitialState = (post?: AdminDocPost): DocFormState => ({
   status: (post?.status as 0 | 1 | 2 | 3) ?? 1,
   pin: post?.pin ?? false,
   sortOrder: post?.sortOrder ?? 0,
-  publishedAt: toDatetimeLocalValue(post?.publishedAt ?? new Date().toISOString())
+  publishedAt: toDatetimeLocalValue(
+    post?.publishedAt ?? new Date().toISOString()
+  )
 })
 
 const getDocPath = (slug: string) => `/doc/${slug.replace(/^\/+/, '')}`
@@ -281,7 +283,10 @@ export const DocEditForm = ({ mode, initialPost }: Props) => {
             labelPlacement="outside"
             selectedKeys={new Set([String(form.status)])}
             onChange={(event) =>
-              handleChange('status', Number(event.target.value) as 0 | 1 | 2 | 3)
+              handleChange(
+                'status',
+                Number(event.target.value) as 0 | 1 | 2 | 3
+              )
             }
           >
             {CONTENT_VISIBILITY_OPTIONS.map((option) => (
@@ -304,7 +309,9 @@ export const DocEditForm = ({ mode, initialPost }: Props) => {
             label="发布时间"
             labelPlacement="outside"
             value={form.publishedAt}
-            onChange={(event) => handleChange('publishedAt', event.target.value)}
+            onChange={(event) =>
+              handleChange('publishedAt', event.target.value)
+            }
           />
         </div>
 

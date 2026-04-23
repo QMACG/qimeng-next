@@ -74,4 +74,3 @@ export const GET = async (req: NextRequest) => {
   const data = await getOverviewData(input.days)
   return NextResponse.json(data)
 }
-

@@ -204,7 +204,9 @@ export const EditorProvider = ({
       className="w-full min-h-64"
       style={
         minHeight
-          ? ({ ['--kun-editor-min-height' as string]: minHeight } as CSSProperties)
+          ? ({
+              ['--kun-editor-min-height' as string]: minHeight
+            } as CSSProperties)
           : undefined
       }
       onClick={(e) => e.stopPropagation()}

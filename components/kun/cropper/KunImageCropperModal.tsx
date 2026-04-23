@@ -13,7 +13,7 @@ import {
 import { KunCropControls } from './KunCropControls'
 import { centerAspectCrop, createCroppedImage } from './utils'
 import type { KunAspect } from './types'
-// @ts-ignore
+// @ts-expect-error Vite/Next may not ship typings for this CSS import
 import 'react-image-crop/dist/ReactCrop.css'
 
 interface Props {

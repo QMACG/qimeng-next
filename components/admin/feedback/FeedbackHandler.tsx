@@ -120,13 +120,22 @@ export const FeedbackHandler = ({ initialFeedback, onHandled }: Props) => {
         </DropdownTrigger>
 
         <DropdownMenu>
-          <DropdownItem key="in_progress" onPress={() => openWithStatus('in_progress')}>
+          <DropdownItem
+            key="in_progress"
+            onPress={() => openWithStatus('in_progress')}
+          >
             回复并标记处理中
           </DropdownItem>
-          <DropdownItem key="resolved" onPress={() => openWithStatus('resolved')}>
+          <DropdownItem
+            key="resolved"
+            onPress={() => openWithStatus('resolved')}
+          >
             回复并标记已处理
           </DropdownItem>
-          <DropdownItem key="suspended" onPress={() => openWithStatus('suspended')}>
+          <DropdownItem
+            key="suspended"
+            onPress={() => openWithStatus('suspended')}
+          >
             标记挂起
           </DropdownItem>
           <DropdownItem key="closed" onPress={() => openWithStatus('closed')}>
@@ -143,7 +152,9 @@ export const FeedbackHandler = ({ initialFeedback, onHandled }: Props) => {
               label="处理状态"
               selectedKeys={new Set([status])}
               onSelectionChange={(keys) => {
-                const key = Array.from(keys)[0] as FeedbackHandleStatus | undefined
+                const key = Array.from(keys)[0] as
+                  | FeedbackHandleStatus
+                  | undefined
                 if (key) {
                   setStatus(key)
                 }
@@ -154,7 +165,9 @@ export const FeedbackHandler = ({ initialFeedback, onHandled }: Props) => {
               ))}
             </Select>
 
-            <p className="text-sm text-default-500">{currentStatusDescription}</p>
+            <p className="text-sm text-default-500">
+              {currentStatusDescription}
+            </p>
 
             <Textarea
               value={handleContent}

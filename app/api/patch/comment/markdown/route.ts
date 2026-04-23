@@ -10,9 +10,7 @@ const commentIdSchema = z.object({
     .max(9999999)
 })
 
-const getCommentMarkdown = async (
-  input: z.infer<typeof commentIdSchema>
-) => {
+const getCommentMarkdown = async (input: z.infer<typeof commentIdSchema>) => {
   const { commentId } = input
 
   const comment = await prisma.patch_comment.findUnique({
@@ -34,4 +32,3 @@ export const GET = async (req: NextRequest) => {
   const response = await getCommentMarkdown(input)
   return NextResponse.json(response)
 }
-

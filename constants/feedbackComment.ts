@@ -31,7 +31,13 @@ export const FEEDBACK_COMMENT_STATUS_META: Record<
   FeedbackCommentStatusValue,
   {
     label: string
-    color: 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'danger'
+    color:
+      | 'default'
+      | 'primary'
+      | 'secondary'
+      | 'success'
+      | 'warning'
+      | 'danger'
   }
 > = {
   [FEEDBACK_COMMENT_STATUS.pending]: {
@@ -57,6 +63,5 @@ export const FEEDBACK_COMMENT_STATUS_META: Record<
 }
 
 export const getFeedbackCommentStatusMeta = (status: number) =>
-  FEEDBACK_COMMENT_STATUS_META[
-    status as FeedbackCommentStatusValue
-  ] ?? FEEDBACK_COMMENT_STATUS_META[FEEDBACK_COMMENT_STATUS.pending]
+  FEEDBACK_COMMENT_STATUS_META[status as FeedbackCommentStatusValue] ??
+  FEEDBACK_COMMENT_STATUS_META[FEEDBACK_COMMENT_STATUS.pending]

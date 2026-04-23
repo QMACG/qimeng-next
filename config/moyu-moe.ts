@@ -44,9 +44,13 @@ const siteSubtitle = '免费galgame资源下载'
 const siteTitle = `${siteName} - ${siteSubtitle}`
 const siteImage = `${primarySiteUrl}/favicon.ico`
 const siteDescription = '专注分享次元世界-Galgame'
-const siteNav = normalizeUrl(process.env.KUN_VISUAL_NOVEL_NAV_URL || primarySiteUrl)
+const siteNav = normalizeUrl(
+  process.env.KUN_VISUAL_NOVEL_NAV_URL || primarySiteUrl
+)
 const telegramGroup = process.env.KUN_VISUAL_NOVEL_TELEGRAM_GROUP_URL || ''
-const githubRepo = normalizeUrl(process.env.KUN_VISUAL_NOVEL_GITHUB_REPO_URL || '')
+const githubRepo = normalizeUrl(
+  process.env.KUN_VISUAL_NOVEL_GITHUB_REPO_URL || ''
+)
 const siteKeywords = [
   '绮梦',
   'GalGame',

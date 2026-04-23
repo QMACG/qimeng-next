@@ -140,8 +140,8 @@ export const GetFileContainer = ({ preview }: Props) => {
               {preview.rateLimitWindowMinutes > 0 &&
               preview.rateLimitMaxCount > 0 ? (
                 <div className="rounded-2xl bg-default-100 px-4 py-3 text-sm text-default-600">
-                  当前限制：{preview.rateLimitWindowMinutes} 分钟内，同一直链文件最多下载{' '}
-                  {preview.rateLimitMaxCount} 次。
+                  当前限制：{preview.rateLimitWindowMinutes}{' '}
+                  分钟内，同一直链文件最多下载 {preview.rateLimitMaxCount} 次。
                 </div>
               ) : null}
 

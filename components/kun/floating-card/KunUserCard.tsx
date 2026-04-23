@@ -20,9 +20,12 @@ export const KunUserCard = ({ uid }: UserCardProps) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const profile = await kunFetchGet<FloatingCardUser>('/user/profile/floating', {
-        uid
-      })
+      const profile = await kunFetchGet<FloatingCardUser>(
+        '/user/profile/floating',
+        {
+          uid
+        }
+      )
       setUser(profile)
     }
 
@@ -56,12 +59,18 @@ export const KunUserCard = ({ uid }: UserCardProps) => {
 
           <div className="mt-4 grid grid-cols-2 gap-3">
             <KunUserStatCard value={user._count.follower} label="关注者" />
-            <KunUserStatCard value={user.receivedFavoriteCount} label="收到喜欢" />
+            <KunUserStatCard
+              value={user.receivedFavoriteCount}
+              label="收到喜欢"
+            />
             {user.showContributionStats ? (
               <KunUserStatCard value={user._count.patch} label="游戏数" />
             ) : null}
             {user.showContributionStats ? (
-              <KunUserStatCard value={user._count.patch_resource} label="资源数" />
+              <KunUserStatCard
+                value={user._count.patch_resource}
+                label="资源数"
+              />
             ) : null}
           </div>
         </>

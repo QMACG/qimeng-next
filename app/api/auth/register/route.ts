@@ -16,10 +16,7 @@ import { toJsonStringArray } from '~/utils/prismaJson'
 import type { UserState } from '~/store/userStore'
 import { auditTextContent } from '~/utils/contentAudit'
 
-const register = async (
-  input: z.infer<typeof registerSchema>,
-  ip: string
-) => {
+const register = async (input: z.infer<typeof registerSchema>, ip: string) => {
   const { name, email, code, password } = input
   const normalizedEmail = email.toLowerCase().trim()
 

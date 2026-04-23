@@ -76,13 +76,13 @@ export const AdminCompanyContainer = ({
         return
       }
 
-      const response = await kunFetchGet<{ companies: Company[]; total: number }>(
-        '/company/all',
-        {
-          page: nextPage,
-          limit: 30
-        }
-      )
+      const response = await kunFetchGet<{
+        companies: Company[]
+        total: number
+      }>('/company/all', {
+        page: nextPage,
+        limit: 30
+      })
 
       setCompanies(response.companies)
       setTotal(response.total)
@@ -98,9 +98,12 @@ export const AdminCompanyContainer = ({
   const handleOpenEdit = async (companyId: number) => {
     setLoading(true)
     try {
-      const response = await kunFetchGet<KunResponse<CompanyDetail>>('/company', {
-        companyId
-      })
+      const response = await kunFetchGet<KunResponse<CompanyDetail>>(
+        '/company',
+        {
+          companyId
+        }
+      )
       if (typeof response === 'string') {
         toast.error(response)
         return
@@ -193,7 +196,9 @@ export const AdminCompanyContainer = ({
           }
         >
           <TableHeader columns={columns}>
-            {(column) => <TableColumn key={column.uid}>{column.name}</TableColumn>}
+            {(column) => (
+              <TableColumn key={column.uid}>{column.name}</TableColumn>
+            )}
           </TableHeader>
           <TableBody items={companies}>
             {(item) => (
@@ -282,7 +287,8 @@ export const AdminCompanyContainer = ({
         <ModalContent>
           <ModalHeader>删除会社</ModalHeader>
           <ModalBody>
-            确定要删除《{deletingCompany?.name ?? ''}》吗？删除后会同步移除相关游戏上的会社关联，且无法恢复。
+            确定要删除《{deletingCompany?.name ?? ''}
+            》吗？删除后会同步移除相关游戏上的会社关联，且无法恢复。
           </ModalBody>
           <ModalFooter>
             <Button variant="light" onPress={onClose}>

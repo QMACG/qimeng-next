@@ -22,9 +22,11 @@ const mapConfig = (config: {
 
 export const getUserNameStyleConfig =
   async (): Promise<AdminUserNameStyleConfig> => {
-    const config = await (prisma as any).site_user_name_style_config.findUnique({
-      where: { id: 1 }
-    })
+    const config = await (prisma as any).site_user_name_style_config.findUnique(
+      {
+        where: { id: 1 }
+      }
+    )
 
     if (!config) {
       const created = await (prisma as any).site_user_name_style_config.create({
@@ -42,4 +44,3 @@ export const getUserNameStyleConfig =
 
     return mapConfig(config)
   }
-

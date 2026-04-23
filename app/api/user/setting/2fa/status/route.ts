@@ -20,7 +20,9 @@ const get2FAStatus = async (uid?: number) => {
   return {
     enabled: user?.enable_2fa || false,
     hasSecret: !!user?.two_factor_secret,
-    backupCodeLength: user ? parseJsonStringArray(user.two_factor_backup).length : 0
+    backupCodeLength: user
+      ? parseJsonStringArray(user.two_factor_backup).length
+      : 0
   }
 }
 

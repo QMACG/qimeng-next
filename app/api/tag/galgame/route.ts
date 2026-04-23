@@ -6,7 +6,10 @@ import { getFrontDisplayConfig } from '~/app/api/admin/setting/front-display/get
 import { getPatchByTagSchema } from '~/validations/tag'
 import { GalgameCardSelectField } from '~/constants/api/select'
 import { getNSFWHeader } from '~/app/api/utils/getNSFWHeader'
-import { buildGalgameOrderBy, buildGalgameWhere } from '~/app/api/utils/galgameQuery'
+import {
+  buildGalgameOrderBy,
+  buildGalgameWhere
+} from '~/app/api/utils/galgameQuery'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 import {
   canShowDownloadCount,

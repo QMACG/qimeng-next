@@ -24,7 +24,10 @@ import {
   wrapInBulletListCommand,
   wrapInOrderedListCommand
 } from '@milkdown/preset-commonmark'
-import { insertTableCommand, toggleStrikethroughCommand } from '@milkdown/preset-gfm'
+import {
+  insertTableCommand,
+  toggleStrikethroughCommand
+} from '@milkdown/preset-gfm'
 import type { CmdKey } from '@milkdown/core'
 
 export const createButtons = (

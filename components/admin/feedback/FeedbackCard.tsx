@@ -32,10 +32,12 @@ interface Props {
 }
 
 export const FeedbackCard = ({ feedback, onHandled }: Props) => {
-  const [deletingCommentId, setDeletingCommentId] = useState<number | null>(null)
-  const [pendingDeleteCommentId, setPendingDeleteCommentId] = useState<number | null>(
+  const [deletingCommentId, setDeletingCommentId] = useState<number | null>(
     null
   )
+  const [pendingDeleteCommentId, setPendingDeleteCommentId] = useState<
+    number | null
+  >(null)
   const { isOpen, onOpen, onClose } = useDisclosure()
   const statusMeta = getFeedbackCommentStatusMeta(feedback.status)
 
@@ -107,7 +109,10 @@ export const FeedbackCard = ({ feedback, onHandled }: Props) => {
                 <div className="space-y-1">
                   <FeedbackClientInfo clientInfo={feedback.clientInfo} />
                   <div className="flex items-center gap-2">
-                    <UserName user={feedback.sender} className="font-semibold" />
+                    <UserName
+                      user={feedback.sender}
+                      className="font-semibold"
+                    />
                     <span className="text-small text-default-500">
                       {formatDate(feedback.created, {
                         isPrecise: true,
@@ -165,7 +170,10 @@ export const FeedbackCard = ({ feedback, onHandled }: Props) => {
                         <FeedbackClientInfo clientInfo={reply.clientInfo} />
                         <div className="flex items-center justify-between gap-3">
                           <div className="text-sm font-medium text-default-700">
-                            <UserName user={reply.user} className="font-medium" />
+                            <UserName
+                              user={reply.user}
+                              className="font-medium"
+                            />
                           </div>
                           <Button
                             size="sm"
@@ -191,9 +199,15 @@ export const FeedbackCard = ({ feedback, onHandled }: Props) => {
         </CardBody>
       </Card>
 
-      <Modal isOpen={isOpen} onClose={handleCloseDeleteModal} placement="center">
+      <Modal
+        isOpen={isOpen}
+        onClose={handleCloseDeleteModal}
+        placement="center"
+      >
         <ModalContent>
-          <ModalHeader className="flex flex-col gap-1">删除反馈评论</ModalHeader>
+          <ModalHeader className="flex flex-col gap-1">
+            删除反馈评论
+          </ModalHeader>
           <ModalBody>
             <p>
               确认删除这条{deleteTargetLabel || '评论'}吗？删除后将无法恢复。

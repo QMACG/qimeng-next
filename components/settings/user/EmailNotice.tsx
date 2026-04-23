@@ -15,7 +15,9 @@ export const EmailNotice = () => {
       return
     }
 
-    const res = await kunFetchPost<KunResponse<{}>>('/user/setting/email-notice')
+    const res = await kunFetchPost<KunResponse<{}>>(
+      '/user/setting/email-notice'
+    )
     if (typeof res !== 'string') {
       setUser({ ...user, enableEmailNotice: value })
       toast.success(value ? '已开启邮件通知' : '已关闭邮件通知')

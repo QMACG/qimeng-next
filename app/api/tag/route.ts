@@ -84,4 +84,3 @@ export const DELETE = async (req: NextRequest) => {
   const response = await deleteTag(input.tagId)
   return NextResponse.json(response)
 }
-

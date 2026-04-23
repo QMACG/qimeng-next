@@ -15,9 +15,12 @@ export const DisableRegisterSetting = ({ disableRegister }: Props) => {
 
   const handleSwitch = async (value: boolean) => {
     try {
-      const res = await kunFetchPut<KunResponse<{}>>('/admin/setting/register', {
-        disableRegister: value
-      })
+      const res = await kunFetchPut<KunResponse<{}>>(
+        '/admin/setting/register',
+        {
+          disableRegister: value
+        }
+      )
 
       if (typeof res === 'string') {
         toast.error(res)

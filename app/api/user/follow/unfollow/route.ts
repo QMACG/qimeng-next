@@ -38,4 +38,3 @@ export const POST = async (req: NextRequest) => {
   const response = await unfollowUser(input.uid, payload?.uid)
   return NextResponse.json(response)
 }
-

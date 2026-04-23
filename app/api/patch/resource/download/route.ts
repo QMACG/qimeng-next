@@ -30,4 +30,3 @@ export const PUT = async (req: NextRequest) => {
   const response = await downloadStats(input)
   return NextResponse.json(response)
 }
-

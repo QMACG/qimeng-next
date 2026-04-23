@@ -12,8 +12,14 @@ interface Props {
 
 const listToText = (value: string[]) => value.join('\n')
 
-const textToList = (value: string) =>
-  [...new Set(value.split(/[\n,;]+/).map((item) => item.trim()).filter(Boolean))]
+const textToList = (value: string) => [
+  ...new Set(
+    value
+      .split(/[\n,;]+/)
+      .map((item) => item.trim())
+      .filter(Boolean)
+  )
+]
 
 export const CommentAuditSetting = ({ config }: Props) => {
   const [enableAudit, setEnableAudit] = useState(config.enableAudit)
@@ -44,16 +50,19 @@ export const CommentAuditSetting = ({ config }: Props) => {
     setSaving(true)
 
     try {
-      const response = await kunFetchPut<KunResponse<{}>>('/admin/comment/audit', {
-        enableAudit,
-        enableUsernameAudit,
-        feedbackRequireCaptcha,
-        minReviewLength: Number(minReviewLength) || 0,
-        keywordBlacklist: textToList(keywordBlacklist),
-        keywordWhitelist: textToList(keywordWhitelist),
-        userBlacklist: textToList(userBlacklist),
-        userWhitelist: textToList(userWhitelist)
-      })
+      const response = await kunFetchPut<KunResponse<{}>>(
+        '/admin/comment/audit',
+        {
+          enableAudit,
+          enableUsernameAudit,
+          feedbackRequireCaptcha,
+          minReviewLength: Number(minReviewLength) || 0,
+          keywordBlacklist: textToList(keywordBlacklist),
+          keywordWhitelist: textToList(keywordWhitelist),
+          userBlacklist: textToList(userBlacklist),
+          userWhitelist: textToList(userWhitelist)
+        }
+      )
 
       if (typeof response === 'string') {
         toast.error(response)
@@ -62,7 +71,9 @@ export const CommentAuditSetting = ({ config }: Props) => {
 
       toast.success('评论审核设置已保存')
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : '保存评论审核设置失败')
+      toast.error(
+        error instanceof Error ? error.message : '保存评论审核设置失败'
+      )
     } finally {
       setSaving(false)
     }
@@ -132,7 +143,8 @@ export const CommentAuditSetting = ({ config }: Props) => {
             <div className="rounded-2xl border border-default-200 p-4">
               <h4 className="font-semibold">名单填写说明</h4>
               <p className="mt-1 text-sm text-default-500">
-                支持换行、逗号或分号分隔。用户名单可填写用户名，也可填写用户 ID。
+                支持换行、逗号或分号分隔。用户名单可填写用户名，也可填写用户
+                ID。
               </p>
             </div>
           </div>

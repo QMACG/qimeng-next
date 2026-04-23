@@ -8,9 +8,7 @@ import { sliceUntilDelimiterFromEnd } from '~/app/api/utils/sliceUntilDelimiterF
 import { findRelatedReportIds, resolveReportMeta } from '../_meta'
 import { recomputePatchRatingStat } from '~/app/api/patch/rating/stat'
 
-const handleReport = async (
-  input: z.infer<typeof adminHandleReportSchema>
-) => {
+const handleReport = async (input: z.infer<typeof adminHandleReportSchema>) => {
   const message = await prisma.user_message.findUnique({
     where: { id: input.messageId }
   })
@@ -44,8 +42,7 @@ const handleReport = async (
   const reportStatus = input.action === 'reject' ? 3 : 2
   const reportResult =
     input.action === 'reject' ? '您的举报已驳回' : '您的举报已处理'
-  const reportReplyLabel =
-    input.action === 'reject' ? '驳回回复' : '处理回复'
+  const reportReplyLabel = input.action === 'reject' ? '驳回回复' : '处理回复'
   const reportContent = `${reportResult}\n\n举报原因：${SLICED_CONTENT}\n${reportReplyLabel}：${handleResult}`
 
   const ratingPatchId =
@@ -139,4 +136,3 @@ export const POST = async (req: NextRequest) => {
   const response = await handleReport(input)
   return NextResponse.json(response)
 }
-

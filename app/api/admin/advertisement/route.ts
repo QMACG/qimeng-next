@@ -120,7 +120,7 @@ export const POST = async (req: NextRequest) => {
   let title = input.title
   let banner = input.banner
   let link = input.link
-  let targetMode = input.targetMode ?? 'article'
+  const targetMode = input.targetMode ?? 'article'
   let docPostId: number | null = null
 
   if (input.kind === 'featured_post' && input.targetMode === 'article') {
@@ -197,7 +197,7 @@ export const PUT = async (req: NextRequest) => {
   let title = input.title
   let banner = input.banner
   let link = input.link
-  let targetMode = input.targetMode ?? 'article'
+  const targetMode = input.targetMode ?? 'article'
   let docPostId: number | null = null
 
   if (input.kind === 'featured_post' && input.targetMode === 'article') {

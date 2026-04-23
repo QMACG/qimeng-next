@@ -64,15 +64,16 @@ const createDefaultFrontDisplayConfig = async () => {
   }
 }
 
-export const getFrontDisplayConfig = async (): Promise<AdminFrontDisplayConfig> => {
-  const existing = await prisma.site_front_display_config.findUnique({
-    where: { id: FRONT_DISPLAY_CONFIG_ID }
-  })
+export const getFrontDisplayConfig =
+  async (): Promise<AdminFrontDisplayConfig> => {
+    const existing = await prisma.site_front_display_config.findUnique({
+      where: { id: FRONT_DISPLAY_CONFIG_ID }
+    })
 
-  if (existing) {
-    return mapFrontDisplayConfig(existing)
+    if (existing) {
+      return mapFrontDisplayConfig(existing)
+    }
+
+    const created = await createDefaultFrontDisplayConfig()
+    return mapFrontDisplayConfig(created)
   }
-
-  const created = await createDefaultFrontDisplayConfig()
-  return mapFrontDisplayConfig(created)
-}

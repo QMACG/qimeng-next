@@ -71,7 +71,9 @@ export const PublishFeedbackComment = ({
     (state) => state.refreshMilkdownContent
   )
   const isAdminHandleMode =
-    mode === 'create' && user.role >= 3 && typeof adminFeedbackRootId === 'number'
+    mode === 'create' &&
+    user.role >= 3 &&
+    typeof adminFeedbackRootId === 'number'
 
   useEffect(() => {
     setContent(initialValue)

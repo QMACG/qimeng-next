@@ -173,7 +173,9 @@ export const AdminFriendLinkContainer = ({ initialLinks }: Props) => {
         return
       }
 
-      setLinks((current) => current.filter((item) => item.id !== deletingLink.id))
+      setLinks((current) =>
+        current.filter((item) => item.id !== deletingLink.id)
+      )
       setDeleteModalOpen(false)
       setDeletingLink(null)
       toast.success('友情链接已删除')
@@ -203,7 +205,9 @@ export const AdminFriendLinkContainer = ({ initialLinks }: Props) => {
 
       <Table aria-label="友链管理">
         <TableHeader columns={columns}>
-          {(column) => <TableColumn key={column.uid}>{column.name}</TableColumn>}
+          {(column) => (
+            <TableColumn key={column.uid}>{column.name}</TableColumn>
+          )}
         </TableHeader>
         <TableBody items={sortedLinks}>
           {(item) => {
@@ -316,7 +320,10 @@ export const AdminFriendLinkContainer = ({ initialLinks }: Props) => {
               placeholder="留空时会优先尝试读取对方网站 favicon.ico"
               value={form.avatar}
               onChange={(event) =>
-                setForm((current) => ({ ...current, avatar: event.target.value }))
+                setForm((current) => ({
+                  ...current,
+                  avatar: event.target.value
+                }))
               }
             />
             <Textarea
@@ -337,12 +344,16 @@ export const AdminFriendLinkContainer = ({ initialLinks }: Props) => {
               labelPlacement="outside"
               selectedKeys={new Set([String(form.status)])}
               onSelectionChange={(keys) => {
-                const value = Number(Array.from(keys)[0] ?? FRIEND_LINK_STATUS.normal)
+                const value = Number(
+                  Array.from(keys)[0] ?? FRIEND_LINK_STATUS.normal
+                )
                 setForm((current) => ({ ...current, status: value }))
               }}
             >
               {FRIEND_LINK_STATUS_OPTIONS.map((option) => (
-                <SelectItem key={String(option.value)}>{option.label}</SelectItem>
+                <SelectItem key={String(option.value)}>
+                  {option.label}
+                </SelectItem>
               ))}
             </Select>
             <Input
@@ -389,7 +400,8 @@ export const AdminFriendLinkContainer = ({ initialLinks }: Props) => {
           <ModalHeader>删除友链</ModalHeader>
           <ModalBody>
             <p>
-              确定要删除友情链接《{deletingLink?.name ?? ''}》吗？删除后将不会再在前台友情链接页面展示，且无法恢复。
+              确定要删除友情链接《{deletingLink?.name ?? ''}
+              》吗？删除后将不会再在前台友情链接页面展示，且无法恢复。
             </p>
           </ModalBody>
           <ModalFooter>

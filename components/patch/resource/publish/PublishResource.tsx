@@ -176,7 +176,10 @@ export const PublishResource = ({
             <div className="space-y-3">
               <h3 className="text-lg font-medium">直链标题</h3>
               {directLinks.map((link, index) => (
-                <div key={`${link}-${index}`} className="space-y-2 rounded-xl border border-default-200 p-3">
+                <div
+                  key={`${link}-${index}`}
+                  className="space-y-2 rounded-xl border border-default-200 p-3"
+                >
                   <p className="break-all text-sm text-default-500">{link}</p>
                   <Input
                     label={`资源标题 ${index + 1}`}
@@ -185,7 +188,10 @@ export const PublishResource = ({
                     value={resourceNames[index] ?? ''}
                     onChange={(event) =>
                       setResourceNames((current) => {
-                        const next = syncResourceNames(current, directLinks.length)
+                        const next = syncResourceNames(
+                          current,
+                          directLinks.length
+                        )
                         next[index] = event.target.value
                         return next
                       })

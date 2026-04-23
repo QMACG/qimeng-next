@@ -8,10 +8,5 @@ interface Props {
 }
 
 export const TagHeader = ({ setNewTag: _setNewTag }: Props) => {
-  return (
-    <KunHeader
-      name="标签列表"
-      description="这里汇总站内游戏标签。"
-    />
-  )
+  return <KunHeader name="标签列表" description="这里汇总站内游戏标签。" />
 }

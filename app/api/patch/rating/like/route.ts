@@ -54,13 +54,16 @@ const toggleRatingLike = async (
       })
     }
 
-    await createDedupMessage({
-      type: 'like',
-      content: `赞了您的评价：${rating.short_summary.slice(0, 107)}`,
-      sender_id: uid,
-      recipient_id: rating.user_id,
-      link: `/${rating.patch.unique_id}`
-    }, tx)
+    await createDedupMessage(
+      {
+        type: 'like',
+        content: `赞了您的评价：${rating.short_summary.slice(0, 107)}`,
+        sender_id: uid,
+        recipient_id: rating.user_id,
+        link: `/${rating.patch.unique_id}`
+      },
+      tx
+    )
 
     await tx.user.update({
       where: { id: rating.user_id },
@@ -84,4 +87,3 @@ export const PUT = async (req: NextRequest) => {
   const response = await toggleRatingLike(input, payload.uid)
   return NextResponse.json(response)
 }
-

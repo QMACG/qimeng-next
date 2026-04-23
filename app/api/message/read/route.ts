@@ -6,9 +6,7 @@ import { clearReadMessageSchema } from '~/validations/message'
 
 const MESSAGE_BATCH_SIZE = 1000
 
-const processMessageInBatches = async (
-  handler: () => Promise<number>
-) => {
+const processMessageInBatches = async (handler: () => Promise<number>) => {
   while (true) {
     const affectedCount = await handler()
 
@@ -106,4 +104,3 @@ export const DELETE = async (req: NextRequest) => {
   const response = await clearReadMessage(payload.uid, input.type)
   return NextResponse.json(response)
 }
-

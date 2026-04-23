@@ -60,7 +60,10 @@ export const callRouteGet = async <T = any>(
   return (await response.json()) as T
 }
 
-export const callRouteGetWithParams = async <T = any, P = Record<string, string>>(
+export const callRouteGetWithParams = async <
+  T = any,
+  P = Record<string, string>
+>(
   handler: (
     req: NextRequest,
     context: { params: Promise<P> }

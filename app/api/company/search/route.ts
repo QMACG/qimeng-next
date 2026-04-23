@@ -5,9 +5,7 @@ import { searchCompanySchema } from '~/validations/company'
 import { kunParsePostBody } from '~/app/api/utils/parseQuery'
 import { parseJsonStringArray } from '~/utils/prismaJson'
 
-const searchCompany = async (
-  input: z.infer<typeof searchCompanySchema>
-) => {
+const searchCompany = async (input: z.infer<typeof searchCompanySchema>) => {
   const { query } = input
 
   const companies = await prisma.patch_company.findMany({
@@ -45,4 +43,3 @@ export const POST = async (req: NextRequest) => {
   const response = await searchCompany(input)
   return NextResponse.json(response)
 }
-

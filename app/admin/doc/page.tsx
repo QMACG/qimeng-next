@@ -21,7 +21,10 @@ export default async function AdminDocPage() {
 
   return (
     <Suspense>
-      <DocContainer initialPosts={response.posts} initialTotal={response.total} />
+      <DocContainer
+        initialPosts={response.posts}
+        initialTotal={response.total}
+      />
     </Suspense>
   )
 }

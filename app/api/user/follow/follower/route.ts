@@ -58,4 +58,3 @@ export const GET = async (req: NextRequest) => {
   const response = await getUserFollower(input, payload?.uid)
   return NextResponse.json(response)
 }
-

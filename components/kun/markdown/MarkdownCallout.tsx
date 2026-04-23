@@ -16,12 +16,9 @@ const colorClassMap: Record<string, string> = {
     'data-kun-callout-warning border-amber-300/90 bg-amber-50/95 text-amber-950',
   success:
     'data-kun-callout-success border-green-300/90 bg-green-50/95 text-green-950',
-  danger:
-    'data-kun-callout-danger border-red-300/90 bg-red-50/95 text-red-950',
-  error:
-    'data-kun-callout-danger border-red-300/90 bg-red-50/95 text-red-950',
-  note:
-    'data-kun-callout-note border-violet-300/90 bg-violet-50/95 text-violet-950'
+  danger: 'data-kun-callout-danger border-red-300/90 bg-red-50/95 text-red-950',
+  error: 'data-kun-callout-danger border-red-300/90 bg-red-50/95 text-red-950',
+  note: 'data-kun-callout-note border-violet-300/90 bg-violet-50/95 text-violet-950'
 }
 
 export const MarkdownCallout: FC<Props> = ({
@@ -34,10 +31,7 @@ export const MarkdownCallout: FC<Props> = ({
 
   return (
     <div
-      className={cn(
-        'data-kun-callout rounded-2xl border px-4 py-4',
-        className
-      )}
+      className={cn('data-kun-callout rounded-2xl border px-4 py-4', className)}
     >
       {title ? (
         <div className="data-kun-callout__title mb-2 text-sm font-bold leading-6">

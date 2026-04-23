@@ -51,7 +51,7 @@ export const kunGetConversationMessagesAction = async (
     getConversationMessagesRoute,
     `/api/message/conversation/${conversationId}`,
     { id: String(conversationId) },
-    input,
+    input
   )
   return response
 }

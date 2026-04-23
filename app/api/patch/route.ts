@@ -23,7 +23,11 @@ export const GET = async (req: NextRequest) => {
   }
   const payload = await verifyHeaderCookie(req)
 
-  const response = await getPatchById(input, payload?.uid ?? 0, payload?.role ?? 0)
+  const response = await getPatchById(
+    input,
+    payload?.uid ?? 0,
+    payload?.role ?? 0
+  )
   return NextResponse.json(response)
 }
 

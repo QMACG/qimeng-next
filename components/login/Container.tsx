@@ -33,4 +33,3 @@ export const LoginContainer = ({ title, children }: Props) => {
     </div>
   )
 }
-

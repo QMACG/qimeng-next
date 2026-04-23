@@ -137,4 +137,3 @@ export const UserNameStyleSetting = ({ config }: Props) => {
     </div>
   )
 }
-

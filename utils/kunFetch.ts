@@ -46,7 +46,9 @@ const parseErrorResponse = async (response: Response) => {
   }
 
   const text = await response.text()
-  return formatUnknownErrorMessage(text || `请求失败，状态码 ${response.status}`)
+  return formatUnknownErrorMessage(
+    text || `请求失败，状态码 ${response.status}`
+  )
 }
 
 const kunFetchRequest = async <T>(

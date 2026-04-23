@@ -6,9 +6,7 @@ import { getUserInfoSchema } from '~/validations/user'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 import type { UserRating } from '~/types/api/user'
 
-const getUserPatchRating = async (
-  input: z.infer<typeof getUserInfoSchema>
-) => {
+const getUserPatchRating = async (input: z.infer<typeof getUserInfoSchema>) => {
   const { uid, page, limit } = input
   const offset = (page - 1) * limit
 
@@ -66,4 +64,3 @@ export const GET = async (req: NextRequest) => {
   const response = await getUserPatchRating(input)
   return NextResponse.json(response)
 }
-

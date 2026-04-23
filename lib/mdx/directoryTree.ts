@@ -72,15 +72,13 @@ export const getDirectoryTree = async (): Promise<KunTreeNode> => {
       return node
     }
 
-    node.children = node.children
-      .map(sortTree)
-      .sort((a, b) => {
-        if (a.type !== b.type) {
-          return a.type === 'directory' ? -1 : 1
-        }
+    node.children = node.children.map(sortTree).sort((a, b) => {
+      if (a.type !== b.type) {
+        return a.type === 'directory' ? -1 : 1
+      }
 
-        return a.label.localeCompare(b.label, 'zh-CN')
-      })
+      return a.label.localeCompare(b.label, 'zh-CN')
+    })
 
     return node
   }

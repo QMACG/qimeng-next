@@ -65,4 +65,3 @@ export const GET = async (req: NextRequest) => {
   const response = await getMessage(input, payload.uid)
   return NextResponse.json(response)
 }
-

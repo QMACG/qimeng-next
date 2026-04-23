@@ -33,33 +33,39 @@ const mapConfig = (config: {
   userWhitelist: parseJsonStringArray(config.user_whitelist as any)
 })
 
-export const getCommentAuditConfig = async (): Promise<AdminCommentAuditConfig> => {
-  const config = await (prisma as any).site_content_audit_config.findUnique({
-    where: { id: 1 }
-  })
-
-  if (!config) {
-    const created = await (prisma as any).site_content_audit_config.create({
-      data: {
-        id: 1,
-        enable_audit: DEFAULT_COMMENT_AUDIT_CONFIG.enableAudit,
-        enable_username_audit: DEFAULT_COMMENT_AUDIT_CONFIG.enableUsernameAudit,
-        feedback_require_captcha:
-          DEFAULT_COMMENT_AUDIT_CONFIG.feedbackRequireCaptcha,
-        min_review_length: DEFAULT_COMMENT_AUDIT_CONFIG.minReviewLength,
-        keyword_blacklist: toJsonStringArray(
-          DEFAULT_COMMENT_AUDIT_CONFIG.keywordBlacklist
-        ),
-        keyword_whitelist: toJsonStringArray(
-          DEFAULT_COMMENT_AUDIT_CONFIG.keywordWhitelist
-        ),
-        user_blacklist: toJsonStringArray(DEFAULT_COMMENT_AUDIT_CONFIG.userBlacklist),
-        user_whitelist: toJsonStringArray(DEFAULT_COMMENT_AUDIT_CONFIG.userWhitelist)
-      }
+export const getCommentAuditConfig =
+  async (): Promise<AdminCommentAuditConfig> => {
+    const config = await (prisma as any).site_content_audit_config.findUnique({
+      where: { id: 1 }
     })
 
-    return mapConfig(created)
-  }
+    if (!config) {
+      const created = await (prisma as any).site_content_audit_config.create({
+        data: {
+          id: 1,
+          enable_audit: DEFAULT_COMMENT_AUDIT_CONFIG.enableAudit,
+          enable_username_audit:
+            DEFAULT_COMMENT_AUDIT_CONFIG.enableUsernameAudit,
+          feedback_require_captcha:
+            DEFAULT_COMMENT_AUDIT_CONFIG.feedbackRequireCaptcha,
+          min_review_length: DEFAULT_COMMENT_AUDIT_CONFIG.minReviewLength,
+          keyword_blacklist: toJsonStringArray(
+            DEFAULT_COMMENT_AUDIT_CONFIG.keywordBlacklist
+          ),
+          keyword_whitelist: toJsonStringArray(
+            DEFAULT_COMMENT_AUDIT_CONFIG.keywordWhitelist
+          ),
+          user_blacklist: toJsonStringArray(
+            DEFAULT_COMMENT_AUDIT_CONFIG.userBlacklist
+          ),
+          user_whitelist: toJsonStringArray(
+            DEFAULT_COMMENT_AUDIT_CONFIG.userWhitelist
+          )
+        }
+      })
 
-  return mapConfig(config)
-}
+      return mapConfig(created)
+    }
+
+    return mapConfig(config)
+  }

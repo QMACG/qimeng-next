@@ -27,7 +27,12 @@ export const KunFriendLink = ({
         </p>
         {enableFriendLinkApply ? (
           <div className="mb-12 flex justify-center">
-            <Button as={Link} href="/friend-link/apply" color="primary" variant="flat">
+            <Button
+              as={Link}
+              href="/friend-link/apply"
+              color="primary"
+              variant="flat"
+            >
               申请友情链接
             </Button>
           </div>
@@ -46,7 +51,9 @@ export const KunFriendLink = ({
             <Card
               isPressable
               isHoverable
-              onPress={() => window.open(friend.link, '_blank', 'noopener,noreferrer')}
+              onPress={() =>
+                window.open(friend.link, '_blank', 'noopener,noreferrer')
+              }
               className="h-full w-full border border-default-200"
             >
               <CardBody className="overflow-visible p-0">

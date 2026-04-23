@@ -37,9 +37,8 @@ export const CommentContent = ({ comment }: Props) => {
       videoRoot.render(<KunExternalLink link={href}>{text}</KunExternalLink>)
     })
 
-    const buttonElements = contentRef.current.querySelectorAll(
-      '[data-kun-button]'
-    )
+    const buttonElements =
+      contentRef.current.querySelectorAll('[data-kun-button]')
     buttonElements.forEach((element) => {
       const href = element.getAttribute('data-href')
       const text = element.getAttribute('data-text')

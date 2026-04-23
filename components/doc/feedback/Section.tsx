@@ -23,7 +23,10 @@ export const FeedbackCommentSection = ({
         </div>
       </CardHeader>
       <CardBody className="p-4">
-        <FeedbackComments docPostId={docPostId} requireCaptcha={requireCaptcha} />
+        <FeedbackComments
+          docPostId={docPostId}
+          requireCaptcha={requireCaptcha}
+        />
       </CardBody>
     </Card>
   )

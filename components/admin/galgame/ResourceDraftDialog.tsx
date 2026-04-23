@@ -97,7 +97,8 @@ export const ResourceDraftDialog = ({
         directLinks.map((link, index) => ({
           tempId: createTempId(),
           name:
-            resourceNames[index]?.trim() || getDefaultResourceTitle('direct', index),
+            resourceNames[index]?.trim() ||
+            getDefaultResourceTitle('direct', index),
           section: value.section,
           storage: value.storage,
           content: link,
@@ -122,7 +123,9 @@ export const ResourceDraftDialog = ({
   return (
     <ModalContent>
       <ModalHeader className="flex-col space-y-2">
-        <h3 className="text-lg">{isEditMode ? '编辑资源草稿' : '添加资源草稿'}</h3>
+        <h3 className="text-lg">
+          {isEditMode ? '编辑资源草稿' : '添加资源草稿'}
+        </h3>
       </ModalHeader>
 
       <ModalBody>
@@ -146,7 +149,10 @@ export const ResourceDraftDialog = ({
             <div className="space-y-3">
               <h3 className="text-lg font-medium">直链标题</h3>
               {directLinks.map((link, index) => (
-                <div key={`${link}-${index}`} className="space-y-2 rounded-xl border border-default-200 p-3">
+                <div
+                  key={`${link}-${index}`}
+                  className="space-y-2 rounded-xl border border-default-200 p-3"
+                >
                   <p className="break-all text-sm text-default-500">{link}</p>
                   <Input
                     label={`资源标题 ${index + 1}`}
@@ -155,7 +161,10 @@ export const ResourceDraftDialog = ({
                     value={resourceNames[index] ?? ''}
                     onChange={(event) =>
                       setResourceNames((current) => {
-                        const next = syncResourceNames(current, directLinks.length)
+                        const next = syncResourceNames(
+                          current,
+                          directLinks.length
+                        )
                         next[index] = event.target.value
                         return next
                       })

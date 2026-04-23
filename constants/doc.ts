@@ -1,10 +1,7 @@
 const prettifyDirectorySegment = (segment: string) =>
   decodeURIComponent(segment).replace(/[-_]+/g, ' ').trim()
 
-export const getDocDirectoryLabel = (
-  path: string,
-  directoryLabel?: string
-) => {
+export const getDocDirectoryLabel = (path: string, directoryLabel?: string) => {
   const pathSegments = path.split('/').filter(Boolean)
   const labelSegments = (directoryLabel ?? '')
     .split('/')
@@ -32,6 +29,7 @@ export const getDocDirectoryLabelSegments = (
     .filter(Boolean)
 
   return pathSegments.map(
-    (segment, index) => labelSegments[index] || prettifyDirectorySegment(segment)
+    (segment, index) =>
+      labelSegments[index] || prettifyDirectorySegment(segment)
   )
 }

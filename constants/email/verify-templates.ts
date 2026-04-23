@@ -9,10 +9,8 @@ const titleMap = {
 const messageMap = {
   register: (siteName: string) =>
     `感谢您注册 ${siteName}，请使用下面的验证码完成注册。`,
-  forgot: () =>
-    '我们收到了您的密码重置请求，请使用下面的验证码继续操作。',
-  reset: () =>
-    '您正在修改邮箱地址，请使用下面的验证码确认新的邮箱。'
+  forgot: () => '我们收到了您的密码重置请求，请使用下面的验证码继续操作。',
+  reset: () => '您正在修改邮箱地址，请使用下面的验证码确认新的邮箱。'
 }
 
 export const createKunVerificationEmailTemplate = (

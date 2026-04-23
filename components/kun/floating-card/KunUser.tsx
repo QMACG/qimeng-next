@@ -22,11 +22,15 @@ export const KunUser = ({ user, userProps }: KunUserProps) => {
   const altString = alt || username
   const safeSrc = toSafeAvatarSrc(src)
   const displayName =
-    typeof restUser.name === 'string'
-      ? restUser.name === user.name
-        ? <UserName user={user} />
-        : restUser.name
-      : restUser.name ?? <UserName user={user} />
+    typeof restUser.name === 'string' ? (
+      restUser.name === user.name ? (
+        <UserName user={user} />
+      ) : (
+        restUser.name
+      )
+    ) : (
+      (restUser.name ?? <UserName user={user} />)
+    )
 
   return (
     <Tooltip

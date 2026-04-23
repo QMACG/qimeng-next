@@ -5,7 +5,10 @@ import { Button, Card, CardBody, Input } from '@heroui/react'
 import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { kunFetchPut } from '~/utils/kunFetch'
-import type { AdminHeaderNavConfig, AdminHeaderNavItem } from '~/types/api/admin'
+import type {
+  AdminHeaderNavConfig,
+  AdminHeaderNavItem
+} from '~/types/api/admin'
 
 interface Props {
   config: AdminHeaderNavConfig
@@ -13,7 +16,8 @@ interface Props {
 
 const sortItems = (items: AdminHeaderNavItem[]) =>
   [...items].sort(
-    (left, right) => left.sortOrder - right.sortOrder || left.name.localeCompare(right.name)
+    (left, right) =>
+      left.sortOrder - right.sortOrder || left.name.localeCompare(right.name)
   )
 
 const normalizeSortOrder = (items: AdminHeaderNavItem[]) =>
@@ -107,7 +111,9 @@ export const HeaderNavSetting = ({ config }: Props) => {
       setItems(normalizeSortOrder(response.items))
       toast.success('页头导航设置已保存')
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : '保存页头导航设置失败')
+      toast.error(
+        error instanceof Error ? error.message : '保存页头导航设置失败'
+      )
     } finally {
       setSaving(false)
     }
@@ -137,13 +143,17 @@ export const HeaderNavSetting = ({ config }: Props) => {
                     label={item.isFixed ? '固定名称' : '导航名称'}
                     value={item.name}
                     isReadOnly={item.isFixed}
-                    onValueChange={(value) => updateItem(item.id, 'name', value)}
+                    onValueChange={(value) =>
+                      updateItem(item.id, 'name', value)
+                    }
                   />
 
                   <Input
                     label="跳转链接"
                     value={item.href}
-                    onValueChange={(value) => updateItem(item.id, 'href', value)}
+                    onValueChange={(value) =>
+                      updateItem(item.id, 'href', value)
+                    }
                   />
 
                   <div className="flex items-end gap-2">

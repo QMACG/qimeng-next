@@ -31,4 +31,3 @@ export const GET = async (req: NextRequest) => {
   const response = await searchUser(input)
   return NextResponse.json(response)
 }
-

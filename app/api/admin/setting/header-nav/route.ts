@@ -44,7 +44,7 @@ export const PUT = async (req: NextRequest) => {
     for (const item of input.items) {
       await (tx as any).site_header_nav_item.create({
         data: {
-          nav_key: item.isFixed ? item.key ?? null : null,
+          nav_key: item.isFixed ? (item.key ?? null) : null,
           name: item.name,
           href: item.href,
           sort_order: item.sortOrder,

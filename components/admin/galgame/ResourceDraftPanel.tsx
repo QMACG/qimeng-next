@@ -27,7 +27,8 @@ export const ResourceDraftPanel = () => {
 
   const groupedCount = useMemo(
     () => ({
-      netdisk: resourceDrafts.filter((item) => item.section === 'netdisk').length,
+      netdisk: resourceDrafts.filter((item) => item.section === 'netdisk')
+        .length,
       direct: resourceDrafts.filter((item) => item.section === 'direct').length
     }),
     [resourceDrafts]
@@ -101,12 +102,15 @@ export const ResourceDraftPanel = () => {
                         {RESOURCE_SECTION_MAP[draft.section] ?? draft.section}
                       </Chip>
                       <Chip size="sm" variant="flat" color="secondary">
-                        {SUPPORTED_RESOURCE_LINK_MAP[draft.storage] ?? draft.storage}
+                        {SUPPORTED_RESOURCE_LINK_MAP[draft.storage] ??
+                          draft.storage}
                       </Chip>
                     </div>
 
                     {draft.name ? (
-                      <p className="font-medium text-default-800">{draft.name}</p>
+                      <p className="font-medium text-default-800">
+                        {draft.name}
+                      </p>
                     ) : null}
 
                     <p className="break-all text-sm text-default-700">

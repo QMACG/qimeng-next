@@ -105,4 +105,3 @@ export const GET = async (req: NextRequest) => {
   const response = await getReport(input)
   return NextResponse.json(response)
 }
-

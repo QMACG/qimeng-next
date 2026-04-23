@@ -47,4 +47,3 @@ export const POST = async (req: NextRequest) => {
   const response = await followUser(input.uid, payload?.uid)
   return NextResponse.json(response)
 }
-

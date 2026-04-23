@@ -2,10 +2,7 @@
 import { prisma } from '~/prisma/index'
 import { verifyHeaderCookie } from '~/middleware/_verifyHeaderCookie'
 
-const markConversationAsRead = async (
-  conversationId: number,
-  uid: number
-) => {
+const markConversationAsRead = async (conversationId: number, uid: number) => {
   const conversation = await prisma.user_conversation.findUnique({
     where: { id: conversationId }
   })
@@ -55,4 +52,3 @@ export const PUT = async (
   const response = await markConversationAsRead(conversationId, payload.uid)
   return NextResponse.json(response)
 }
-

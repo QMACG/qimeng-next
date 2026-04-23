@@ -24,13 +24,19 @@ export const syncPatchCompanies = async (
     where: { patch_id: patchId },
     select: { company_id: true }
   })
-  const existingCompanyIds = existingRelations.map((relation) => relation.company_id)
+  const existingCompanyIds = existingRelations.map(
+    (relation) => relation.company_id
+  )
 
   const nextIds = new Set(validCompanyIds)
   const currentIds = new Set(existingCompanyIds)
 
-  const toAdd = validCompanyIds.filter((companyId) => !currentIds.has(companyId))
-  const toRemove = existingCompanyIds.filter((companyId) => !nextIds.has(companyId))
+  const toAdd = validCompanyIds.filter(
+    (companyId) => !currentIds.has(companyId)
+  )
+  const toRemove = existingCompanyIds.filter(
+    (companyId) => !nextIds.has(companyId)
+  )
 
   if (toAdd.length) {
     await prisma.patch_company_relation.createMany({

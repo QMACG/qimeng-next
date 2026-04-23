@@ -43,4 +43,3 @@ export const POST = async (req: NextRequest) => {
   const response = await searchTag(input)
   return NextResponse.json(response)
 }
-

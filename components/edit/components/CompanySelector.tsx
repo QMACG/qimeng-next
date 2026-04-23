@@ -2,7 +2,14 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { Button, Card, CardBody, Chip, Input, ScrollShadow } from '@heroui/react'
+import {
+  Button,
+  Card,
+  CardBody,
+  Chip,
+  Input,
+  ScrollShadow
+} from '@heroui/react'
 import { Building2, Plus, Search, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useDebounce } from 'use-debounce'
@@ -64,7 +71,8 @@ export const CompanySelector = ({ companies, onChange }: Props) => {
   const canQuickCreate =
     Boolean(normalizedQuery) &&
     !results.some(
-      (company) => company.name.trim().toLowerCase() === normalizedQuery.toLowerCase()
+      (company) =>
+        company.name.trim().toLowerCase() === normalizedQuery.toLowerCase()
     )
 
   const handleSelect = (company: Company) => {

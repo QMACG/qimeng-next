@@ -50,7 +50,11 @@ const buildGalleryTemplate = (rawLinks = '') => {
       ? links
           .map((link, index) => `![画廊图片 ${index + 1}](${link})`)
           .join('\n\n')
-      : ['![画廊图片 1](https://example.com/1.avif)', '![画廊图片 2](https://example.com/2.avif)', '![画廊图片 3](https://example.com/3.avif)'].join('\n\n')
+      : [
+          '![画廊图片 1](https://example.com/1.avif)',
+          '![画廊图片 2](https://example.com/2.avif)',
+          '![画廊图片 3](https://example.com/3.avif)'
+        ].join('\n\n')
 
   return `\n:::gallery\n${images}\n:::\n`
 }

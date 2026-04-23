@@ -32,7 +32,9 @@ export const getHomeBoxAdvertisements = async (
 
   return advertisements
     .filter((item) => (viewer.uid ? true : item.visible_for_guest))
-    .filter((item): item is typeof item & { slot: number } => item.slot !== null)
+    .filter(
+      (item): item is typeof item & { slot: number } => item.slot !== null
+    )
     .map((item) => ({
       id: item.id,
       banner: item.banner,

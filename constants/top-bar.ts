@@ -1,4 +1,7 @@
-import type { AdminHeaderNavItem, AdminHeaderNavFixedKey } from '~/types/api/admin'
+import type {
+  AdminHeaderNavItem,
+  AdminHeaderNavFixedKey
+} from '~/types/api/admin'
 
 export interface KunNavItem {
   name: string

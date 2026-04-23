@@ -103,7 +103,9 @@ export default async function Kun({ params }: Props) {
         />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbJsonLd) }}
+          dangerouslySetInnerHTML={{
+            __html: serializeJsonLd(breadcrumbJsonLd)
+          }}
         />
         <BlogHeader frontmatter={frontmatter} />
         <article className="kun-prose">

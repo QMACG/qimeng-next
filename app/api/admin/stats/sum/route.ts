@@ -43,4 +43,3 @@ export const GET = async (req: NextRequest) => {
   const data = await getSumData()
   return NextResponse.json(data)
 }
-

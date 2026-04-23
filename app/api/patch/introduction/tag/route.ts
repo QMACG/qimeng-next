@@ -84,4 +84,3 @@ export const PUT = async (req: NextRequest) => {
   const response = await handleRemovePatchTag(input)
   return NextResponse.json(response)
 }
-

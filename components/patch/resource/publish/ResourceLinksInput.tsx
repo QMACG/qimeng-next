@@ -36,7 +36,9 @@ export const ResourceLinksInput = ({
           isRequired
           minRows={5}
           label="直链链接"
-          placeholder={'每行填写一个直链链接\n如果直接换行填写多个链接，会一次性拆分为多条直链资源'}
+          placeholder={
+            '每行填写一个直链链接\n如果直接换行填写多个链接，会一次性拆分为多条直链资源'
+          }
           value={content}
           isInvalid={!!errors.content}
           errorMessage={errors.content?.message}

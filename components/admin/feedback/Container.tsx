@@ -124,8 +124,8 @@ export const Feedback = ({ initialFeedbacks, total }: Props) => {
   }
 
   const currentPlaceholder =
-    searchTypeOptions.find((option) => option.key === searchType)?.placeholder ??
-    '输入反馈内容搜索'
+    searchTypeOptions.find((option) => option.key === searchType)
+      ?.placeholder ?? '输入反馈内容搜索'
 
   return (
     <div className="space-y-6">

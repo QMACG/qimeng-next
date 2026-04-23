@@ -202,10 +202,7 @@ const deleteMessage = async (
   return {}
 }
 
-const deleteConversation = async (
-  conversationId: number,
-  uid: number
-) => {
+const deleteConversation = async (conversationId: number, uid: number) => {
   const conversation = await verifyConversationAccess(conversationId, uid)
   if (!conversation) {
     return '会话不存在或无权访问'
@@ -328,4 +325,3 @@ export const DELETE = async (
   const response = await deleteConversation(conversationId, payload.uid)
   return NextResponse.json(response)
 }
-

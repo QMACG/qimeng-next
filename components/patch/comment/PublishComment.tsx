@@ -40,11 +40,14 @@ export const PublishComment = ({
 
   const handlePublishComment = async () => {
     setLoading(true)
-    const res = await kunFetchPost<KunResponse<PatchComment>>('/patch/comment', {
-      patchId,
-      parentId,
-      content: content.trim()
-    })
+    const res = await kunFetchPost<KunResponse<PatchComment>>(
+      '/patch/comment',
+      {
+        patchId,
+        parentId,
+        content: content.trim()
+      }
+    )
 
     kunErrorHandler(res, (value) => {
       setNewComment({

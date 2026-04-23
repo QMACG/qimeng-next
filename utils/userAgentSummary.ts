@@ -26,7 +26,10 @@ const detectBrowser = (ua: string) => {
     )
   }
   if (/MicroMessenger\/([\d.]+)/i.test(ua)) {
-    return appendVersion('微信', extractVersion(ua, /MicroMessenger\/([\d.]+)/i))
+    return appendVersion(
+      '微信',
+      extractVersion(ua, /MicroMessenger\/([\d.]+)/i)
+    )
   }
   if (/Weibo/i.test(ua)) {
     return '微博'
@@ -44,13 +47,22 @@ const detectBrowser = (ua: string) => {
     )
   }
   if (/HeyTapBrowser\/([\d.]+)/i.test(ua)) {
-    return appendVersion('OPPO浏览器', extractVersion(ua, /HeyTapBrowser\/([\d.]+)/i))
+    return appendVersion(
+      'OPPO浏览器',
+      extractVersion(ua, /HeyTapBrowser\/([\d.]+)/i)
+    )
   }
   if (/VivoBrowser\/([\d.]+)/i.test(ua)) {
-    return appendVersion('vivo浏览器', extractVersion(ua, /VivoBrowser\/([\d.]+)/i))
+    return appendVersion(
+      'vivo浏览器',
+      extractVersion(ua, /VivoBrowser\/([\d.]+)/i)
+    )
   }
   if (/MiuiBrowser\/([\d.]+)/i.test(ua)) {
-    return appendVersion('小米浏览器', extractVersion(ua, /MiuiBrowser\/([\d.]+)/i))
+    return appendVersion(
+      '小米浏览器',
+      extractVersion(ua, /MiuiBrowser\/([\d.]+)/i)
+    )
   }
   if (/SamsungBrowser\/([\d.]+)/i.test(ua)) {
     return appendVersion(
@@ -68,13 +80,19 @@ const detectBrowser = (ua: string) => {
     )
   }
   if (/EdgA?\/([\d.]+)/i.test(ua)) {
-    return appendVersion('Microsoft Edge', extractVersion(ua, /EdgA?\/([\d.]+)/i))
+    return appendVersion(
+      'Microsoft Edge',
+      extractVersion(ua, /EdgA?\/([\d.]+)/i)
+    )
   }
   if (/Firefox\/([\d.]+)/i.test(ua)) {
     return appendVersion('Firefox', extractVersion(ua, /Firefox\/([\d.]+)/i))
   }
   if (/OPR\/([\d.]+)/i.test(ua) || /Opera\/([\d.]+)/i.test(ua)) {
-    return appendVersion('Opera', extractVersion(ua, /(?:OPR|Opera)\/([\d.]+)/i))
+    return appendVersion(
+      'Opera',
+      extractVersion(ua, /(?:OPR|Opera)\/([\d.]+)/i)
+    )
   }
   if (/Brave\/([\d.]+)/i.test(ua)) {
     return appendVersion('Brave', extractVersion(ua, /Brave\/([\d.]+)/i))
@@ -83,7 +101,10 @@ const detectBrowser = (ua: string) => {
     return appendVersion('Chromium', extractVersion(ua, /Chromium\/([\d.]+)/i))
   }
   if (/Chrome\/([\d.]+)/i.test(ua) || /CriOS\/([\d.]+)/i.test(ua)) {
-    return appendVersion('Chrome', extractVersion(ua, /(?:Chrome|CriOS)\/([\d.]+)/i))
+    return appendVersion(
+      'Chrome',
+      extractVersion(ua, /(?:Chrome|CriOS)\/([\d.]+)/i)
+    )
   }
   if (/Safari\/([\d.]+)/i.test(ua)) {
     return appendVersion('Safari', extractVersion(ua, /Version\/([\d.]+)/i))
@@ -121,7 +142,10 @@ const detectOs = (ua: string) => {
   }
 
   if (/HarmonyOS|OpenHarmony/i.test(ua)) {
-    return appendVersion('HarmonyOS', extractVersion(ua, /HarmonyOS[ /]?([\d.]+)/i))
+    return appendVersion(
+      'HarmonyOS',
+      extractVersion(ua, /HarmonyOS[ /]?([\d.]+)/i)
+    )
   }
   if (/Windows/i.test(ua)) {
     return detectWindowsVersion(ua)
@@ -154,7 +178,9 @@ const detectOs = (ua: string) => {
   return '未知系统'
 }
 
-export const parseUserAgentSummary = (userAgent: string): DocCommentClientInfo => ({
+export const parseUserAgentSummary = (
+  userAgent: string
+): DocCommentClientInfo => ({
   os: detectOs(userAgent),
   browser: detectBrowser(userAgent)
 })

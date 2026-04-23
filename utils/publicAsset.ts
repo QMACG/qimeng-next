@@ -22,9 +22,7 @@ export const toSafeRemoteHttpUrl = (
   return isSafeRemoteHttpUrl(trimmed) ? trimmed : undefined
 }
 
-export const toSafeAvatarSrc = (
-  value?: string | null
-): string | undefined => {
+export const toSafeAvatarSrc = (value?: string | null): string | undefined => {
   const trimmed = value?.trim()
   if (!trimmed) {
     return undefined

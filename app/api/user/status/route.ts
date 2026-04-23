@@ -44,4 +44,3 @@ export async function GET(req: NextRequest) {
   const status = await getStatus(payload?.uid)
   return NextResponse.json(status)
 }
-

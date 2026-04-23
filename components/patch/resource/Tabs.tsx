@@ -103,7 +103,9 @@ export const ResourceTabs = ({
             <Card>
               <CardBody className="space-y-3">
                 {sectionResources.length > 0 ? (
-                  sectionResources.map((resource) => renderResourceCard(resource))
+                  sectionResources.map((resource) =>
+                    renderResourceCard(resource)
+                  )
                 ) : (
                   <KunNull message={`暂无${RESOURCE_SECTION_MAP[section]}`} />
                 )}

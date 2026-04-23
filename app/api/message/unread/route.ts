@@ -31,4 +31,3 @@ export const GET = async (req: NextRequest) => {
   const response = await getMessage(payload.uid)
   return NextResponse.json(response)
 }
-

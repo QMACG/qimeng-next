@@ -108,9 +108,12 @@ export const UserEdit = ({ initialUser }: Props) => {
   const handleDisable2FA = async () => {
     setDisabling2FA(true)
     try {
-      const res = await kunFetchPost<KunResponse<{}>>('/admin/user/2fa/disable', {
-        uid: formUser.id
-      })
+      const res = await kunFetchPost<KunResponse<{}>>(
+        '/admin/user/2fa/disable',
+        {
+          uid: formUser.id
+        }
+      )
       kunErrorHandler(res, () => {
         setUser((prev) => ({ ...prev, enable2FA: false }))
         setFormUser((prev) => ({ ...prev, enable2FA: false }))
