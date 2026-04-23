@@ -21,6 +21,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # postinstall runs `prisma generate`, which needs prisma.config.ts to resolve
+      # KUN_DATABASE_URL (via dotenv) before pnpm can finish.
+      - name: Copy .env.example to .env
+        run: cp .env.example .env
+
       # enable pnpm
       - name: Use Latest Corepack
         run: |
@@ -38,9 +43,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
-
-      - name: Copy .env.example to .env
-        run: cp .env.example .env
 
       - name: Generate prisma client
         run: pnpm run prisma:generate
