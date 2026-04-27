@@ -19,6 +19,8 @@ import {
 import { getNSFWHeader } from '~/utils/actions/getNSFWHeader'
 import { verifyHeaderCookie } from '~/utils/actions/verifyHeaderCookie'
 import { getFrontDisplayConfig } from '~/app/api/admin/setting/front-display/getFrontDisplayConfig'
+import { headers } from 'next/headers'
+import { isIndexingCrawlerUserAgent } from '~/utils/crawler'
 import type { Metadata } from 'next'
 import type { Company } from '~/types/api/company'
 
@@ -52,17 +54,22 @@ export default async function Kun({ params, searchParams }: Props) {
     return <ErrorComponent error="提取页面参数错误" />
   }
 
-  const [patch, payload, nsfwHeader, frontDisplay] = await Promise.all([
-    kunGetPatchActions({ uniqueId: id }),
-    verifyHeaderCookie(),
-    getNSFWHeader(),
-    getFrontDisplayConfig()
-  ])
+  const [patch, payload, nsfwHeader, frontDisplay, requestHeaders] =
+    await Promise.all([
+      kunGetPatchActions({ uniqueId: id }),
+      verifyHeaderCookie(),
+      getNSFWHeader(),
+      getFrontDisplayConfig(),
+      headers()
+    ])
 
   if (typeof patch === 'string') {
     return <ErrorComponent error={patch} />
   }
 
+  const isIndexingCrawler = isIndexingCrawlerUserAgent(
+    requestHeaders.get('user-agent')
+  )
   const nsfwPreference = nsfwHeader.content_limit
   const isNsfwEnabled =
     nsfwPreference === 'nsfw' || nsfwPreference === 'all' || !nsfwPreference
@@ -76,6 +83,7 @@ export default async function Kun({ params, searchParams }: Props) {
     !frontDisplay.enableContentScopeControl
   const canViewCurrentPatch =
     patch.contentLimit !== 'nsfw' ||
+    isIndexingCrawler ||
     (Boolean(payload?.uid) && isNsfwEnabled) ||
     (isGuestRestrictedPatch && guestConfirmed)
 
@@ -143,7 +151,9 @@ export default async function Kun({ params, searchParams }: Props) {
     { name: patch.name, item: canonical }
   ])
 
-  await kunUpdatePatchViewsActions({ uniqueId: id })
+  if (!isIndexingCrawler) {
+    await kunUpdatePatchViewsActions({ uniqueId: id })
+  }
 
   return (
     <div className="container py-6 mx-auto space-y-6">

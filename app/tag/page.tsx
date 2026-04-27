@@ -3,7 +3,6 @@ import { kunMetadata } from './metadata'
 import { kunGetActions } from './actions'
 import { ErrorComponent } from '~/components/error/ErrorComponent'
 import { Suspense } from 'react'
-import { verifyHeaderCookie } from '~/utils/actions/verifyHeaderCookie'
 import { parsePositiveIntParam } from '~/utils/galgameFilter'
 import type { Metadata } from 'next'
 
@@ -28,15 +27,12 @@ export default async function Kun({ searchParams }: PageProps) {
     return <ErrorComponent error={response} />
   }
 
-  const payload = await verifyHeaderCookie()
-
   return (
     <Suspense>
       <Container
         initialTags={response.tags}
         initialTotal={response.total}
         initialPage={currentPage}
-        uid={payload?.uid}
       />
     </Suspense>
   )

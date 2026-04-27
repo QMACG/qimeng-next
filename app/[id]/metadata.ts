@@ -1,5 +1,4 @@
 import { kunMoyuMoe } from '~/config/moyu-moe'
-import { generateNullMetadata } from '~/utils/noIndex'
 import { htmlToSeoDescription, toCanonicalUrl } from '~/utils/seo'
 import type { Metadata } from 'next'
 import type { Patch, PatchIntroduction } from '~/types/api/patch'
@@ -34,10 +33,6 @@ export const generateKunMetadataTemplate = (
     `${kunMoyuMoe.titleShort} 提供 ${patch.name} 的游戏介绍、资源信息、标签与评论内容。`
   )
   const canonical = toCanonicalUrl(`/${patch.uniqueId}`)
-
-  if (patch.contentLimit === 'nsfw') {
-    return generateNullMetadata(detailTitle)
-  }
 
   return {
     metadataBase: new URL(kunMoyuMoe.domain.main),
@@ -74,6 +69,17 @@ export const generateKunMetadataTemplate = (
       title: `${detailTitle} - ${kunMoyuMoe.titleShort}`,
       description,
       images: [patch.banner]
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1
+      }
     },
     alternates: {
       canonical

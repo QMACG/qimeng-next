@@ -1,6 +1,6 @@
 'use server'
 
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { NextRequest } from 'next/server'
 
 type QueryValue =
@@ -44,9 +44,19 @@ const buildRequest = async (
     .filter((cookie) => forwardedCookieNames.has(cookie.name))
     .map((cookie) => `${cookie.name}=${encodeURIComponent(cookie.value)}`)
     .join('; ')
+  const requestHeaders = await headers()
+  const userAgent = requestHeaders.get('user-agent')
+  const forwardedHeaders = new Headers()
+
+  if (cookieHeader) {
+    forwardedHeaders.set('cookie', cookieHeader)
+  }
+  if (userAgent) {
+    forwardedHeaders.set('user-agent', userAgent)
+  }
 
   return new NextRequest(url, {
-    headers: cookieHeader ? { cookie: cookieHeader } : undefined
+    headers: forwardedHeaders
   })
 }
 

@@ -9,21 +9,18 @@ import { kunFetchGet, kunFetchPost } from '~/utils/kunFetch'
 import { useMounted } from '~/hooks/useMounted'
 import { useSyncedPageInUrl } from '~/hooks/useSyncedPageInUrl'
 import { KunPagination } from '~/components/kun/Pagination'
-import { KunNull } from '~/components/kun/Null'
 import type { Tag as TagType } from '~/types/api/tag'
 
 interface Props {
   initialTags: TagType[]
   initialTotal: number
   initialPage: number
-  uid?: number
 }
 
 export const Container = ({
   initialTags,
   initialTotal,
-  initialPage,
-  uid
+  initialPage
 }: Props) => {
   const [tags, setTags] = useState<TagType[]>(initialTags)
   const { page, setPage } = useSyncedPageInUrl(initialPage)
@@ -81,34 +78,26 @@ export const Container = ({
     <div className="flex flex-col w-full my-4 space-y-8">
       <TagHeader setNewTag={(newTag) => setTags([newTag, ...initialTags])} />
 
-      {uid ? (
-        <>
-          <SearchTags
-            query={query}
-            setQuery={setQuery}
-            handleSearch={handleSearch}
-            searching={searching}
+      <SearchTags
+        query={query}
+        setQuery={setQuery}
+        handleSearch={handleSearch}
+        searching={searching}
+      />
+
+      {!searching && (
+        <TagList tags={tags} loading={loading} searching={searching} />
+      )}
+
+      {total > 100 && !query && (
+        <div className="flex justify-center">
+          <KunPagination
+            total={Math.ceil(total / 100)}
+            page={page}
+            onPageChange={setPage}
+            isLoading={loading}
           />
-
-          {!searching && (
-            <TagList tags={tags} loading={loading} searching={searching} />
-          )}
-
-          {total > 100 && !query && (
-            <div className="flex justify-center">
-              <KunPagination
-                total={Math.ceil(total / 100)}
-                page={page}
-                onPageChange={setPage}
-                isLoading={loading}
-              />
-            </div>
-          )}
-        </>
-      ) : (
-        <>
-          <KunNull message="请登陆后查看游戏标签" />
-        </>
+        </div>
       )}
     </div>
   )

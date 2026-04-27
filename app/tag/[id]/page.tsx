@@ -2,8 +2,6 @@ import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { TagDetailContainer } from '~/components/tag/detail/Container'
 import { ErrorComponent } from '~/components/error/ErrorComponent'
-import { KunNull } from '~/components/kun/Null'
-import { verifyHeaderCookie } from '~/utils/actions/verifyHeaderCookie'
 import {
   DEFAULT_GALGAME_SORT_FIELD,
   DEFAULT_GALGAME_SORT_ORDER,
@@ -12,6 +10,7 @@ import {
 } from '~/utils/galgameFilter'
 import type { SortField, SortOrder } from '~/components/galgame/_sort'
 import { generateKunMetadataTemplate } from './metadata'
+import { generateNullMetadata } from '~/utils/noIndex'
 import { kunGetTagByIdActions, kunTagGalgameActions } from './actions'
 
 export const revalidate = 3
@@ -32,10 +31,10 @@ export const generateMetadata = async ({
   const tag = await kunGetTagByIdActions({ tagId: Number(id) })
 
   if (typeof tag === 'string') {
-    return generateKunMetadataTemplate('标签详情')
+    return generateNullMetadata('标签详情')
   }
 
-  return generateKunMetadataTemplate(tag.name)
+  return generateKunMetadataTemplate(tag.name, tag.id)
 }
 
 export default async function Kun({ params, searchParams }: Props) {
@@ -65,23 +64,17 @@ export default async function Kun({ params, searchParams }: Props) {
     return <ErrorComponent error={response} />
   }
 
-  const payload = await verifyHeaderCookie()
-
   return (
     <Suspense>
-      {payload?.uid ? (
-        <TagDetailContainer
-          initialTag={tag}
-          initialPatches={response.galgames}
-          total={response.total}
-          initialNsfwHiddenCount={response.nsfwHiddenCount}
-          initialPage={currentPage}
-          initialSortField={sortField}
-          initialSortOrder={sortOrder}
-        />
-      ) : (
-        <KunNull message="请登录后查看标签详情信息" />
-      )}
+      <TagDetailContainer
+        initialTag={tag}
+        initialPatches={response.galgames}
+        total={response.total}
+        initialNsfwHiddenCount={response.nsfwHiddenCount}
+        initialPage={currentPage}
+        initialSortField={sortField}
+        initialSortOrder={sortOrder}
+      />
     </Suspense>
   )
 }
